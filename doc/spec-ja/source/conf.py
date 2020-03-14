@@ -18,7 +18,7 @@ todo_include_todos=True
 
 # -- Project information -----------------------------------------------------
 
-project = 'Function Evaluation with FHE using Lookup Table'
+project = '準同型表探索による関数計算ライブラリ基本設計書'
 copyright = 'Copyright 2018 Yamana Laboratory, Waseda University'
 author = ''
 
