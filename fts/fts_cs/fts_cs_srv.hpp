@@ -45,7 +45,7 @@ public:
      */
     void start(void);
     /**
-     * サーバ停止
+     * サーバ停止指示
      */
     void stop(void);
     /**

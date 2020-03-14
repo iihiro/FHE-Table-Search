@@ -99,7 +99,7 @@ private:
 
 ### シーケンス
 
-「インターフェース/Decryptor向けクライアント」および「インターフェース/ComputationServer向けクライアント」のインターフェースを用いて,[システム概要/User](02_system_overview)の処理フローに従って処理を行う.
+前述の「インターフェース/Decryptor向けクライアント」および「インターフェース/ComputationServer向けクライアント」のインターフェースを用いて,[システム概要/User](02_system_overview)の処理フローに従って処理を行う.
 
 
 ## Decryptor
@@ -128,7 +128,7 @@ public:
      */
     void start(void);
     /**
-     * サーバ停止
+     * サーバ停止指示
      */
     void stop(void);
     /**
@@ -212,7 +212,7 @@ public:
      */
     void start(void);
     /**
-     * サーバ停止
+     * サーバ停止指示
      */
     void stop(void);
     /**
