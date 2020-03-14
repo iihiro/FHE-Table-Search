@@ -46,13 +46,7 @@ FHE-Table-Search is a library of function evaluation of fully homomorphic encryp
 2. see `doc/html/index.html`
 
 ## Basic specification
-1. Run the following command at the root of the repository to create the basic specification.
-    ```sh
-    $ cd doc/spec-ja
-    $ make latexpdf # To create PDF
-    $ make html # To create HTML
-    ```
-2. see `doc/spec-ja/build/latex/sphinx.pdf` or `doc/spec-ja/build/html/index.html`
+1. Download from [Actions/build_documents](https://github.com/iihiro/FHE-Table-Search/actions?query=workflow%3Abuild_documents)
 
 # How to run
 1. Run the following command at the root of the repository to run demo app.
