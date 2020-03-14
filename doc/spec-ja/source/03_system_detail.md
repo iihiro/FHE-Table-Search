@@ -142,6 +142,8 @@ private:
 };
 ```
 
+Decryptorのインターフェースとしては,サーバの制御用メソッドのみ持つ. Socket通信におけるプロトコルの実装は,後述のシーケンス設計に基づき, [stdsc](04_appendix) の`stdsc::CallbackFunctionContainer`機能を用いて実装する. また状態遷移の実装も, 後述の状態遷移設計に基づき, [stdsc](04_appendix) の`stdsc::StateContext`機能を用いて実装する.
+
 ### 状態遷移
 
 ```eval_rst
@@ -186,6 +188,17 @@ DecServer(Decryptorのサーバ実装クラス)は新規鍵生成リクエスト
 計算リクエストとして暗号化された中間結果を受信( **(1)** )すると,それを復号化し( **(2)** ),PRIクエリを生成する( **(3)** ).
 生成したPIRクエリを暗号化して,それをレスポンスとして返す( **(4)** ).
 
+#### 鍵破棄リクエスト受信時
+
+```eval_rst
+.. image:: images/fhetbl_design-seq-dec-4.png
+   :align: center
+   :scale: 70%
+```
+
+DecServerは鍵破棄リクエストを受信( **(1)** )すると,keyIDに対応した鍵ペアをkey tableから削除( **(2)** )した上で,処理に成功したか否かをレスポンスとして返す( **(3)** ).
+
+
 ## Computation Server
 
 ComputationServerライブラリは,ComputationServerとしてのサーバ機能を提供する.
@@ -225,6 +238,8 @@ private:
     std::shared_ptr<Impl> pimpl_;
 };
 ```
+
+ComputationServerのインターフェースとしては,サーバの制御用メソッドのみ持つ. Socket通信におけるプロトコルの実装は,後述のシーケンス設計に基づき, [stdsc](04_appendix) の`stdsc::CallbackFunctionContainer`機能を用いて実装する. また状態遷移の実装も, 後述の状態遷移設計に基づき, [stdsc](04_appendix) の`stdsc::StateContext`機能を用いて実装する.
 
 ### 状態遷移
 

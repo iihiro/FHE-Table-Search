@@ -39,6 +39,7 @@ https://github.com/yamanalab/FHE-Table-Search
    :header-rows: 1
 
    名称, 説明
+   stdsc, Standard Server Client library (https://github.com/yamanalab/stdsc)
 ```
 
 ## 参照
