@@ -13,7 +13,7 @@
 ```eval_rst
 .. image:: images/overview.png
    :align: center
-   :scale: 80%
+   :scale: 60%
 ```
 
 ```eval_rst

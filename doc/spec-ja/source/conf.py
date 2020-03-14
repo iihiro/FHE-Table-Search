@@ -69,7 +69,6 @@ html_static_path = ['_static']
 
 
 # -- Setting for markdown ----------------------------------------------------
-latex_docclass = {'manual': 'jsbook'}
 
 source_suffix = ['.rst', '.md']
 
@@ -89,5 +88,37 @@ def setup(app):
             }, True)
     app.add_transform(AutoStructify)
 
+
+# -- Setting for LaTex --------------------------------------------------------
+
+
+
+latex_docclass = {'manual': 'jsbook'}
+
+numfig = True
+numfig_format = {'section': '%s',
+                 'figure': 'Fig %s',
+                 'table': 'Table %s',
+                 'code-block': 'List %s'};
+
 # delete empty pages
-latex_elements = {'extraclassoptions': 'openany'}
+#latex_elements = {'extraclassoptions': 'openany'}
+
+latex_elements = {
+    'extraclassoptions': 'openany',
+    'preamble': r'''
+\makeatletter
+\renewcommand{\sphinxmaketitle}{
+\vspace*{\stretch{1}}
+\begin{center}
+    {\LARGE \@title}
+\end{center}
+\vspace{\stretch{2}}
+\begin{flushright}
+    \@date \par
+    \@author \par
+    \vspace{50pt}
+\end{flushright}
+}
+'''
+}
