@@ -63,14 +63,14 @@ The demo app consists of three processes: Decryptor, ComputationServer and User.
 * Behavior
     * Decryptor receives the new key request, then returns new keys (public key, secret key, context) and keyID. (Fig: (1)(2))
     * Decryptor receives a public key request, then returns a public key and context. (Fig: (5))
-    * Decryptor receives a key discardation request, then discard keys specified keyID. (Fig: (13)(14))
-    * Decryptor receives intermediate results, then decrypts it, generates and returns an encrypted PIR queries. (Fig: (8)(9))
+    * Decryptor receives a key discardation request, then discard keys specified keyID. (Fig: (12)(13))
+    * Decryptor receives intermediate results, then decrypts it, generates and returns an encrypted PIR queries. (Fig: (7)(8))
 * Usage
     ```sh
     Usage: ./dec [-p port] [-c config_filename]
     ```
-    * -p port : port number
-    * -c config_filename : file path of configuration file (OPTINAL)
+    * -p port : port number (type: int)
+    * -c config_filename : file path of configuration file (type: string) (*OPTINAL*)
 * Configuration
     * Specify the following encryption parameters in the configuration file.
         ```
@@ -86,16 +86,17 @@ The demo app consists of three processes: Decryptor, ComputationServer and User.
 * Behavior
     * ComputationServer receives a query from User, then begin the computation and returns the queryID. (Fig: (4))
     * ComputationServer sends a public key request to Decryptor, then receives the public key. (Fig: (5))
-    * ComputationServer generates LUT matrices. (Fig: (6))
-    * ComputationServer gets intermediate results from LUTin. (Fig: (7))
-    * ComputationServer sends intermediate results to Decryptor, then receives PIR queries. (Fig: (8))
-    * ComputationServer re-constructs queries from PIR queries and gets the results from LUTout. (Fig: (10))
-    * ComputationServer receives a result request from User, then returns encryped results. (Fig: (11))
+    * ComputationServer gets intermediate results from LUTin. (Fig: (6))
+    * ComputationServer sends intermediate results to Decryptor, then receives PIR queries. (Fig: (7))
+    * ComputationServer re-constructs queries from PIR queries and gets the results from LUTout. (Fig: (9))
+    * ComputationServer receives a result request from User, then returns encryped results. (Fig: (10))
 * Usage
     ```sh
-    Usage: ./cs [-p port]
+    Usage: ./cs [-p port] [-f LUT_filepath] [-m max_queries]
     ```
-    * -p port : port number
+    * -p port : port number (type: int)
+    * -f LUT_filepath : LUT filepath (type: string)
+    * -m max_queries : max concurrent queries (type: int)
 * State Transition Diagram
     * ![](doc/spec-ja/source/images/fhetbl_design-state-cs.png)
 
@@ -103,14 +104,14 @@ The demo app consists of three processes: Decryptor, ComputationServer and User.
 * Behavior
     * User sends a new key request to Decryptor, then receives a secret key, public key and keyID. (Fig: (1))
     * User encrypts input values using the public key and sends a query containing the encryped input and keyID to ComputationServer. (Fig: (3)(4))
-    * User sends a result request to ComputaionServer, then receives encryped results and decrypt it using secret key.  (Fig: (11)(12))
-    * User sends a discardation key request to Decryptor to discard keys specified keyID. (Fig: (13))
+    * User sends a result request to ComputaionServer, then receives encryped results and decrypt it using secret key.  (Fig: (10)(11))
+    * User sends a discardation key request to Decryptor to discard keys specified keyID. (Fig: (12))
 * Usage
     ```sh
     Usage: ./user value1 [value2]
     ```
-    * value1 value1
-    * value2 value2 (optional)
+    * value1 value1 (type: int)
+    * value2 value2 (type: int) (*OPTINAL*)
 
 # License
 Copyright 2018 Yamana Laboratory, Waseda University
