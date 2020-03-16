@@ -20,7 +20,7 @@ todo_include_todos=True
 
 project = '準同型表探索による関数計算ライブラリ基本設計書'
 copyright = 'Copyright 2018 Yamana Laboratory, Waseda University'
-author = ''
+author = '株式会社エデュアム'
 
 # The full version, including alpha/beta/rc tags
 release = '1.0'
@@ -114,11 +114,15 @@ latex_elements = {
     {\LARGE \@title}
 \end{center}
 \vspace{\stretch{2}}
-\begin{flushright}
+\begin{center}
+    {\em\large\py@HeaderFamily \py@release\releaseinfo} \par
+    \vspace{20pt}
+    {\large
     \@date \par
     \@author \par
     \vspace{50pt}
-\end{flushright}
+    } \par
+\end{center}
 }
 '''
 }
