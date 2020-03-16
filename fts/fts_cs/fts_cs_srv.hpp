@@ -32,12 +32,16 @@ public:
     /**
      * コンストラクタ
      * @param[in] port ポート番号
+     * @param[in] LUT_filepath LUTファイルパス
      * @param[in] callback コールバック関数定義
      * @param[in] state 状態遷移定義
+     * @param[in] max_concurrent_query 最大同時クエリー数
      */
     CSServer(const char* port,
+             const std::string& LUT_filepath,
              stdsc::CallbackFunctionContainer& callback,
-             stdsc::StateContext& state);
+             stdsc::StateContext& state,
+             const uint32_t max_concurrent_query = DEFAULT_MAX_CONCURRENT_QUERY);
     ~CSServer(void) = default;
 
     /**

@@ -57,8 +57,9 @@ public:
     /**
      * 鍵ペア削除
      * @param[in] key_id keyID
+     * @return 処理に成功したか否か
      */
-    void delete_keys(const int32_t key_id) const;
+    bool delete_keys(const int32_t key_id) const;
 
 private:
     struct Impl;

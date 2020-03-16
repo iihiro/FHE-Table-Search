@@ -60,8 +60,9 @@ public:
      * 結果受信
      * @param[in] query_id queryID
      * @param[out] enc_result 暗号化された結果
+     * @return 結果が受信できたか否か
      */
-    voi recv_result(const int32_t query_id, fts_share::EncData& enc_result) const;
+    bool recv_result(const int32_t query_id, fts_share::EncData& enc_result) const;
 
 private:
     struct Impl;
