@@ -214,19 +214,20 @@ public:
     /**
      * コンストラクタ
      * @param[in] port ポート番号
-     * @param[in] LUT_filepath LUTファイルパス
+     * @param[in] LUT_dirpath LUTファイルのディレクトリパス
      * @param[in] callback コールバック関数定義
      * @param[in] state 状態遷移定義
      * @param[in] max_concurrent_queries 最大同時クエリー数
+     * @param[in] max_results 最大結果保持数
+     * @param[in] result_lifetime_sec 結果を保持する時間(秒)
      */
     CSServer(const char* port,
-             const std::string& LUT_filepath,
+             const std::string& LUT_dirpath,
              stdsc::CallbackFunctionContainer& callback,
              stdsc::StateContext& state,
-             const uint32_t max_concurrent_queries = DEFAULT_MAX_CONCURRENT_QUERIES);
-    CSServer(const char* port,
-             stdsc::CallbackFunctionContainer& callback,
-             stdsc::StateContext& state);
+             const uint32_t max_concurrent_queries = DEFAULT_MAX_CONCURRENT_QUERIES,
+             const uint32_t max_results = DEFAULT_MAX_RESULTS,
+             const uint32_t result_lifetime_sec = DEFAULT_MAX_RESULT_LIFETIME_SEC);
     ~CSServer(void) = default;
 
     /**
@@ -250,8 +251,10 @@ private:
 
 ComputationServerの実装であるCSServerクラスは,インターフェースとしてサーバの始動/停止のメソッドのみ持つ. リクエスト受信時の処理や状態遷移はstdscの`stdsc::CallbackFunctionContainer`および`stdsc::StateContext`を用いて実装する. stdscについては[Appendix/stdsc:標準サーバ・クライアントライブラリ](04_appendix)を参照のこと.
 また,CSServerクラスのコンストラクタでは以下の処理を行う.
-* 引数`LUT_filepath`のファイルを読み込みメモリ上にLUTを構築する(LUTファイルの詳細は [Appendix/LUTファイルフォーマット](04_appendix)を参照のこと]
-* 引数`max_concurrent_queries`の値を最大同時クエリ数として,後述の「シーケンス/クエリ受信時」の処理において同時に受け付けられる最大クエリ数を制限する
+* 引数`LUT_dirpath`のディレクトリから,`*.txt`のファイルをLUTファイルとして全て読み込む(LUTファイルの詳細は[Appendix/LUTファイルフォーマット](04_appendix)を参照のこと).
+* 引数`max_concurrent_queries`を最大同時クエリ数として,後述の「シーケンス/クエリ受信時」の処理において同時に受け付けられる最大クエリ数を制限する
+* 引数`max_results`を最大結果保持数として,後述の「シーケンス/クエリ受信時」の処理において保持する最大結果数を制限する
+* 引数`result_lifetime_sec`を結果の寿命(結果が保持される時間)として,後述の「シーケンス/クエリ受信時」の処理において時間超過した結果は削除される
 
 ### 状態遷移
 
@@ -273,9 +276,9 @@ ComputationServerは1つの状態しか持たない.
    :scale: 70%
 ```
 
-CSServerはクエリを受信( **(1)** )すると,QueryQueueへプッシュし( **(2)** ),受信したクエリの識別子となるqueryIDを生成し( **(3)** ),それをレスポンスとして返す( **(4)** ). ただし,QueryQueueに保存されているクエリ数が最大同時クエリ数より多い場合はプッシュやqueryIDの生成を行わずに,上限超過の旨をレスポンスとして返す.
+CSServerはクエリを受信( **(1)** )すると,まず入力値数と関数番号の整合性が取れているかを検証する( **(2)** ). 検証の結果,不正と判断された場合は,その旨をレスポンスとして返し,以降の処理は行わない. 次に計算結果を保持するResultQueueに対して,保持された結果の数が上限値(`max_results`)に達しているかを確認する. 上限値に達している場合は,寿命(`result_lifetime_sec`)を超えた結果をResultQueueから削除する( **(3)** ). その上で,クエリを保持するQeuryQueueの登録数とReusultQueueの登録数の上限値超過のチェックを行い,超過している場合は,その旨をレスポンスとして返し,以降の処理は行わない. 超過していない場合は,受信したクエリの識別子となるqueryIDを生成( **(4)** )した上で,QueryQueueへそれをプッシュし( **(5)** ),queryIDをレスポンスとして返す( **(6)** ).
 
-QeuryQueueはアトミックキューとして,他スレッドから排他的にアクセスできる作りとする. QueryQueueにプッシュされたクエリはCSThreadがポップして処理する. CSThreadは,CSServerとは別スレッドで動作させ,ComputationServerのメイン計算処理を行うスレッドとする.
+QeuryQueueとResultQueueはアトミックキューとして,他スレッドから排他的にアクセスできる作りとする. QueryQueueにプッシュされたクエリはCSThreadがポップして処理する. CSThreadは,CSServerとは別スレッドで動作するComputationServerのメイン計算処理を行うスレッドである. CSThreadは計算結果をResultQueueへプッシュする.
 
 ```eval_rst
 .. image:: images/fhetbl_design-seq-cs-02.png
@@ -286,8 +289,6 @@ QeuryQueueはアトミックキューとして,他スレッドから排他的に
 CSThreadは,CSServerとは異なるスレッドで動作し,QueryQueueにクエリがプッシュされるのを非同期に監視する. QueryQueueにクエリがプッシュされると,それをポップし( **(1)** ),計算処理を開始する.
 
 CSThreadは,CSClient(DecServerとのやりとりを仲介するクラス)を通じてkeyIDに対応するPublicKeyを取得する( **(2)** ). 次にクエリで受け取った暗号化された入力値を元に,LUTから中間結果を探索し( **(3)** ), CSClientを通じてPIRクエリを取得する( **(4)** ). PIRクエリからクエリを再構築し, LUTから出力値を取得する( **(5)** ). 取得した出力値は,ResultQueueへプッシュする( **(7)** ).
-
-ResultQueueはアトミックキューとして,他スレッドから排他的にアクセスできる作りとする. ResultQueueにプッシュされたクエリはCSServerがポップして処理する.
 
 #### 結果リクエスト受信時
 

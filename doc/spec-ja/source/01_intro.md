@@ -43,5 +43,5 @@ https://github.com/yamanalab/FHE-Table-Search
 ```
 
 ## 参照
-* RuixiaoLI and Yu ISHIMARl and Hayato YAMANA, "Fully Homomorphic Enctyption with Table Loolmp for Privacy-Prese^ing Smart Grid"
-* RuixiaoLI and Yu ISHIMARl and Hayato YAMANA, "Privacy Preserving Calculation in Cloud using Fully Homomorphic Encryption with Table Lookup"
+* Ruixiao LI and Yu ISHIMAKI and Hayato YAMANA, "Fully Homomorphic Enctyption with Table Loolup for Privacy-Preserving Smart Grid"
+* Ruixiao LI and Yu ISHIMAKI and Hayato YAMANA, "Privacy Preserving Calculation in Cloud using Fully Homomorphic Encryption with Table Lookup"
