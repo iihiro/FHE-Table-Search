@@ -51,9 +51,12 @@ public:
 
     /**
      * 新規鍵ペア生成
+     * @param[out] pubkey Public key
+     * @param[out] pseckey Secret key
      * @return keyID
      */
-    int32_t new_keys();
+    int32_t new_keys(fts_share::PubKey& pubkey, fts_share::SecKey& seckey);
+    
     /**
      * 鍵ペア削除
      * @param[in] key_id keyID

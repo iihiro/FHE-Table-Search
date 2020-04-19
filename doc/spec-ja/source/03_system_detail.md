@@ -36,9 +36,12 @@ public:
 
     /**
      * 新規鍵ペア生成
+     * @param[out] pubkey Public key
+     * @param[out] pseckey Secret key
      * @return keyID
      */
-    int32_t new_keys();
+    int32_t new_keys(fts_share::PubKey& pubkey, fts_share::SecKey& seckey);
+
     /**
      * 鍵ペア削除
      * @param[in] key_id keyID
@@ -51,6 +54,8 @@ private:
     std::shared_ptr<Impl> pimpl_;
 };
 ```
+
+コンストラクタで受け取った接続先に対して,`connect()`で接続し,`disconnect()`で切断する. `new_keys()`では,Decryptorに対して新規鍵ペアの生成を要求することができ,生成された鍵ペアは引数で受け取ることができる. また,戻り値でその鍵ペアに対応したkeyIDを取得することができる. `delete_keys()`では,keyIDで指定した鍵ペアの削除をDecryptorへ要求することができる.
 
 #### ComputationServer向けクライアント
 
@@ -81,10 +86,12 @@ public:
     /**
      * クエリ送信
      * @param[in] key_id keyID
+     * @param[in] func_no 関数番号
      * @param[in] enc_input 暗号化された入力値(1つ or 2つ)
      * @return queryID
      */
-    int32_t send_query(const int32_t key_id, const std::vector<fts_share::EncData>& enc_input) const;
+    int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input) const;
+    
     /**
      * 結果受信
      * @param[in] query_id queryID
@@ -98,6 +105,8 @@ private:
     std::shared_ptr<Impl> pimpl_;
 };
 ```
+
+コンストラクタで受け取った接続先に対して,`connect()`で接続し,`disconnect()`で切断する. `send_query()`では,ComputationServerに対してクエリを送信し,そのクエリに対応したqueryIDを引数で返す. この時,ComputationServerは引数で渡されたkeyID,関数番号および暗号化された入力値に従って計算を非同期で開始する. `recv_result()`では,queryIDで指定したクエリの計算結果があればそれを引数で返す. 結果がない(まだ計算中の)場合は, 戻り値としてfalseを返す.
 
 ### シーケンス
 

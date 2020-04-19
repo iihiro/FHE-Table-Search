@@ -52,10 +52,12 @@ public:
     /**
      * クエリ送信
      * @param[in] key_id keyID
+     * @param[in] func_no 関数番号
      * @param[in] enc_input 暗号化された入力値(1つ or 2つ)
      * @return queryID
      */
-    int32_t send_query(const int32_t key_id, const std::vector<fts_share::EncData>& enc_input) const;
+    int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input) const;
+    
     /**
      * 結果受信
      * @param[in] query_id queryID
