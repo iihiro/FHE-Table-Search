@@ -20,15 +20,19 @@
 #include <iostream>
 #include <share/define.hpp>
 #include <stdsc/stdsc_state.hpp>
+#include <stdsc/stdsc_callback_function.hpp>
+#include <stdsc/stdsc_callback_function_container.hpp>
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_utility.hpp>
-#include <fts_share/fts_pubkey.hpp>
-#include <fts_share/fts_seckey.hpp>
-#include <fts_user/fts_user_dec_client.hpp>
+#include <fts_share/fts_packet.hpp>
+#include <fts_dec/fts_dec_srv.hpp>
+#include <fts_dec/fts_dec_srv_state.hpp>
+#include <fts_dec/fts_dec_srv_callback_function.hpp>
 
 // static constexpr const char* CONTEXT_FILENAME = "context.txt";
 // static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
+// static constexpr const char* SECKEY_FILENAME  = "seckey.txt";
 
 
 struct Option
@@ -42,21 +46,39 @@ void init(Option& option, int argc, char* argv[])
 
 void exec(Option& option)
 {
-    const char* host = "localhost";
+    stdsc::StateContext state(std::make_shared<fts_dec_server::StateInit>());
     
-    fts_client::DecClient user_dec_client(host, PORT_DEC_SRV);
+    stdsc::CallbackFunctionContainer callback;
+    fts_dec_server::CallbackParam param;
+    {
+        std::shared_ptr<stdsc::CallbackFunction> cb_new_keys(
+            new fts_dec_server::CallbackFunctionForNewKeys()
+        );
+        callback.set(fts_share::kControlCodeRequestNewKeys, cb_new_keys);
 
-    user_dec_client.connect();
-    std::cout << "Connected to Server: port["
-        << PORT_DEC_SRV << "]" << std::endl;
+        std::shared_ptr<stdsc::CallbackFunction> cb_delete_keys(
+            new fts_dec_server::CallbackFunctionForDeleteKeys()
+        );
+        callback.set(fts_share::kControlCodeRequestDeleteKeys, cb_delete_keys);
 
-    fts_share::PubKey pubkey;
-    fts_share::SecKey seckey;
-    user_dec_client.new_keys(pubkey, seckey);
-    std::cout << "created new keys" << std::endl;
+        std::shared_ptr<stdsc::CallbackFunction> cb_result(
+            new fts_dec_server::CallbackFunctionForResultRequest()
+        );
+        callback.set(fts_share::kControlCodeDownloadResult, cb_result);
+    }
+    callback.set_commondata(static_cast<void*>(&param), sizeof(param));
 
-    user_dec_client.delete_keys(0);
-    std::cout << "delete keys" << std::endl;
+    std::shared_ptr<fts_dec::DecServer> dec_server
+        (new fts_dec::DecServer(PORT_DEC_SRV, callback, state));
+
+    dec_server->start();
+    
+    std::string key;
+    std::cout << "hit any key to exit server: " << std::endl;
+    std::cin >> key;
+
+    dec_server->stop();
+    dec_server->wait();
 }
 
 int main(int argc, char* argv[])
