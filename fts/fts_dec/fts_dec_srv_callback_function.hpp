@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <stdsc/stdsc_callback_function.hpp>
 
-namespace fts_dec_server
+namespace fts_server
 {
 
 struct CallbackParam
@@ -14,7 +14,6 @@ struct CallbackParam
 };
 
 DECLARE_REQUEST_CLASS(CallbackFunctionForNewKeys);
-DECLARE_REQUEST_CLASS(CallbackFunctionForDeleteKeys);
 DECLARE_DOWNLOAD_CLASS(CallbackFunctionForResultRequest);
 
 } /* namespace fts_dec_server */

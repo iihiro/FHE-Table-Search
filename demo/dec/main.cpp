@@ -46,30 +46,25 @@ void init(Option& option, int argc, char* argv[])
 
 void exec(Option& option)
 {
-    stdsc::StateContext state(std::make_shared<fts_dec_server::StateInit>());
+    stdsc::StateContext state(std::make_shared<fts_server::StateInit>());
     
     stdsc::CallbackFunctionContainer callback;
-    fts_dec_server::CallbackParam param;
+    fts_server::CallbackParam param;
     {
         std::shared_ptr<stdsc::CallbackFunction> cb_new_keys(
-            new fts_dec_server::CallbackFunctionForNewKeys()
+            new fts_server::CallbackFunctionForNewKeys()
         );
         callback.set(fts_share::kControlCodeRequestNewKeys, cb_new_keys);
 
-        std::shared_ptr<stdsc::CallbackFunction> cb_delete_keys(
-            new fts_dec_server::CallbackFunctionForDeleteKeys()
-        );
-        callback.set(fts_share::kControlCodeRequestDeleteKeys, cb_delete_keys);
-
         std::shared_ptr<stdsc::CallbackFunction> cb_result(
-            new fts_dec_server::CallbackFunctionForResultRequest()
+            new fts_server::CallbackFunctionForResultRequest()
         );
         callback.set(fts_share::kControlCodeDownloadResult, cb_result);
     }
     callback.set_commondata(static_cast<void*>(&param), sizeof(param));
 
-    std::shared_ptr<fts_dec::DecServer> dec_server
-        (new fts_dec::DecServer(PORT_DEC_SRV, callback, state));
+    std::shared_ptr<fts_server::DecServer> dec_server
+        (new fts_server::DecServer(PORT_DEC_SRV, callback, state));
 
     dec_server->start();
     

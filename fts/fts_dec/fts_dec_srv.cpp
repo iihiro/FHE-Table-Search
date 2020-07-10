@@ -5,7 +5,7 @@
 #include <fts_share/fts_utility.hpp>
 #include <fts_dec/fts_dec_srv.hpp>
 
-namespace fts_dec
+namespace fts_server
 {
 
 struct DecServer::Impl

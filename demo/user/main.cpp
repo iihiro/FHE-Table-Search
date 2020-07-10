@@ -52,11 +52,13 @@ void exec(Option& option)
 
     fts_share::PubKey pubkey;
     fts_share::SecKey seckey;
-    user_dec_client.new_keys(pubkey, seckey);
-    std::cout << "created new keys" << std::endl;
+    int32_t res_new_keys = user_dec_client.new_keys(pubkey, seckey);
+    std::cout << "created new keys: result ["
+        << res_new_keys << "]" << std::endl;
 
-    user_dec_client.delete_keys(0);
-    std::cout << "delete keys" << std::endl;
+    bool res_delete_keys = user_dec_client.delete_keys(0);
+    std::cout << "delete keys: result ["
+        << res_delete_keys << "]" << std::endl;
 }
 
 int main(int argc, char* argv[])

@@ -5,7 +5,7 @@
 #include <cstdbool>
 #include <stdsc/stdsc_state.hpp>
 
-namespace fts_dec_server
+namespace fts_server
 {
 
 /**

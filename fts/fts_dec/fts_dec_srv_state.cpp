@@ -2,7 +2,7 @@
 #include <fts_dec/fts_dec_srv_state.hpp>
 
 
-namespace fts_dec_server
+namespace fts_server
 {
 
 StateInit::StateInit()
