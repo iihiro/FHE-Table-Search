@@ -8,7 +8,7 @@ set(CMAKE_CXX_FLAGS "-O3 -std=c++17 -openmp -pthread -Wall -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -std=c++17 -openmp -pthread -Wall")
 
 include_directories(${PROJECT_SOURCE_DIR}/fts ${PROJECT_SOURCE_DIR}/stdsc)
-#link_directories(${CMAKE_LIB_PALISADE})
+link_directories(${CMAKE_LIB_PALISADE})
 
 set(COMMON_LIBS stdsc fts_share)
 

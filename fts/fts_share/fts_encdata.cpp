@@ -1,10 +1,10 @@
-#include <fts_share/fts_pubkey.hpp>
+#include <fts_share/fts_encdata.hpp>
 
 
 namespace fts_share
 {
 
-PubKey::PubKey(void)
+EncData::EncData(void)
 {
 }
 

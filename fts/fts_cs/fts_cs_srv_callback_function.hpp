@@ -15,10 +15,33 @@
  * limitations under the License.
  */
 
-#ifndef DEFINE_HPP
-#define DEFINE_HPP
+#ifndef CALLBACK_FUNCTION_HPP
+#define CALLBACK_FUNCTION_HPP
 
-#define PORT_DEC_SRV  "10001"
-#define PORT_CS_SRV   "10002"
+#include <string>
+#include <cstdint>
+#include <stdsc/stdsc_callback_function.hpp>
 
-#endif /* DEFINE_HPP */
+namespace stdsc
+{
+class StateContext;
+class Buffer;
+class Socket;
+}
+
+namespace fts_server
+{
+
+struct CallbackParam
+{
+    uint32_t query_id;
+    uint32_t enc_results;
+};
+
+DECLARE_REQUEST_CLASS(CallbackFunctionForComputeRequest);
+DECLARE_DOWNLOAD_CLASS(CallbackFunctionForQueryID);
+DECLARE_DOWNLOAD_CLASS(CallbackFunctionForResultRequest);
+
+} /* namespace fts_server */
+
+#endif /* CALLBACK_FUNCTION_HPP */

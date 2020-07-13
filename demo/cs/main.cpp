@@ -20,17 +20,19 @@
 #include <iostream>
 #include <share/define.hpp>
 #include <stdsc/stdsc_state.hpp>
+#include <stdsc/stdsc_callback_function.hpp>
+#include <stdsc/stdsc_callback_function_container.hpp>
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_utility.hpp>
-#include <fts_share/fts_pubkey.hpp>
-#include <fts_share/fts_seckey.hpp>
-#include <fts_share/fts_encdata.hpp>
-#include <fts_user/fts_user_dec_client.hpp>
-#include <fts_user/fts_user_cs_client.hpp>
+#include <fts_share/fts_packet.hpp>
+#include <fts_cs/fts_cs_srv.hpp>
+#include <fts_cs/fts_cs_srv_state.hpp>
+#include <fts_cs/fts_cs_srv_callback_function.hpp>
 
 // static constexpr const char* CONTEXT_FILENAME = "context.txt";
 // static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
+// static constexpr const char* SECKEY_FILENAME  = "seckey.txt";
 
 
 struct Option
@@ -44,35 +46,41 @@ void init(Option& option, int argc, char* argv[])
 
 void exec(Option& option)
 {
-    const char* host = "localhost";
+    stdsc::StateContext state(std::make_shared<fts_server::StateInit>());
     
-    // fts_client::DecClient user_dec_client(host, PORT_DEC_SRV);
+    stdsc::CallbackFunctionContainer callback;
+    fts_server::CallbackParam param;
+    {
+        std::shared_ptr<stdsc::CallbackFunction> cb_send_query(
+            new fts_server::CallbackFunctionForComputeRequest()
+        );
+        callback.set(fts_share::kControlCodeRequestQuery, cb_send_query);
 
-    // user_dec_client.connect();
-    // std::cout << "Connected to Server: port["
-    //     << PORT_DEC_SRV << "]" << std::endl;
+        std::shared_ptr<stdsc::CallbackFunction> cb_return_query_id(
+            new fts_server::CallbackFunctionForQueryID()
+        );
+        callback.set(fts_share::kControlCodeDownloadQueryID, cb_return_query_id);
 
-    // fts_share::PubKey pubkey;
-    // fts_share::SecKey seckey;
-    // int32_t res_new_keys = user_dec_client.new_keys(pubkey, seckey);
-    // std::cout << "created new keys: result ["
-    //     << res_new_keys << "]" << std::endl;
+        std::shared_ptr<stdsc::CallbackFunction> cb_result(
+            new fts_server::CallbackFunctionForResultRequest()
+        );
+        callback.set(fts_share::kControlCodeDownloadResult, cb_result);
+    }
+    callback.set_commondata(static_cast<void*>(&param), sizeof(param));
 
-    // bool res_delete_keys = user_dec_client.delete_keys(0);
-    // std::cout << "delete keys: result ["
-    //     << res_delete_keys << "]" << std::endl;
+    const std::string LUT_dirpath = "hoge";
 
-    fts_client::CSClient user_cs_client(host, PORT_DEC_SRV);
+    std::shared_ptr<fts_server::CSServer> cs_server
+        (new fts_server::CSServer(PORT_DEC_SRV, LUT_dirpath, callback, state));
 
-    user_cs_client.connect();
+    cs_server->start();
+    
+    std::string key;
+    std::cout << "hit any key to exit server: " << std::endl;
+    std::cin >> key;
 
-    const std::vector<fts_share::EncData> encdata1;
-    int32_t res_send_query = user_cs_client.send_query(0, 0, encdata1);
-    std::cout << "result [" << res_send_query << "]" << std::endl;
-
-    fts_share::EncData encdata2;
-    bool res_recv_result = user_cs_client.recv_result(0, encdata2);
-    std::cout << "result [" << res_recv_result << "]" << std::endl;
+    cs_server->stop();
+    cs_server->wait();
 }
 
 int main(int argc, char* argv[])

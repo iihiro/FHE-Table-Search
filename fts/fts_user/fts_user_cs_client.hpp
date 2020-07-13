@@ -19,6 +19,7 @@
 #define FTS_CLIENT_CS_CLIENT_HPP
 
 #include <memory>
+#include <fts_share/fts_define.hpp>
 
 namespace fts_client
 {
