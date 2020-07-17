@@ -49,7 +49,7 @@ int main(int argc, char *argv[]){
   string s1(argv[1]);
   //make query
   cout<<"Get query!: ";
-  int64_t LUT_query=to_string(s1);
+  int64_t LUT_query=std::stoll(s1);
   //cin >> LUT_query;
 
   //encrypt the LUT query
