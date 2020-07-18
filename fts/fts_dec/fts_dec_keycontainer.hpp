@@ -21,9 +21,25 @@
 #include <memory>
 #include <seal/seal.h>
 
+namespace fts_share
+{
+    class DecParam;
+}
+
 namespace fts_dec
 {
 
+enum KeyKind_t : int32_t
+{
+    kKindUnknown   = -1,
+    kKindPubKey    = 0,
+    kKindSecKey    = 1,
+    kKindGaloisKey = 2,
+    kKindRelinKey  = 3,
+    kKindParam     = 4,
+    kNumOfKind,
+};
+    
 /**
  * @brief This class is used to hold the SEAL keys.
  */
@@ -32,8 +48,19 @@ struct KeyContainer
     KeyContainer();
     ~KeyContainer() = default;
 
-    int32_t new();
-    void delete(const int32_t keyID);
+    int32_t new_keys(const fts_share::DecParam& param);
+    void delete_keys(const int32_t keyID);
+
+    template <class T>
+    void get(const int32_t keyID, const KeyKind_t kind, T& data) const;
+    void get_param(const int32_t keyID, seal::EncryptionParameters& param) const;
+    
+    size_t size(const int32_t keyID, const KeyKind_t kind) const;
+
+    //void get_pubkey(const int32_t keyID, seal::PublicKey& data) const;
+    //void get_seckey(const int32_t keyID, seal::SecretKey& data) const;
+    //void get_galoiskey(const int32_t keyID, seal::GaloisKeys& data) const;
+    //void get_relinkey(const int32_t keyID, seal::RelinKeys& data) const;
 
 private:
     struct Impl;

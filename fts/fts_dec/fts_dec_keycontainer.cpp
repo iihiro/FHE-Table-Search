@@ -1,6 +1,9 @@
+#include <fstream>
 #include <unordered_map>
 #include <stdsc/stdsc_exception.hpp>
 #include <stdsc/stdsc_log.hpp>
+#include <fts_share/fts_utility.hpp>
+#include <fts_share/fts_decparam.hpp>
 #include <fts_dec/fts_dec_keycontainer.hpp>
 
 #include <seal/seal.h>
@@ -21,10 +24,7 @@ namespace fts_dec
 void print_parameters(std::shared_ptr<seal::SEALContext> context)
 {
     // Verify parameters
-    if (!context)
-    {
-        throw invalid_argument("context is not set");
-    }
+    STDSC_THROW_INVPARAM_IF_CHECK(context, "context is not set");
     auto &context_data = *context->context_data();
 
     /*
@@ -40,7 +40,7 @@ void print_parameters(std::shared_ptr<seal::SEALContext> context)
         scheme_name = "CKKS";
         break;
     default:
-        throw invalid_argument("unsupported scheme");
+        STDSC_THROW_INVARIANT("unsupported scheme");
     }
 
     std::cout << "/ Encryption parameters:" << std::endl;
@@ -69,64 +69,51 @@ void print_parameters(std::shared_ptr<seal::SEALContext> context)
     
 struct KeyContainer::Impl
 {
-    enum Kind_t : int32_t
-    {
-        kKindUnknown   = -1,
-        kKindPubKey    = 0,
-        kKindSecKey    = 1,
-        kKindGaloisKey = 2,
-        kKindRelinKey  = 3,
-        kKindParam     = 4,
-        kNumOfKind,
-    };
-    
     struct KeyFilenames
     {    
         KeyFilenames(const int32_t id)
         {
-            filenames_.emplace(kKindPubKey,    std::string("pubkey_")    + id);
-            filenames_.emplace(kKindSecKey,    std::string("seckey_")    + id);
-            filenames_.emplace(kKindGaloisKey, std::string("galoiskey_") + id);
-            filenames_.emplace(kKindRelinKey,  std::string("relinkey_")  + id);
-            filenames_.emplace(kKindParam,     std::string("param_")     + id);
+            filenames_.emplace(kKindPubKey,    std::string("pubkey_")    + std::to_string(id));
+            filenames_.emplace(kKindSecKey,    std::string("seckey_")    + std::to_string(id));
+            filenames_.emplace(kKindGaloisKey, std::string("galoiskey_") + std::to_string(id));
+            filenames_.emplace(kKindRelinKey,  std::string("relinkey_")  + std::to_string(id));
+            filenames_.emplace(kKindParam,     std::string("param_")     + std::to_string(id));
         }
 
-        std::string filename(const Kind_t kind) const
+        std::string filename(const KeyKind_t kind) const
         {
             CHECK_KIND(kind);
             return filenames_.at(kind);
         }
         
-        std::unordered_map<Kind_t, std::string> filenames_;
+        std::unordered_map<KeyKind_t, std::string> filenames_;
     };
     
     Impl()
     {}
 
-    int32_t new(const std::size_t poly_mod_degree,
-                const std::size_t coef_mod_192,
-                const std::size_t plain_mod)
+    int32_t new_keys(const fts_share::DecParam& param)
     {
         int32_t keyID = generate_keyID();
-        generate_keyfiles(poly_mod_degree, coef_mod_192, plain_mod, map_.at(keyID));
+        generate_keyfiles(param.poly_mod_degree, param.coef_mod_192, param.plain_mod, map_.at(keyID));
         map_.emplace(keyID, KeyFilenames(keyID));
         return keyID;
     }
     
-    void delete(const int32_t keyID)
+    void delete_keys(const int32_t keyID)
     {
         remove_keyfiles(map_.at(keyID));
         map_.erase(keyID);
     }
 
-    template <T>
-    void get(const int32_t keyID, const Kind_t kind, T& data) const
+    template <class T>
+    void get(const int32_t keyID, const KeyKind_t kind, T& data) const
     {
-        auto& filename = map_.at(keyID).filename(kind);
+        const auto& filename = map_.at(keyID).filename(kind);
         if (!fts_share::utility::file_exist(filename)) {
             std::ostringstream oss;
             oss << "File is not found. (" << filename << ")";
-            STDSC_THROW_FILE(ret, oss.str());
+            STDSC_THROW_FILE(oss.str());
         }
         std::ifstream ifs(filename);
         data.unsafe_load(ifs);
@@ -135,24 +122,24 @@ struct KeyContainer::Impl
 
     void get_param(const int32_t keyID, seal::EncryptionParameters& param) const
     {
-        auto& filename = map_.at(Kind_t::kKindParam).filename(kind);
+        const auto& filename = map_.at(KeyKind_t::kKindParam).filename(KeyKind_t::kKindParam);
         if (!fts_share::utility::file_exist(filename)) {
             std::ostringstream oss;
             oss << "File is not found. (" << filename << ")";
-            STDSC_THROW_FILE(ret, oss.str());
+            STDSC_THROW_FILE(oss.str());
         }
         std::ifstream ifs(filename);
-        param = EncryptionParameters::Load(ifs);
+        param = seal::EncryptionParameters::Load(ifs);
         ifs.close();
     }
 
-    size_t size(const int32_t keyID, const Kind_t kind) const
+    size_t size(const int32_t keyID, const KeyKind_t kind) const
     {
-        auto& filename = map_.at(Kind_t::kKindParam).filename(kind);
+        const auto& filename = map_.at(KeyKind_t::kKindParam).filename(kind);
         if (!fts_share::utility::file_exist(filename)) {
             std::ostringstream oss;
             oss << "File is not found. (" << filename << ")";
-            STDSC_THROW_FILE(ret, oss.str());
+            STDSC_THROW_FILE(oss.str());
         }
         return fts_share::utility::file_size(filename);
     }
@@ -169,9 +156,9 @@ private:
                            const KeyFilenames& filenames)
     {
         STDSC_LOG_INFO("Generating keys");
-        seal::EncryptionParameters parms(scheme_type::BFV);
+        seal::EncryptionParameters parms(seal::scheme_type::BFV);
         parms.set_poly_modulus_degree(poly_mod_degree);
-        parms.set_coeff_modulus(DefaultParams::coeff_modulus_192(coef_mod_192));
+        parms.set_coeff_modulus(seal::DefaultParams::coeff_modulus_192(coef_mod_192));
         parms.set_plain_modulus(plain_mod);
 
         auto context = seal::SEALContext::Create(parms);
@@ -189,24 +176,24 @@ private:
         std::cout << "Plaintext matrix row size: " << row_size << std::endl;
         std::cout << "Slot nums = " << slot_count << std::endl;
 
-        std::cout << "Save public key and secret key..." << flush;
-        std::ofstream pkFile(filenames.filename(Kind_t::kKindPubKey), ios::binary);
+        std::cout << "Save public key and secret key..." << std::flush;
+        std::ofstream pkFile(filenames.filename(KeyKind_t::kKindPubKey), std::ios::binary);
         public_key.save(pkFile);
         pkFile.close();
 
-        std::ofstream skFile(filenames.filename(Kind_t::kKindSecKey), ios::binary);
+        std::ofstream skFile(filenames.filename(KeyKind_t::kKindSecKey), std::ios::binary);
         secret_key.save(skFile);
         skFile.close();
 
-        std::ofstream parmsFile(filenames.filename(Kind_t::kKindParam), ios::binary);
+        std::ofstream parmsFile(filenames.filename(KeyKind_t::kKindParam), std::ios::binary);
         seal::EncryptionParameters::Save(parms, parmsFile);
         parmsFile.close();
 
-        std::ofstream galFile(filenames.filename(Kind_t::kKindGaloisKey), ios::binary);
+        std::ofstream galFile(filenames.filename(KeyKind_t::kKindGaloisKey), std::ios::binary);
         gal_keys.save(galFile);
         galFile.close();
 
-        std::ofstream relinFile(filenames.filename(Kind_t::kKindRelinKey), ios::binary);
+        std::ofstream relinFile(filenames.filename(KeyKind_t::kKindRelinKey), std::ios::binary);
         relin_keys16.save(relinFile);
         relinFile.close();
 
@@ -215,16 +202,17 @@ private:
 
     void remove_keyfiles(const KeyFilenames& filenames)
     {
-        int32_t bgn = static_cast<int32_t>(Kind_t::kKindPubKey);
-        int32_t end = static_cast<int32_t>(Kind_t::kKindParam);
+        int32_t bgn = static_cast<int32_t>(KeyKind_t::kKindPubKey);
+        int32_t end = static_cast<int32_t>(KeyKind_t::kKindParam);
 
         for (auto i=bgn; i<=end; ++i) {
-            auto key = static_cast<Kind_t>(i);
-            auto ret = fts_share::utility::remove_file(filenames.at(key));
+            const auto key = static_cast<KeyKind_t>(i);
+            const auto& filename = filenames.filename(key);
+            auto ret = fts_share::utility::remove_file(filename);
             if (!ret) {
                 std::ostringstream oss;
-                oss << "Failed to remove file. (" << filenames.at(key) << ")";
-                STDSC_THROW_FILE(ret, oss.str());
+                oss << "Failed to remove file. (" << filename << ")";
+                STDSC_THROW_FILE(oss.str());
             }
         }
     }
@@ -237,14 +225,71 @@ KeyContainer::KeyContainer()
     : pimpl_(new Impl())
 {}
 
-int32_t KeyContainer::new()
+int32_t KeyContainer::new_keys(const fts_share::DecParam& param)
 {
-    return pimpl_->new();
+    return pimpl_->new_keys(param);
 }
 
-void KeyContainer::delete(const int32_t keyID)
+void KeyContainer::delete_keys(const int32_t keyID)
 {
-    pimpl_->delete(keyID);
+    pimpl_->delete_keys(keyID);
+}
+
+template <class T>
+void KeyContainer::get(const int32_t keyID, const KeyKind_t kind, T& data) const
+{
+    pimpl_->get<T>(keyID, kind, data);
+}
+
+#define DEF_GET_WITH_TYPE(type)                                         \
+    template <>                                                         \
+    void KeyContainer::get(const int32_t keyID,                         \
+                           const KeyKind_t kind, type& data) const {    \
+        pimpl_->get(keyID, kind, data);                                 \
+    }
+
+DEF_GET_WITH_TYPE(seal::PublicKey);
+DEF_GET_WITH_TYPE(seal::SecretKey);
+DEF_GET_WITH_TYPE(seal::GaloisKeys)
+DEF_GET_WITH_TYPE(seal::RelinKeys);
+
+#undef DEF_GET_WITH_TYPE
+
+
+//template <>
+//void KeyContainer::get(const int32_t keyID, const KeyKind_t kind, seal::SecretKey& data) const
+//{
+//    pimpl_->get(keyID, kind, data);
+//}
+
+size_t KeyContainer::size(const int32_t keyID, const KeyKind_t kind) const
+{
+    return pimpl_->size(keyID, kind);
+}
+
+//void KeyContainer::get_pubkey(const int32_t keyID, seal::PublicKey& data) const
+//{
+//    pimpl_->get<seal::PublicKey>(keyID, KeyKind_t::kKindPubKey, data);
+//}
+//
+//void KeyContainer::get_seckey(const int32_t keyID, seal::SecretKey& data) const
+//{
+//    pimpl_->get<seal::SecretKey>(keyID, KeyKind_t::kKindSecKey, data);
+//}
+//
+//void KeyContainer::get_galoiskey(const int32_t keyID, seal::GaloisKeys& data) const
+//{
+//    pimpl_->get<seal::GaloisKeys>(keyID, KeyKind_t::kKindGaloisKey, data);
+//}
+//
+//void KeyContainer::get_relinkey(const int32_t keyID, seal::RelinKeys& data) const
+//{
+//    pimpl_->get<seal::RelinKeys>(keyID, KeyKind_t::kKindRelinKey, data);
+//}
+
+void KeyContainer::get_param(const int32_t keyID, seal::EncryptionParameters& param) const
+{
+    pimpl_->get_param(keyID, param);
 }
 
 } /* namespace fts_dec */

@@ -8,9 +8,8 @@
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_utility.hpp>
-#include <fts_share/fts_pubkey.hpp>
-#include <fts_share/fts_seckey.hpp>
 #include <fts_share/fts_packet.hpp>
+#include <fts_share/fts_plaindata.hpp>
 #include <fts_user/fts_user_dec_client.hpp>
 
 namespace fts_user

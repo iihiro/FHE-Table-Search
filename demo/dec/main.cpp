@@ -27,8 +27,9 @@
 #include <fts_share/fts_utility.hpp>
 #include <fts_share/fts_packet.hpp>
 #include <fts_dec/fts_dec_srv.hpp>
-#include <fts_dec/fts_dec_srv_state.hpp>
-#include <fts_dec/fts_dec_srv_callback_function.hpp>
+#include <fts_dec/fts_dec_state.hpp>
+#include <fts_dec/fts_dec_callback_param.hpp>
+#include <fts_dec/fts_dec_callback_function.hpp>
 
 // static constexpr const char* CONTEXT_FILENAME = "context.txt";
 // static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
@@ -52,8 +53,7 @@ void exec(Option& option)
     fts_dec::CallbackParam param;
     {
         std::shared_ptr<stdsc::CallbackFunction> cb_new_keys(
-            new fts_dec::CallbackFunctionForNewKeys()
-        );
+            new fts_dec::CallbackFunctionNewKeyRequest());
         callback.set(fts_share::kControlCodeDownloadNewKeys, cb_new_keys);
     }
     callback.set_commondata(static_cast<void*>(&param), sizeof(param));

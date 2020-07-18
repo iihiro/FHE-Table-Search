@@ -25,20 +25,8 @@
 #include <stdsc/stdsc_packet.hpp>
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
-//#include <fts_share/fts_packet.hpp>
-//#include <fts_share/fts_define.hpp>
-//#include <fts_share/fts_pubkey.hpp>
-//#include <fts_share/fts_seckey.hpp>
-//#include <fts_share/fts_galoiskey.hpp>
-//#include <fts_share/fts_relinkey.hpp>
-//#include <fts_share/fts_context.hpp>
-//#include <fts_share/fts_encdata.hpp>
-//#include <fts_share/fts_encparam.hpp>
-//#include <fts_share/fts_plaindata.hpp>
-//#include <fts_share/fts_decparam.hpp>
-//#include <fts_enc/fts_enc_dec_client.hpp>
-//#include <fts_enc/fts_enc_eval_client.hpp>
-//#include <fts_enc/fts_enc.hpp>
+#include <fts_user/fts_user_dec_client.hpp>
+#include <fts_user/fts_user.hpp>
 
 #include <seal/seal.h>
 
@@ -90,7 +78,7 @@ struct User::Impl
         DecClient dec_client(dec_host_.c_str(), dec_port_.c_str());
         dec_client.connect(retry_interval_usec_, timeout_sec_);
         
-        fts::share::PubKey pubkey;
+        seal::PublicKey pubkey;
         dec_client.get_pubkey(keyID, pubkey);
     }
 
@@ -104,18 +92,18 @@ private:
     seal::SecretKey seckey_;
 };
 
-User::User(const std::string& dec_host, const uint32_t dec_port,
-           const std::string& cs_host, const uint32_t cs_port,
+User::User(const std::string& dec_host, const std::string& dec_port,
+           const std::string& cs_host, const std::string& cs_port,
            const uint32_t retry_interval_usec,
            const uint32_t timeout_sec)
-    : pimpl_(new Impl(dec_host, dec_port, eval_host, eval_port,
+    : pimpl_(new Impl(dec_host, dec_port, cs_host, cs_port,
                       retry_interval_usec, timeout_sec))
 {
 }
 
 int32_t User::new_keys()
 {
-    pimpl_->new_keys();
+    return pimpl_->new_keys();
 }
 
 void User::compute(const int32_t keyID, const int64_t val)

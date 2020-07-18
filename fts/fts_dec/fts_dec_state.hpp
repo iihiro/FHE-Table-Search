@@ -37,6 +37,10 @@ struct StateReady : public stdsc::State
     StateReady(void);
     virtual void set(stdsc::StateContext& sc, uint64_t event) override;
     STDSC_STATE_DEFID(kStateReady);
+
+private:
+    struct Impl;
+    std::shared_ptr<Impl> pimpl_;
 };
 
 

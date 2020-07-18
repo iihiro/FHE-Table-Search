@@ -32,8 +32,8 @@ class User
 {
 public:
     
-    User(const char* dec_host, const char* dec_port,
-         const char* cs_host, const char* cs_port,
+    User(const std::string& dec_host, const std::string& dec_port,
+         const std::string& cs_host, const std::string& cs_port,
          const uint32_t retry_interval_usec = FTS_RETRY_INTERVAL_USEC,
          const uint32_t timeout_sec = FTS_TIMEOUT_SEC);
     virtual ~User(void) = default;

@@ -6,27 +6,30 @@
 #include <stdsc/stdsc_packet.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_packet.hpp>
-#include <fts_share/fts_securekey_filemanager.hpp>
 #include <fts_share/fts_plaindata.hpp>
-#include <fts_dec/fts_dec_srv_callback_function.hpp>
-#include <fts_dec/fts_dec_srv_state.hpp>
+#include <fts_dec/fts_dec_callback_function.hpp>
+#include <fts_dec/fts_dec_callback_param.hpp>
+#include <fts_dec/fts_dec_keycontainer.hpp>
+#include <fts_dec/fts_dec_state.hpp>
 
-namespace fts_server
+namespace fts_dec
 {
 
 DEFUN_DOWNLOAD(CallbackFunctionNewKeyRequest)
 {
     std::cout << "Received new key request." << std::endl;
-    DEF_CDATA_ON_ALL(fts_server::CommonCallbackParam);
-    
+    DEF_CDATA_ON_EACH(fts_dec::CallbackParam);
+    DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
+    auto& param   = cdata_e->param;
     auto& keycont = cdata_a->keycont;
-    auto keyID = keycont.new();
+    
+    auto keyID = keycont.new_keys(param);
 
     fts_share::PlainData<int32_t> plaindata;
     plaindata.push(keyID);
 
     auto keyID_sz  = plaindata.stream_size();
-    auto seckey_sz = keycont.size(keyID, KeyContainer::Kind_t::kKindSecKey);
+    auto seckey_sz = keycont.size(keyID, KeyKind_t::kKindSecKey);
     auto total_sz  = keyID_sz + seckey_sz;
     
     stdsc::BufferStream buffstream(total_sz);
@@ -34,14 +37,14 @@ DEFUN_DOWNLOAD(CallbackFunctionNewKeyRequest)
     plaindata.save_to_stream(stream);
 
     seal::SecretKey seckey;
-    keycont.get(keyID, KeyContainer::Kind_t::kKindSecKey, seckey);
+    keycont.get(keyID, KeyKind_t::kKindSecKey, seckey);
     seckey.unsafe_load(stream);
 
     STDSC_LOG_INFO("Sending keyID and secret key.");
     stdsc::Buffer* buffer = &buffstream;
-    sock.send_packet(stdsc::make_data_packet(prvc_share::kControlCodeDownloadNewKeys, total_sz));
+    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDownloadNewKeys, total_sz));
     sock.send_buffer(*buffer);
-    state.set(kEventParamNewKeyRequest);
+    state.set(kEventNewKeysRequest);
 }
 
 //// CallbackFunctionPubkeyRequest
