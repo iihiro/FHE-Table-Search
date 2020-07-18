@@ -52,10 +52,10 @@ public:
         stdsc::BufferStream buffstream(buffer);
         std::iostream stream(&buffstream);
 
+        seckey.unsafe_load(stream);
         fts_share::PlainData<int32_t> plaindata;
         plaindata.load_from_stream(stream);
-        seckey.unsafe_load(stream);
-
+        
         return plaindata.data();
     }
 

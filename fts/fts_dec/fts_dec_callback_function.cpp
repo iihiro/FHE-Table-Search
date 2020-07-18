@@ -22,27 +22,28 @@ DEFUN_DOWNLOAD(CallbackFunctionNewKeyRequest)
     DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
     auto& param   = cdata_e->param;
     auto& keycont = cdata_a->keycont;
-    
+
     auto keyID = keycont.new_keys(param);
 
     fts_share::PlainData<int32_t> plaindata;
     plaindata.push(keyID);
 
-    auto keyID_sz  = plaindata.stream_size();
     auto seckey_sz = keycont.size(keyID, KeyKind_t::kKindSecKey);
-    auto total_sz  = keyID_sz + seckey_sz;
+    auto keyID_sz  = plaindata.stream_size();
+    auto total_sz  = seckey_sz + keyID_sz;
     
     stdsc::BufferStream buffstream(total_sz);
     std::iostream stream(&buffstream);
-    plaindata.save_to_stream(stream);
 
     seal::SecretKey seckey;
     keycont.get(keyID, KeyKind_t::kKindSecKey, seckey);
-    seckey.unsafe_load(stream);
+    seckey.save(stream);
 
+    plaindata.save_to_stream(stream);
+    
     STDSC_LOG_INFO("Sending keyID and secret key.");
     stdsc::Buffer* buffer = &buffstream;
-    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDownloadNewKeys, total_sz));
+    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataNewKeys, total_sz));
     sock.send_buffer(*buffer);
     state.set(kEventNewKeysRequest);
 }

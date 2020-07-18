@@ -16,9 +16,7 @@ enum ControlCode_t : uint64_t
     kControlCodeRequestDeleteKeys = 0x201,
 
     /* Code for Data packet: 0x401-0x4FF */
-    kControlCodeValueA = 0x401,
-    kControlCodeValueB = 0x402,
-    kControlCodeDataResult = 0x403,
+    kControlCodeDataNewKeys = 0x401,
 
     /* Code for Download packet: 0x801-0x8FF */
     kControlCodeDownloadNewKeys = 0x801,

@@ -51,12 +51,15 @@ void exec(Option& option)
     
     stdsc::CallbackFunctionContainer callback;
     fts_dec::CallbackParam param;
+    fts_dec::CommonCallbackParam cparam;
     {
         std::shared_ptr<stdsc::CallbackFunction> cb_new_keys(
             new fts_dec::CallbackFunctionNewKeyRequest());
         callback.set(fts_share::kControlCodeDownloadNewKeys, cb_new_keys);
     }
     callback.set_commondata(static_cast<void*>(&param), sizeof(param));
+    callback.set_commondata(static_cast<void*>(&cparam), sizeof(cparam),
+                            stdsc::CommonDataKind_t::kCommonDataOnAllConnection);
 
     std::shared_ptr<fts_dec::DecServer> dec_server
         (new fts_dec::DecServer(PORT_DEC_SRV, callback, state));

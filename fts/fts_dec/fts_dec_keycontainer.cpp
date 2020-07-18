@@ -95,8 +95,8 @@ struct KeyContainer::Impl
     int32_t new_keys(const fts_share::DecParam& param)
     {
         int32_t keyID = generate_keyID();
-        generate_keyfiles(param.poly_mod_degree, param.coef_mod_192, param.plain_mod, map_.at(keyID));
         map_.emplace(keyID, KeyFilenames(keyID));
+        generate_keyfiles(param.poly_mod_degree, param.coef_mod_192, param.plain_mod, map_.at(keyID));
         return keyID;
     }
     
@@ -110,6 +110,7 @@ struct KeyContainer::Impl
     void get(const int32_t keyID, const KeyKind_t kind, T& data) const
     {
         const auto& filename = map_.at(keyID).filename(kind);
+        printf("f: %s\n", filename.c_str());
         if (!fts_share::utility::file_exist(filename)) {
             std::ostringstream oss;
             oss << "File is not found. (" << filename << ")";
@@ -117,6 +118,14 @@ struct KeyContainer::Impl
         }
         std::ifstream ifs(filename);
         data.unsafe_load(ifs);
+
+        // debug by iiz
+        {
+            std::ofstream skFile("seckey0.txt", std::ios::binary);
+            data.save(skFile);
+            skFile.close();
+        }
+        
         ifs.close();
     }
 
@@ -135,12 +144,15 @@ struct KeyContainer::Impl
 
     size_t size(const int32_t keyID, const KeyKind_t kind) const
     {
-        const auto& filename = map_.at(KeyKind_t::kKindParam).filename(kind);
+        printf("1\n");
+        const auto& filename = map_.at(keyID).filename(kind);
+        printf("2\n");
         if (!fts_share::utility::file_exist(filename)) {
             std::ostringstream oss;
             oss << "File is not found. (" << filename << ")";
             STDSC_THROW_FILE(oss.str());
         }
+        printf("3\n");
         return fts_share::utility::file_size(filename);
     }
     
@@ -254,7 +266,6 @@ DEF_GET_WITH_TYPE(seal::GaloisKeys)
 DEF_GET_WITH_TYPE(seal::RelinKeys);
 
 #undef DEF_GET_WITH_TYPE
-
 
 //template <>
 //void KeyContainer::get(const int32_t keyID, const KeyKind_t kind, seal::SecretKey& data) const

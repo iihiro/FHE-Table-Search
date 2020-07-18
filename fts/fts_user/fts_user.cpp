@@ -80,6 +80,13 @@ struct User::Impl
         
         seal::PublicKey pubkey;
         dec_client.get_pubkey(keyID, pubkey);
+
+
+        {
+            std::ofstream skFile("seckey.txt", std::ios::binary);
+            seckey_.save(skFile);
+            skFile.close();
+        }        
     }
 
 private:
