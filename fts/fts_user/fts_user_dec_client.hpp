@@ -19,8 +19,6 @@
 #define FTS_USER_DEC_CLIENT_HPP
 
 #include <memory>
-//#include <fts_share/fts_pubkey.hpp>
-//#include <fts_share/fts_seckey.hpp>
 #include <fts_share/fts_define.hpp>
 
 #include <seal/seal.h>

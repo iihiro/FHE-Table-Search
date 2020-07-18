@@ -31,11 +31,6 @@
 #include <fts_dec/fts_dec_callback_param.hpp>
 #include <fts_dec/fts_dec_callback_function.hpp>
 
-// static constexpr const char* CONTEXT_FILENAME = "context.txt";
-// static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
-// static constexpr const char* SECKEY_FILENAME  = "seckey.txt";
-
-
 struct Option
 {
     uint64_t dummy;

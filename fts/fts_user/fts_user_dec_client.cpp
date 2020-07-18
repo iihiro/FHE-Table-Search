@@ -61,14 +61,7 @@ public:
 
     bool delete_keys(const int32_t key_id) const
     {
-        // stdsc::Buffer bufferA(sz);
-        // client.send_data_blocking(nantoka);
-        // client_.send_request_blocking(fts_share::kControlCodeRequestDeleteKeys);
-
-        // stdsc::Buffer result;
-        // client_.recv_data_blocking(fts_share::kControlCodeDownloadResult, result);
         STDSC_LOG_INFO("delete keys(%d) [DECClient::delete_keys()]", key_id);
-
         return true;
     }
 

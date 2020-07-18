@@ -45,26 +45,10 @@ struct User::Impl
           cs_port_(cs_port),
           retry_interval_usec_(retry_interval_usec),
           timeout_sec_(timeout_sec)
-    {
-        //dec_client_->connect(retry_interval_usec_, timeout_sec_);
-        //eval_client_->connect(retry_interval_usec_, timeout_sec_);
-        //
-        //context_ = std::make_shared<fts_share::Context>();
-        //dec_client_->get_context(*context_);
-        //
-        //pubkey_ = std::make_shared<fts_share::PubKey>(context_->get());
-        //dec_client_->get_pubkey(*pubkey_);
-        //
-        //dec_client_->get_param(dec_param_);
-        //
-        //STDSC_LOG_INFO("param: logN:%lu, bit_len:%lu",
-        //               dec_param_.logN, dec_param_.bit_len);
-    }
+    {}
 
     ~Impl(void)
-    {
-        //dec_client_->disconnect();
-    }
+    {}
 
     int32_t new_keys()
     {

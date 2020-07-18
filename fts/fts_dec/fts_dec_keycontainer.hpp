@@ -54,13 +54,7 @@ struct KeyContainer
     template <class T>
     void get(const int32_t keyID, const KeyKind_t kind, T& data) const;
     void get_param(const int32_t keyID, seal::EncryptionParameters& param) const;
-    
     size_t size(const int32_t keyID, const KeyKind_t kind) const;
-
-    //void get_pubkey(const int32_t keyID, seal::PublicKey& data) const;
-    //void get_seckey(const int32_t keyID, seal::SecretKey& data) const;
-    //void get_galoiskey(const int32_t keyID, seal::GaloisKeys& data) const;
-    //void get_relinkey(const int32_t keyID, seal::RelinKeys& data) const;
 
 private:
     struct Impl;

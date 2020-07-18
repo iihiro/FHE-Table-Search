@@ -267,36 +267,10 @@ DEF_GET_WITH_TYPE(seal::RelinKeys);
 
 #undef DEF_GET_WITH_TYPE
 
-//template <>
-//void KeyContainer::get(const int32_t keyID, const KeyKind_t kind, seal::SecretKey& data) const
-//{
-//    pimpl_->get(keyID, kind, data);
-//}
-
 size_t KeyContainer::size(const int32_t keyID, const KeyKind_t kind) const
 {
     return pimpl_->size(keyID, kind);
 }
-
-//void KeyContainer::get_pubkey(const int32_t keyID, seal::PublicKey& data) const
-//{
-//    pimpl_->get<seal::PublicKey>(keyID, KeyKind_t::kKindPubKey, data);
-//}
-//
-//void KeyContainer::get_seckey(const int32_t keyID, seal::SecretKey& data) const
-//{
-//    pimpl_->get<seal::SecretKey>(keyID, KeyKind_t::kKindSecKey, data);
-//}
-//
-//void KeyContainer::get_galoiskey(const int32_t keyID, seal::GaloisKeys& data) const
-//{
-//    pimpl_->get<seal::GaloisKeys>(keyID, KeyKind_t::kKindGaloisKey, data);
-//}
-//
-//void KeyContainer::get_relinkey(const int32_t keyID, seal::RelinKeys& data) const
-//{
-//    pimpl_->get<seal::RelinKeys>(keyID, KeyKind_t::kKindRelinKey, data);
-//}
 
 void KeyContainer::get_param(const int32_t keyID, seal::EncryptionParameters& param) const
 {
