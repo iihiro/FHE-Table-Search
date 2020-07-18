@@ -19,6 +19,9 @@
 #define FTS_CLIENT_DEC_CLIENT_HPP
 
 #include <memory>
+#include <fts_share/fts_pubkey.hpp>
+#include <fts_share/fts_seckey.hpp>
+#include <fts_share/fts_define.hpp>
 
 namespace fts_client
 {
@@ -26,7 +29,7 @@ namespace fts_client
 /**
  * @brief Provides client for Decryptor.
  */
-class DECClient
+class DecClient
 {
 public:
     /**
@@ -34,8 +37,8 @@ public:
      * @param[in] host Decryptorのホスト名
      * @param[in] port Decryptorのポート番号
      */
-    DECClient(const char* host, const char* port);
-    virtual ~DECClient(void) = default;
+    DecClient(const char* host, const char* port);
+    virtual ~DecClient(void) = default;
 
     /**
      * 接続

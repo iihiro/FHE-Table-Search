@@ -20,7 +20,7 @@
 
 #include <memory>
 
-namespace fts_dec
+namespace fts_server
 {
 
 /**
