@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /*
  * Copyright 2018 Yamana Laboratory, Waseda University
  * Supported by JST CREST Grant Number JPMJCR1503, Japan.
@@ -16,38 +15,31 @@
  * limitations under the License.
  */
 
-#ifndef FTS_SECKEY_HPP
-#define FTS_SECKEY_HPP
+#ifndef FTS_DEC_KEYCONTAINER_HPP
+#define FTS_DEC_KEYCONTAINER_HPP
 
-#include <iostream>
-#include <string>
 #include <memory>
 #include <seal/seal.h>
 
-namespace fts_share
+namespace fts_dec
 {
 
 /**
- * @brief This class is used to hold the public key.
+ * @brief This class is used to hold the SEAL keys.
  */
-struct SecKey
+struct KeyContainer
 {
-    SecKey(const seal::SEALContext& context);
-    ~SecKey(void) = default;
+    KeyContainer();
+    ~KeyContainer() = default;
 
-    void save_to_stream(std::ostream& os) const;
-    void load_from_stream(std::istream& is);
-
-    void save_to_file(const std::string& filepath) const;
-    void load_from_file(const std::string& filepath);
-
-    const seal::SecretKey& get(void) const;
+    int32_t new();
+    void delete(const int32_t keyID);
 
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace fts_share */
+} /* namespace fts_dec */
 
-#endif /* FTS_SECKEY_HPP */
+#endif /* FTS_DEC_KEYCONTAINER_HPP */

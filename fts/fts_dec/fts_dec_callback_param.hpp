@@ -15,49 +15,36 @@
  * limitations under the License.
  */
 
-#ifndef FTS_DEC_SRV_HPP
-#define FTS_DEC_SRV_HPP
+#ifndef FTS_DEC_CALLBACK_PARAM_HPP
+#define FTS_DEC_CALLBACK_PARAM_HPP
 
 #include <memory>
+#include <vector>
+#include <fts_share/fts_decparam.hpp>
+#include <fts_dec/fts_dec_keycontainer.hpp>
 
 namespace fts_dec
 {
 
 /**
- * @brief Provides Decryptor Server.
+ * @brief This class is used to hold the callback parameters for Decryptor.
  */
-class DecServer
+struct CallbackParam
 {
-public:
-    /**
-     * コンストラクタ
-     * @param[in] port ポート番号
-     * @param[in] callback コールバック関数定義
-     * @param[in] state 状態遷移定義
-     */
-    DecServer(const char* port,
-              stdsc::CallbackFunctionContainer& callback,
-              stdsc::StateContext& state);
-    ~DecServer(void) = default;
+    CallbackParam(void);
+    ~CallbackParam(void) = default;
+    fts_share::DecParam param;
+};
 
-    /**
-     * サーバ実行
-     */
-    void start(void);
-    /**
-     * サーバ停止指示
-     */
-    void stop(void);
-    /**
-     * サーバ停止待ち
-     */
-    void wait(void);
-
-private:
-    struct Impl;
-    std::shared_ptr<Impl> pimpl_;
+/**
+ * @brief This class is used to hold the callback parameters for Decryptor
+ * This parameter to shared on all connections.
+ */
+struct CommonCallbackParam
+{
+    KeyContainer keycont;
 };
 
 } /* namespace fts_dec */
 
-#endif /* FTS_DEC_SRV_HPP */
+#endif /* FTS_DEC_CALLBACK_PARAM_HPP */

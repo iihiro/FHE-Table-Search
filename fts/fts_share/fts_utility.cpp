@@ -67,6 +67,16 @@ size_t file_size(const std::string& filename)
     return size;
 }
 
+bool remove_file(const std::string& filename)
+{
+    bool ret = false;
+    if (file_exist(filename))
+    {
+        ret = (std::remove(filename.c_str()) == 0) ? true : false;
+    }
+    return ret;
+}
+
 std::string basename(const std::string& filepath)
 {
     std::string filename = filepath;

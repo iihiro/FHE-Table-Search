@@ -13,7 +13,7 @@
 #include <fts_share/fts_packet.hpp>
 #include <fts_user/fts_user_dec_client.hpp>
 
-namespace fts_client
+namespace fts_user
 {
 
 struct DecClient::Impl
@@ -44,17 +44,20 @@ public:
         client_.close();
     }
 
-    int32_t new_keys(fts_share::PubKey& pubkey, fts_share::SecKey& seckey)
+    int32_t new_keys(seal::SecretKey& seckey)
     {
-        // stdsc::Buffer bufferA(sz);
-        // client.send_data_blocking(nantoka);
-        client_.send_request_blocking(fts_share::kControlCodeRequestNewKeys);
+        stdsc::Buffer buffer;
+        client_.recv_data_blocking(fts_share::kControlCodeDownloadNewKeys, buffer);
+        STDSC_LOG_INFO("create new keys");
 
-        stdsc::Buffer result;
-        client_.recv_data_blocking(fts_share::kControlCodeDownloadResult, result);
-        STDSC_LOG_INFO("create new keys [DECClient::new_keys()]");
+        stdsc::BufferStream buffstream(buffer);
+        std::iostream stream(&buffstream);
 
-        return 0;
+        fts_share::PlainData<int32_t> plaindata;
+        plaindata.load_from_stream(stream);
+        seckey.unsafe_load(stream);
+
+        return plaindata.data();
     }
 
     bool delete_keys(const int32_t key_id) const
@@ -70,6 +73,17 @@ public:
         return true;
     }
 
+    void get_pubkey(const int32_t keyID, seal::PublicKey& pubkey)
+    {
+    }
+    
+    void get_galoiskey(const int32_t keyID, seal::GaloisKeys& galoiskey)
+    {
+    }
+    
+    void get_relinkey(const int32_t keyID, seal::RelinKeys& relinkey)
+    {
+    }
 
 private:
     const char* host_;
@@ -93,11 +107,9 @@ void DecClient::disconnect(void)
     pimpl_->disconnect();
 }
 
-int32_t DecClient::new_keys(fts_share::PubKey& pubkey, fts_share::SecKey& seckey)
+int32_t DecClient::new_keys(seal::SecretKey& seckey)
 {
-    int32_t res = pimpl_->new_keys(pubkey, seckey);
-
-    return res;
+    return pimpl_->new_keys(seckey);
 }
 
 bool DecClient::delete_keys(const int32_t key_id) const
@@ -107,5 +119,21 @@ bool DecClient::delete_keys(const int32_t key_id) const
     return res;
 }
 
+void DecClient::get_pubkey(const int32_t keyID, seal::PublicKey& pubkey)
+{
+    pimpl_->get_pubkey(keyID, pubkey);
+}
+    
+void DecClient::get_galoiskey(const int32_t keyID, seal::GaloisKeys& galoiskey)
+{
+    pimpl_->get_galoiskey(keyID, galoiskey);
+}
+    
+void DecClient::get_relinkey(const int32_t keyID, seal::RelinKeys& relinkey)
+{
+    pimpl_->get_relinkey(keyID, relinkey);
+}
 
-} /* namespace fts_client */
+
+
+} /* namespace fts_user */

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /*
  * Copyright 2018 Yamana Laboratory, Waseda University
  * Supported by JST CREST Grant Number JPMJCR1503, Japan.
@@ -16,38 +15,37 @@
  * limitations under the License.
  */
 
-#ifndef FTS_PUBKEY_HPP
-#define FTS_PUBKEY_HPP
+#ifndef FTS_USER_HPP
+#define FTS_USER_HPP
 
-#include <iostream>
-#include <string>
 #include <memory>
-#include <seal/seal.h>
+#include <vector>
+#include <fts_share/fts_define.hpp>
 
-namespace fts_share
+namespace fts_user
 {
-
+    
 /**
- * @brief This class is used to hold the public key.
+ * @brief Provides encryptor.
  */
-struct PubKey
+class User
 {
-    PubKey(const seal::SEALContext& context);
-    ~PubKey(void) = default;
+public:
+    
+    User(const char* dec_host, const char* dec_port,
+         const char* cs_host, const char* cs_port,
+         const uint32_t retry_interval_usec = FTS_RETRY_INTERVAL_USEC,
+         const uint32_t timeout_sec = FTS_TIMEOUT_SEC);
+    virtual ~User(void) = default;
 
-    void save_to_stream(std::ostream& os) const;
-    void load_from_stream(std::istream& is);
-
-    void save_to_file(const std::string& filepath) const;
-    void load_from_file(const std::string& filepath);
-
-    const seal::PublicKey& get(void) const;
-
+    int32_t new_keys();
+    void compute(const int32_t keyID, const int64_t val);
+    
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace fts_share */
+} /* namespace fts_user */
 
-#endif /* FTS_PUBKEY_HPP */
+#endif /* FTS_USER_HPP */

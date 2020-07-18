@@ -21,7 +21,7 @@ enum ControlCode_t : uint64_t
     kControlCodeDataResult = 0x403,
 
     /* Code for Download packet: 0x801-0x8FF */
-    kControlCodeDownloadResult = 0x801,
+    kControlCodeDownloadNewKeys = 0x801,
 };
 
 } /* namespace fts_share */

@@ -15,15 +15,17 @@
  * limitations under the License.
  */
 
-#ifndef FTS_CLIENT_DEC_CLIENT_HPP
-#define FTS_CLIENT_DEC_CLIENT_HPP
+#ifndef FTS_USER_DEC_CLIENT_HPP
+#define FTS_USER_DEC_CLIENT_HPP
 
 #include <memory>
-#include <fts_share/fts_pubkey.hpp>
-#include <fts_share/fts_seckey.hpp>
+//#include <fts_share/fts_pubkey.hpp>
+//#include <fts_share/fts_seckey.hpp>
 #include <fts_share/fts_define.hpp>
 
-namespace fts_client
+#include <seal/seal.h>
+
+namespace fts_user
 {
 
 /**
@@ -54,11 +56,10 @@ public:
 
     /**
      * 新規鍵ペア生成
-     * @param[out] pubkey Public key
      * @param[out] pseckey Secret key
      * @return keyID
      */
-    int32_t new_keys(fts_share::PubKey& pubkey, fts_share::SecKey& seckey);
+    int32_t new_keys(seal::SecretKey& seckey);
     
     /**
      * 鍵ペア削除
@@ -67,11 +68,15 @@ public:
      */
     bool delete_keys(const int32_t key_id) const;
 
+    void get_pubkey(const int32_t keyID, seal::PublicKey& pubkey);
+    void get_galoiskey(const int32_t keyID, seal::GaloisKeys& galoiskey);
+    void get_relinkey(const int32_t keyID, seal::RelinKeys& relinkey);
+    
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace fts_client */
+} /* namespace fts_user */
 
-#endif /* FTS_CLIENT_DEC_CLIENT_HPP */
+#endif /* FTS_USER_DEC_CLIENT_HPP */

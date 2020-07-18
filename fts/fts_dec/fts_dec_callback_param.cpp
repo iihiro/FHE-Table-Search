@@ -15,30 +15,14 @@
  * limitations under the License.
  */
 
-#ifndef FTS_UTILITY_HPP
-#define FTS_UTILITY_HPP
+#include <memory>
+#include <fts_dec/fts_dec_callback_param.hpp>
 
-#include <string>
-#include <vector>
-
-namespace fts_share
+namespace fts_dec
 {
 
-namespace utility
+CallbackParam::CallbackParam(void)
 {
+}
 
-bool file_exist(const std::string& filename);
-bool dir_exist(const std::string& dirname);
-size_t file_size(const std::string& filename);
-bool remove_file(const std::string& filename);
-std::string basename(const std::string& filepath);
-bool isdigit(const std::string& str);
-std::string getenv(const char* env_var);
-void split(const std::string& str, const std::string& delims,
-           std::vector<std::string>& vec_str);
-
-} /* namespace utility */
-
-} /* namespace fts_share */
-
-#endif /* FTS_UTILITY_HPP */
+} /* namespace fts_dec */

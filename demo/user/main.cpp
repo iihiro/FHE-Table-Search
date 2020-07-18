@@ -23,13 +23,9 @@
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_utility.hpp>
-#include <fts_share/fts_pubkey.hpp>
-#include <fts_share/fts_seckey.hpp>
-#include <fts_user/fts_user_dec_client.hpp>
-
-// static constexpr const char* CONTEXT_FILENAME = "context.txt";
-// static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
-
+//#include <fts_share/fts_pubkey.hpp>
+//#include <fts_share/fts_seckey.hpp>
+#include <fts_user/fts_user.hpp>
 
 struct Option
 {
@@ -43,22 +39,10 @@ void init(Option& option, int argc, char* argv[])
 void exec(Option& option)
 {
     const char* host = "localhost";
-    
-    fts_client::DecClient user_dec_client(host, PORT_DEC_SRV);
 
-    user_dec_client.connect();
-    std::cout << "Connected to Server: port["
-        << PORT_DEC_SRV << "]" << std::endl;
-
-    fts_share::PubKey pubkey;
-    fts_share::SecKey seckey;
-    int32_t res_new_keys = user_dec_client.new_keys(pubkey, seckey);
-    std::cout << "created new keys: result ["
-        << res_new_keys << "]" << std::endl;
-
-    bool res_delete_keys = user_dec_client.delete_keys(0);
-    std::cout << "delete keys: result ["
-        << res_delete_keys << "]" << std::endl;
+    fts_user::User user(host, PORT_DEC_SRV, host, PORT_CS_SRV);
+    auto keyID = user.new_keys();
+    user.compute(keyID, 2);
 }
 
 int main(int argc, char* argv[])
