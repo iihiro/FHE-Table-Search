@@ -15,43 +15,44 @@
  * limitations under the License.
  */
 
-#include <iostream>
-#include <fts_cs/fts_cs_srv_state.hpp>
+#include <stdsc/stdsc_log.hpp>
+#include <fts_cs/fts_cs_state.hpp>
 
-namespace fts_server
+namespace fts_cs
 {
 
-StateInit::StateInit()
+struct StateReady::Impl
 {
-    std::cout << "State: Connected" << std::endl;
+    Impl(void)
+    {
+    }
+
+    void set(stdsc::StateContext& sc, uint64_t event)
+    {
+        STDSC_LOG_TRACE("StateReady: event#%lu", event);
+        switch (static_cast<Event_t>(event))
+        {
+            default:
+                break;
+        }
+    }
+};
+
+// Ready
+
+std::shared_ptr<stdsc::State> StateReady::create(void)
+{
+    return std::shared_ptr<stdsc::State>(new StateReady());
 }
 
-std::shared_ptr<stdsc::State> StateInit::create()
+StateReady::StateReady()
+  : pimpl_(new Impl())
 {
-    auto s = std::shared_ptr<stdsc::State>(
-      new StateInit());
-    return s;
-}
-
-void StateInit::set(stdsc::StateContext& sc, uint64_t event)
-{
-    sc.next_state(StateReady::create());
-}
-
-StateReady::StateReady(void)
-{
-    std::cout << "State: Ready" << std::endl;
-}
-
-std::shared_ptr<stdsc::State> StateReady::create()
-{
-    auto s = std::shared_ptr<stdsc::State>(new StateReady());
-    return s;
 }
 
 void StateReady::set(stdsc::StateContext& sc, uint64_t event)
 {
+    pimpl_->set(sc, event);
 }
 
-
-} /* namespace server */
+} /* namespace fts_cs */

@@ -9,7 +9,7 @@
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_utility.hpp>
 #include <fts_share/fts_encdata.hpp>
-#include <fts_share/fts_seckey.hpp>
+//#include <fts_share/fts_seckey.hpp>
 #include <fts_share/fts_packet.hpp>
 #include <fts_user/fts_user_cs_client.hpp>
 
@@ -45,22 +45,23 @@ public:
 
     int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input)
     {
-        client_.send_request_blocking(fts_share::kControlCodeRequestQuery);
-
-        stdsc::Buffer result;
-        client_.recv_data_blocking(fts_share::kControlCodeDownloadQueryID, result);
-        STDSC_LOG_INFO("sent the query");
-
-        return *static_cast<const uint32_t*>(result.data());
+        //client_.send_request_blocking(fts_share::kControlCodeRequestQuery);
+        //
+        //stdsc::Buffer result;
+        //client_.recv_data_blocking(fts_share::kControlCodeDownloadQueryID, result);
+        //STDSC_LOG_INFO("sent the query");
+        //
+        //return *static_cast<const uint32_t*>(result.data());
+        return 0;
     }
 
     bool recv_result(const int32_t query_id, fts_share::EncData& enc_result)
     {
-        client_.send_request_blocking(fts_share::kControlCodeRequestResults);
-
-        stdsc::Buffer result;
-        client_.recv_data_blocking(fts_share::kControlCodeDownloadResult, result);
-        STDSC_LOG_INFO("recieved results");
+        //client_.send_request_blocking(fts_share::kControlCodeRequestResults);
+        //
+        //stdsc::Buffer result;
+        //client_.recv_data_blocking(fts_share::kControlCodeDownloadResult, result);
+        //STDSC_LOG_INFO("recieved results");
 
         return true;
     }

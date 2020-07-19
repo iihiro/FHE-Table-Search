@@ -32,7 +32,7 @@ class Context;
 /**
  * @brief This class is used to hold the encrypted data.
  */
-struct EncData : public fts_share::BasicData<Ciphertext>
+    struct EncData : public fts_share::BasicData<seal::Ciphertext>
 {
     explicit EncData(const seal::SEALContext& context);
     virtual ~EncData(void) = default;

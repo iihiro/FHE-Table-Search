@@ -27,8 +27,9 @@
 #include <fts_share/fts_utility.hpp>
 #include <fts_share/fts_packet.hpp>
 #include <fts_cs/fts_cs_srv.hpp>
-#include <fts_cs/fts_cs_srv_state.hpp>
-#include <fts_cs/fts_cs_srv_callback_function.hpp>
+#include <fts_cs/fts_cs_state.hpp>
+#include <fts_cs/fts_cs_callback_param.hpp>
+#include <fts_cs/fts_cs_callback_function.hpp>
 
 // static constexpr const char* CONTEXT_FILENAME = "context.txt";
 // static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
@@ -46,32 +47,32 @@ void init(Option& option, int argc, char* argv[])
 
 void exec(Option& option)
 {
-    stdsc::StateContext state(std::make_shared<fts_server::StateInit>());
+    stdsc::StateContext state(std::make_shared<fts_cs::StateReady>());
     
     stdsc::CallbackFunctionContainer callback;
-    fts_server::CallbackParam param;
+    fts_cs::CallbackParam param;
     {
-        std::shared_ptr<stdsc::CallbackFunction> cb_send_query(
-            new fts_server::CallbackFunctionForComputeRequest()
-        );
-        callback.set(fts_share::kControlCodeRequestQuery, cb_send_query);
-
-        std::shared_ptr<stdsc::CallbackFunction> cb_return_query_id(
-            new fts_server::CallbackFunctionForQueryID()
-        );
-        callback.set(fts_share::kControlCodeDownloadQueryID, cb_return_query_id);
-
-        std::shared_ptr<stdsc::CallbackFunction> cb_result(
-            new fts_server::CallbackFunctionForResultRequest()
-        );
-        callback.set(fts_share::kControlCodeDownloadResult, cb_result);
+        //std::shared_ptr<stdsc::CallbackFunction> cb_send_query(
+        //    new fts_cs::CallbackFunctionForComputeRequest()
+        //);
+        //callback.set(fts_share::kControlCodeRequestQuery, cb_send_query);
+        //
+        //std::shared_ptr<stdsc::CallbackFunction> cb_return_query_id(
+        //    new fts_cs::CallbackFunctionForQueryID()
+        //);
+        //callback.set(fts_share::kControlCodeDownloadQueryID, cb_return_query_id);
+        //
+        //std::shared_ptr<stdsc::CallbackFunction> cb_result(
+        //    new fts_cs::CallbackFunctionForResultRequest()
+        //);
+        //callback.set(fts_share::kControlCodeDownloadResult, cb_result);
     }
     callback.set_commondata(static_cast<void*>(&param), sizeof(param));
 
     const std::string LUT_dirpath = "hoge";
 
-    std::shared_ptr<fts_server::CSServer> cs_server
-        (new fts_server::CSServer(PORT_DEC_SRV, LUT_dirpath, callback, state));
+    std::shared_ptr<fts_cs::CSServer> cs_server
+        (new fts_cs::CSServer(PORT_DEC_SRV, LUT_dirpath, callback, state));
 
     cs_server->start();
     

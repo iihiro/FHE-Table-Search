@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-#ifndef STATE_HPP
-#define STATE_HPP
+#ifndef FTS_CS_SRV_STATE_HPP
+#define FTS_CS_SRV_STATE_HPP
 
 #include <memory>
 #include <cstdbool>
 #include <stdsc/stdsc_state.hpp>
 
-namespace fts_server
+namespace fts_cs
 {
 
 /**
@@ -31,9 +31,8 @@ namespace fts_server
 enum StateId_t : int32_t
 {
     kStateNil      = 0,
-    kStateInit     = 1,
-    kStateReady    = 2,
-    kStateExit     = 3,
+    kStateReady    = 1,
+    kStateExit     = 2,
 };
 
 /**
@@ -41,19 +40,9 @@ enum StateId_t : int32_t
  */
 enum Event_t : uint64_t
 {
-    kEventReceivedQuery          = 3,
-    kEventReceivedResultRequest  = 4,
-};
-
-/**
- * @brief Provides 'Connected' state.
- */
-struct StateInit : public stdsc::State
-{
-    static std::shared_ptr<stdsc::State> create();
-    StateInit();
-    virtual void set(stdsc::StateContext& sc, uint64_t event) override;
-    STDSC_STATE_DEFID(kStateInit);
+    kEventNil           = 0,
+    kEventQuery         = 1,
+    kEventResultRequest = 2,
 };
 
 /**
@@ -65,8 +54,13 @@ struct StateReady : public stdsc::State
     StateReady(void);
     virtual void set(stdsc::StateContext& sc, uint64_t event) override;
     STDSC_STATE_DEFID(kStateReady);
+
+private:
+    struct Impl;
+    std::shared_ptr<Impl> pimpl_;
 };
 
-} /* server */
 
-#endif /* STATE_HPP */
+} /* namespace fts_cs */
+
+#endif /* FTS_CS_SRV_STATE_HPP */

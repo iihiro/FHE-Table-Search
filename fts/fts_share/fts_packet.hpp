@@ -21,6 +21,8 @@ enum ControlCode_t : uint64_t
     kControlCodeDataGaloisKey = 0x403,
     kControlCodeDataRelinKey  = 0x404,
     kControlCodeDataParam     = 0x405,
+    kControlCodeDataQueryID   = 0x406,
+    kControlCodeDataResult    = 0x407,
 
     /* Code for Download packet: 0x801-0x8FF */
     kControlCodeDownloadNewKeys = 0x801,
@@ -30,6 +32,8 @@ enum ControlCode_t : uint64_t
     kControlCodeUpDownloadGaloisKey = 0x1002,
     kControlCodeUpDownloadRelinKey  = 0x1003,
     kControlCodeUpDownloadParam     = 0x1004,
+    kControlCodeUpDownloadQuery     = 0x1005,
+    kControlCodeUpDownloadResult    = 0x1006,
 };
 
 } /* namespace fts_share */

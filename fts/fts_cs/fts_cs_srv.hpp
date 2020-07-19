@@ -24,7 +24,7 @@
 
 #include <memory>
 
-namespace fts_server
+namespace fts_cs
 {
 
 /**
@@ -70,6 +70,6 @@ private:
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace ftscs */
+} /* namespace fts_cs */
 
 #endif /* FTS_CS_SRV_HPP */

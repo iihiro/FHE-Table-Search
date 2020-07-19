@@ -5,7 +5,7 @@
 #include <fts_share/fts_utility.hpp>
 #include <fts_cs/fts_cs_srv.hpp>
 
-namespace fts_server
+namespace fts_cs
 {
 
 struct CSServer::Impl

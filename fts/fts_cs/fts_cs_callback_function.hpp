@@ -15,33 +15,24 @@
  * limitations under the License.
  */
 
-#ifndef CALLBACK_FUNCTION_HPP
-#define CALLBACK_FUNCTION_HPP
+#ifndef FTS_CS_SRV_CALLBACK_FUNCTION_HPP
+#define FTS_CS_SRV_CALLBACK_FUNCTION_HPP
 
-#include <string>
-#include <cstdint>
 #include <stdsc/stdsc_callback_function.hpp>
 
-namespace stdsc
-{
-class StateContext;
-class Buffer;
-class Socket;
-}
-
-namespace fts_server
+namespace fts_cs
 {
 
-struct CallbackParam
-{
-    uint32_t query_id;
-    uint32_t enc_results;
-};
+/**
+ * @brief Provides callback function in receiving query.
+ */
+DECLARE_UPDOWNLOAD_CLASS(CallbackFunctionQuery);
 
-DECLARE_REQUEST_CLASS(CallbackFunctionForComputeRequest);
-DECLARE_DOWNLOAD_CLASS(CallbackFunctionForQueryID);
-DECLARE_DOWNLOAD_CLASS(CallbackFunctionForResultRequest);
+/**
+ * @brief Provides callback function in receiving result request.
+ */
+DECLARE_UPDOWNLOAD_CLASS(CallbackFunctionResultRequest);
 
-} /* namespace fts_server */
+} /* namespace fts_cs */
 
-#endif /* CALLBACK_FUNCTION_HPP */
+#endif /* FTS_CS_SRV_CALLBACK_FUNCTION_HPP */
