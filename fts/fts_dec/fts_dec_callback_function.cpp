@@ -15,9 +15,12 @@
 namespace fts_dec
 {
 
+// CallbackFunction for new key Request
 DEFUN_DOWNLOAD(CallbackFunctionNewKeyRequest)
 {
-    std::cout << "Received new key request." << std::endl;
+    STDSC_LOG_INFO("Received new key request. (current state : %s)",
+                   state.current_state_str().c_str());
+
     DEF_CDATA_ON_EACH(fts_dec::CallbackParam);
     DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
     auto& param   = cdata_e->param;
@@ -42,111 +45,118 @@ DEFUN_DOWNLOAD(CallbackFunctionNewKeyRequest)
     plaindata.save_to_stream(stream);
     
     STDSC_LOG_INFO("Sending keyID and secret key.");
-    stdsc::Buffer* buffer = &buffstream;
+    stdsc::Buffer* bsbuff = &buffstream;
     sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataNewKeys, total_sz));
-    sock.send_buffer(*buffer);
+    sock.send_buffer(*bsbuff);
     state.set(kEventNewKeysRequest);
 }
 
-//// CallbackFunctionPubkeyRequest
-//DEFUN_DOWNLOAD(CallbackFunctionPubkeyRequest)
-//{
-//    STDSC_LOG_INFO("Received public key request. (current state : %s)",
-//                   state.current_state_str().c_str());
-//
-//    DEF_CDATA_ON_EACH(fts_dec::CallbackParam);
-//
-//    auto  kind = fts_share::SecureKeyFileManager::Kind_t::kKindPubKey;
-//    auto& skm  = *cdata_e->skm_ptr;
-//    stdsc::Buffer pubkey(skm.size(kind));
-//    skm.data(kind, pubkey.data());
-//    STDSC_LOG_INFO("Sending public key.");
-//    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataPubkey,
-//                                             skm.size(kind)));
-//    sock.send_buffer(pubkey);
-//    state.set(kEventPubkeyRequest);
-//}
+// CallbackFunction for Pubkey Request
+DEFUN_UPDOWNLOAD(CallbackFunctionPubKeyRequest)
+{
+    STDSC_LOG_INFO("Received public key request. (current state : %s)",
+                   state.current_state_str().c_str());
 
-//// CallbackFunctionContextRequest
-//DEFUN_DOWNLOAD(CallbackFunctionContextRequest)
-//{
-//    STDSC_LOG_INFO("Received context request. (current state : %s)",
-//                   state.current_state_str().c_str());
-//
-//    DEF_CDATA_ON_EACH(fts_dec::CallbackParam);
-//
-//    auto  kind = fts_share::SecureKeyFileManager::Kind_t::kKindContext;
-//    auto& skm  = *cdata_e->skm_ptr;
-//    stdsc::Buffer context(skm.size(kind));
-//    skm.data(kind, context.data());
-//    STDSC_LOG_INFO("Sending context.");
-//    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataContext,
-//                                             skm.size(kind)));
-//    sock.send_buffer(context);
-//    state.set(kEventContextRequest);
-//}
-//
-//// CallbackFunctionEMKRequest
-//DEFUN_DOWNLOAD(CallbackFunctionEMKRequest)
-//{
-//    STDSC_LOG_INFO("Received emk request. (current state : %s)",
-//                   state.current_state_str().c_str());
-//
-//    DEF_CDATA_ON_EACH(fts_dec::CallbackParam);
-//
-//    auto  kind = fts_share::SecureKeyFileManager::Kind_t::kKindEMK;
-//    auto& skm  = *cdata_e->skm_ptr;
-//    stdsc::Buffer emk(skm.size(kind));
-//    skm.data(kind, emk.data());
-//    STDSC_LOG_INFO("Sending emk.");
-//    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataEMK,
-//                                             skm.size(kind)));
-//    sock.send_buffer(emk);
-//    state.set(kEventEMKRequest);
-//}
-//
-//// CallbackFunctionEAKRequest
-//DEFUN_DOWNLOAD(CallbackFunctionEAKRequest)
-//{
-//    STDSC_LOG_INFO("Received eak request. (current state : %s)",
-//                   state.current_state_str().c_str());
-//
-//    DEF_CDATA_ON_EACH(fts_dec::CallbackParam);
-//
-//    auto  kind = fts_share::SecureKeyFileManager::Kind_t::kKindEAK;
-//    auto& skm  = *cdata_e->skm_ptr;
-//    stdsc::Buffer eak(skm.size(kind));
-//    skm.data(kind, eak.data());
-//    STDSC_LOG_INFO("Sending eak.");
-//    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataEAK,
-//                                             skm.size(kind)));
-//    sock.send_buffer(eak);
-//    state.set(kEventEAKRequest);
-//}
-//
-//// CallbackFunctionParamRequest
-//DEFUN_DOWNLOAD(CallbackFunctionParamRequest)
-//{
-//    STDSC_LOG_INFO("Received param request. (current state : %s)",
-//                   state.current_state_str().c_str());
-//
-//    DEF_CDATA_ON_EACH(fts_dec::CallbackParam);
-//
-//    fts_share::PlainData<fts_share::DecParam> plaindata;
-//    plaindata.push(cdata_e->param);
-//
-//    auto sz = plaindata.stream_size();
-//    stdsc::BufferStream buffstream(sz);
-//    std::iostream stream(&buffstream);
-//
-//    plaindata.save_to_stream(stream);
-//
-//    STDSC_LOG_INFO("Sending param.");
-//    stdsc::Buffer* buffer = &buffstream;
-//    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataDecParam, sz));
-//    sock.send_buffer(*buffer);
-//    state.set(kEventParamRequest);
-//}
+    DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
+    auto& keycont = cdata_a->keycont;
 
+    auto keyID = *static_cast<const int32_t*>(buffer.data());
+    STDSC_LOG_INFO("public key request with keyID: %d", keyID);
+
+    auto sz = keycont.size(keyID, KeyKind_t::kKindPubKey);
+    stdsc::BufferStream buffstream(sz);
+    std::iostream stream(&buffstream);
+
+    seal::PublicKey pubkey;
+    keycont.get(keyID, KeyKind_t::kKindPubKey, pubkey);
+    pubkey.save(stream);
+
+    STDSC_LOG_INFO("Sending publick key.");
+    stdsc::Buffer* bsbuff = &buffstream;
+    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataPubKey, sz));
+    sock.send_buffer(*bsbuff);
+    state.set(kEventPubKeyRequest);
+}
+
+// CallbackFunction for Galoiskey Request
+DEFUN_UPDOWNLOAD(CallbackFunctionGaloisKeyRequest)
+{
+    STDSC_LOG_INFO("Received galois key request. (current state : %s)",
+                   state.current_state_str().c_str());
+
+    DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
+    auto& keycont = cdata_a->keycont;
+
+    auto keyID = *static_cast<const int32_t*>(buffer.data());
+    STDSC_LOG_INFO("galois key request with keyID: %d", keyID);
+
+    auto sz = keycont.size(keyID, KeyKind_t::kKindGaloisKey);
+    stdsc::BufferStream buffstream(sz);
+    std::iostream stream(&buffstream);
+
+    seal::GaloisKeys galoiskey;
+    keycont.get(keyID, KeyKind_t::kKindGaloisKey, galoiskey);
+    galoiskey.save(stream);
+
+    STDSC_LOG_INFO("Sending galois key.");
+    stdsc::Buffer* bsbuff = &buffstream;
+    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataGaloisKey, sz));
+    sock.send_buffer(*bsbuff);
+    state.set(kEventGaloisKeyRequest);
+}
+
+// CallbackFunction for Relinkey Request
+DEFUN_UPDOWNLOAD(CallbackFunctionRelinKeyRequest)
+{
+    STDSC_LOG_INFO("Received relin key request. (current state : %s)",
+                   state.current_state_str().c_str());
+
+    DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
+    auto& keycont = cdata_a->keycont;
+
+    auto keyID = *static_cast<const int32_t*>(buffer.data());
+    STDSC_LOG_INFO("relin key request with keyID: %d", keyID);
+
+    auto sz = keycont.size(keyID, KeyKind_t::kKindRelinKey);
+    stdsc::BufferStream buffstream(sz);
+    std::iostream stream(&buffstream);
+
+    seal::RelinKeys relinkey;
+    keycont.get(keyID, KeyKind_t::kKindRelinKey, relinkey);
+    relinkey.save(stream);
+
+    STDSC_LOG_INFO("Sending relin key.");
+    stdsc::Buffer* bsbuff = &buffstream;
+    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataRelinKey, sz));
+    sock.send_buffer(*bsbuff);
+    state.set(kEventRelinKeyRequest);
+}
+
+// CallbackFunction for Param Request
+DEFUN_UPDOWNLOAD(CallbackFunctionParamRequest)
+{
+    STDSC_LOG_INFO("Received param request. (current state : %s)",
+                   state.current_state_str().c_str());
+
+    DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
+    auto& keycont = cdata_a->keycont;
+
+    auto keyID = *static_cast<const int32_t*>(buffer.data());
+    STDSC_LOG_INFO("param request with keyID: %d", keyID);
+
+    auto sz = keycont.size(keyID, KeyKind_t::kKindParam);
+    stdsc::BufferStream buffstream(sz);
+    std::iostream stream(&buffstream);
+
+    seal::EncryptionParameters params(seal::scheme_type::BFV);
+    keycont.get_param(keyID, params);
+    seal::EncryptionParameters::Save(params, stream);
+
+    STDSC_LOG_INFO("Sending param.");
+    stdsc::Buffer* bsbuff = &buffstream;
+    sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataParam, sz));
+    sock.send_buffer(*bsbuff);
+    state.set(kEventParamRequest);
+}
 
 } /* namespace fts_dec_server */

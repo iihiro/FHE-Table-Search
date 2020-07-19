@@ -28,30 +28,25 @@ namespace fts_dec
  */
 DECLARE_DOWNLOAD_CLASS(CallbackFunctionNewKeyRequest);
 
-///**
-// * @brief Provides callback function in receiving pubic key request.
-// */
-//DECLARE_DOWNLOAD_CLASS(CallbackFunctionPubkeyRequest);
-//
-///**
-// * @brief Provides callback function in receiving galois key request.
-// */
-//DECLARE_DOWNLOAD_CLASS(CallbackFunctionGaloisKeyRequest);
-//
-///**
-// * @brief Provides callback function in receiving Relin key request.
-// */
-//DECLARE_DOWNLOAD_CLASS(CallbackFunctionRelinKeyRequest);
-//    
-///**
-// * @brief Provides callback function in receiving context request.
-// */
-//DECLARE_DOWNLOAD_CLASS(CallbackFunctionContextRequest);
-//    
-///**
-// * @brief Provides callback function in receiving pamameter request.
-// */
-//DECLARE_DOWNLOAD_CLASS(CallbackFunctionParamRequest);
+/**
+ * @brief Provides callback function in receiving pubic key request.
+ */
+DECLARE_UPDOWNLOAD_CLASS(CallbackFunctionPubKeyRequest);
+
+/**
+ * @brief Provides callback function in receiving galois key request.
+ */
+DECLARE_UPDOWNLOAD_CLASS(CallbackFunctionGaloisKeyRequest);
+
+/**
+ * @brief Provides callback function in receiving Relin key request.
+ */
+DECLARE_UPDOWNLOAD_CLASS(CallbackFunctionRelinKeyRequest);
+    
+/**
+ * @brief Provides callback function in receiving pamameter request.
+ */
+DECLARE_UPDOWNLOAD_CLASS(CallbackFunctionParamRequest);
 
 
 } /* namespace fts_dec */

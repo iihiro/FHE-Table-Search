@@ -69,6 +69,7 @@ public:
     void get_pubkey(const int32_t keyID, seal::PublicKey& pubkey);
     void get_galoiskey(const int32_t keyID, seal::GaloisKeys& galoiskey);
     void get_relinkey(const int32_t keyID, seal::RelinKeys& relinkey);
+    void get_param(const int32_t key, seal::EncryptionParameters& param);
     
 private:
     struct Impl;

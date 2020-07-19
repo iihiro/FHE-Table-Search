@@ -47,7 +47,7 @@ public:
     {
         stdsc::Buffer buffer;
         client_.recv_data_blocking(fts_share::kControlCodeDownloadNewKeys, buffer);
-        STDSC_LOG_INFO("create new keys");
+        STDSC_LOG_INFO("generate new keys");
 
         stdsc::BufferStream buffstream(buffer);
         std::iostream stream(&buffstream);
@@ -65,16 +65,27 @@ public:
         return true;
     }
 
-    void get_pubkey(const int32_t keyID, seal::PublicKey& pubkey)
+    template <class T>
+    void get_key(const int32_t keyID, const fts_share::ControlCode_t code, T& key)
     {
+        stdsc::Buffer sbuffer(sizeof(keyID)), rbuffer;
+        *(int32_t*)sbuffer.data() = keyID;
+        client_.send_recv_data_blocking(code, sbuffer, rbuffer);
+
+        stdsc::BufferStream buffstream(rbuffer);
+        std::iostream stream(&buffstream);
+        key.unsafe_load(stream);
     }
     
-    void get_galoiskey(const int32_t keyID, seal::GaloisKeys& galoiskey)
+    void get_param(const int32_t keyID, seal::EncryptionParameters& param)
     {
-    }
+        stdsc::Buffer sbuffer(sizeof(keyID)), rbuffer;
+        *(int32_t*)sbuffer.data() = keyID;
+        client_.send_recv_data_blocking(fts_share::kControlCodeUpDownloadParam, sbuffer, rbuffer);
     
-    void get_relinkey(const int32_t keyID, seal::RelinKeys& relinkey)
-    {
+        stdsc::BufferStream buffstream(rbuffer);
+        std::iostream stream(&buffstream);
+        param = seal::EncryptionParameters::Load(stream);
     }
 
 private:
@@ -113,19 +124,22 @@ bool DecClient::delete_keys(const int32_t key_id) const
 
 void DecClient::get_pubkey(const int32_t keyID, seal::PublicKey& pubkey)
 {
-    pimpl_->get_pubkey(keyID, pubkey);
+    pimpl_->get_key(keyID, fts_share::kControlCodeUpDownloadPubKey, pubkey);
 }
     
 void DecClient::get_galoiskey(const int32_t keyID, seal::GaloisKeys& galoiskey)
 {
-    pimpl_->get_galoiskey(keyID, galoiskey);
+    pimpl_->get_key(keyID, fts_share::kControlCodeUpDownloadGaloisKey, galoiskey);
 }
     
 void DecClient::get_relinkey(const int32_t keyID, seal::RelinKeys& relinkey)
 {
-    pimpl_->get_relinkey(keyID, relinkey);
+    pimpl_->get_key(keyID, fts_share::kControlCodeUpDownloadRelinKey, relinkey);
 }
 
-
+void DecClient::get_param(const int32_t keyID, seal::EncryptionParameters& param)
+{
+    pimpl_->get_param(keyID, param);
+}
 
 } /* namespace fts_user */

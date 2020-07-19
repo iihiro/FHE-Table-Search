@@ -54,7 +54,10 @@ struct User::Impl
     {
         DecClient dec_client(dec_host_.c_str(), dec_port_.c_str());
         dec_client.connect(retry_interval_usec_, timeout_sec_);
-        return dec_client.new_keys(seckey_);
+        auto keyID = dec_client.new_keys(seckey_);
+        STDSC_LOG_INFO("generate new keys. (keyID:%d)", keyID);
+        dbg_dumpkey_to_file("seckey.txt", seckey_);
+        return keyID;
     }
     
     void compute(int32_t keyID, const int64_t val)
@@ -62,17 +65,40 @@ struct User::Impl
         DecClient dec_client(dec_host_.c_str(), dec_port_.c_str());
         dec_client.connect(retry_interval_usec_, timeout_sec_);
         
-        seal::PublicKey pubkey;
-        dec_client.get_pubkey(keyID, pubkey);
-
-
-        {
-            std::ofstream skFile("seckey.txt", std::ios::binary);
-            seckey_.save(skFile);
-            skFile.close();
-        }        
+        //seal::PublicKey pubkey;
+        //dec_client.get_pubkey(keyID, pubkey);
+        //dbg_dumpkey_to_file("pubkey.txt", pubkey);
+        //
+        //seal::GaloisKeys galoiskey;
+        //dec_client.get_galoiskey(keyID, galoiskey);
+        //dbg_dumpkey_to_file("galoiskey.txt", galoiskey);
+        //
+        //seal::RelinKeys relinkey;
+        //dec_client.get_relinkey(keyID, relinkey);
+        //dbg_dumpkey_to_file("relinkey.txt", relinkey);
+        
+        seal::EncryptionParameters param(seal::scheme_type::BFV);
+        dec_client.get_param(keyID, param);
+        dbg_dumpparam_to_file("param.txt", param);
     }
 
+private:
+    template <class T>
+    void dbg_dumpkey_to_file(const std::string& filepath, T& data)
+    {
+        std::ofstream ofs(filepath, std::ios::binary);
+        data.save(ofs);
+        ofs.close();
+    }
+    
+    void dbg_dumpparam_to_file(const std::string& filepath,
+                               seal::EncryptionParameters& param)
+    {
+        std::ofstream ofs(filepath, std::ios::binary);
+        seal::EncryptionParameters::Save(param, ofs);
+        ofs.close();
+    }
+    
 private:
     const std::string dec_host_;
     const std::string dec_port_;

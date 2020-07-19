@@ -51,6 +51,18 @@ void exec(Option& option)
         std::shared_ptr<stdsc::CallbackFunction> cb_new_keys(
             new fts_dec::CallbackFunctionNewKeyRequest());
         callback.set(fts_share::kControlCodeDownloadNewKeys, cb_new_keys);
+        std::shared_ptr<stdsc::CallbackFunction> cb_pub_key(
+            new fts_dec::CallbackFunctionPubKeyRequest());
+        callback.set(fts_share::kControlCodeUpDownloadPubKey, cb_pub_key);
+        std::shared_ptr<stdsc::CallbackFunction> cb_gal_key(
+            new fts_dec::CallbackFunctionGaloisKeyRequest());
+        callback.set(fts_share::kControlCodeUpDownloadGaloisKey, cb_gal_key);
+        std::shared_ptr<stdsc::CallbackFunction> cb_rel_key(
+            new fts_dec::CallbackFunctionRelinKeyRequest());
+        callback.set(fts_share::kControlCodeUpDownloadRelinKey, cb_rel_key);
+        std::shared_ptr<stdsc::CallbackFunction> cb_param(
+            new fts_dec::CallbackFunctionParamRequest());
+        callback.set(fts_share::kControlCodeUpDownloadParam, cb_param);
     }
     callback.set_commondata(static_cast<void*>(&param), sizeof(param));
     callback.set_commondata(static_cast<void*>(&cparam), sizeof(cparam),

@@ -26,6 +26,10 @@ enum Event_t : uint64_t
     kEventNil               = 0,
     kEventNewKeysRequest    = 1,
     kEventDeleteKeysRequest = 2,
+    kEventPubKeyRequest     = 3,
+    kEventGaloisKeyRequest  = 4,
+    kEventRelinKeyRequest   = 5,
+    kEventParamRequest      = 6,
 };
 
 /**

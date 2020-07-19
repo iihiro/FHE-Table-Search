@@ -110,7 +110,6 @@ struct KeyContainer::Impl
     void get(const int32_t keyID, const KeyKind_t kind, T& data) const
     {
         const auto& filename = map_.at(keyID).filename(kind);
-        printf("f: %s\n", filename.c_str());
         if (!fts_share::utility::file_exist(filename)) {
             std::ostringstream oss;
             oss << "File is not found. (" << filename << ")";
@@ -131,7 +130,7 @@ struct KeyContainer::Impl
 
     void get_param(const int32_t keyID, seal::EncryptionParameters& param) const
     {
-        const auto& filename = map_.at(KeyKind_t::kKindParam).filename(KeyKind_t::kKindParam);
+        const auto& filename = map_.at(keyID).filename(KeyKind_t::kKindParam);
         if (!fts_share::utility::file_exist(filename)) {
             std::ostringstream oss;
             oss << "File is not found. (" << filename << ")";
@@ -144,15 +143,12 @@ struct KeyContainer::Impl
 
     size_t size(const int32_t keyID, const KeyKind_t kind) const
     {
-        printf("1\n");
         const auto& filename = map_.at(keyID).filename(kind);
-        printf("2\n");
         if (!fts_share::utility::file_exist(filename)) {
             std::ostringstream oss;
             oss << "File is not found. (" << filename << ")";
             STDSC_THROW_FILE(oss.str());
         }
-        printf("3\n");
         return fts_share::utility::file_size(filename);
     }
     
