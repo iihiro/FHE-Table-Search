@@ -48,6 +48,11 @@ DECLARE_UPDOWNLOAD_CLASS(CallbackFunctionRelinKeyRequest);
  */
 DECLARE_UPDOWNLOAD_CLASS(CallbackFunctionParamRequest);
 
+/**
+ * @brief Provides callback function in receiving delete key request.
+ */
+DECLARE_DATA_CLASS(CallbackFunctionDeleteKeyRequest);
+    
 
 } /* namespace fts_dec */
 

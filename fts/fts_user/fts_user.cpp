@@ -65,17 +65,17 @@ struct User::Impl
         DecClient dec_client(dec_host_.c_str(), dec_port_.c_str());
         dec_client.connect(retry_interval_usec_, timeout_sec_);
         
-        //seal::PublicKey pubkey;
-        //dec_client.get_pubkey(keyID, pubkey);
-        //dbg_dumpkey_to_file("pubkey.txt", pubkey);
-        //
-        //seal::GaloisKeys galoiskey;
-        //dec_client.get_galoiskey(keyID, galoiskey);
-        //dbg_dumpkey_to_file("galoiskey.txt", galoiskey);
-        //
-        //seal::RelinKeys relinkey;
-        //dec_client.get_relinkey(keyID, relinkey);
-        //dbg_dumpkey_to_file("relinkey.txt", relinkey);
+        seal::PublicKey pubkey;
+        dec_client.get_pubkey(keyID, pubkey);
+        dbg_dumpkey_to_file("pubkey.txt", pubkey);
+
+        seal::GaloisKeys galoiskey;
+        dec_client.get_galoiskey(keyID, galoiskey);
+        dbg_dumpkey_to_file("galoiskey.txt", galoiskey);
+
+        seal::RelinKeys relinkey;
+        dec_client.get_relinkey(keyID, relinkey);
+        dbg_dumpkey_to_file("relinkey.txt", relinkey);
         
         seal::EncryptionParameters param(seal::scheme_type::BFV);
         dec_client.get_param(keyID, param);

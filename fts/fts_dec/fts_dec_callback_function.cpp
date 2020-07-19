@@ -159,4 +159,20 @@ DEFUN_UPDOWNLOAD(CallbackFunctionParamRequest)
     state.set(kEventParamRequest);
 }
 
+// CallbackFunction for Delete key Request
+DEFUN_DATA(CallbackFunctionDeleteKeyRequest)
+{
+    STDSC_LOG_INFO("Received delete key request. (current state : %s)",
+                   state.current_state_str().c_str());
+
+    DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
+    auto& keycont = cdata_a->keycont;
+
+    auto keyID = *static_cast<const int32_t*>(buffer.data());
+    STDSC_LOG_INFO("delete key request with keyID: %d", keyID);
+
+    keycont.delete_keys(keyID);
+    state.set(kEventDeleteKeysRequest);
+}
+
 } /* namespace fts_dec_server */
