@@ -18,9 +18,13 @@
 #ifndef FTS_CS_HPP
 #define FTS_CS_HPP
 
+#define DEFAULT_MAX_CONCURRENT_QUERIES 128
+#define DEFAULT_MAX_RESULTS 128
+#define DEFAULT_MAX_RESULT_LIFETIME_SEC 50000
+
 #include <memory>
 
-namespace ftscs
+namespace fts_server
 {
 
 /**
