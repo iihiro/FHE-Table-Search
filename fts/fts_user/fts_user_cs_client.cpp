@@ -9,8 +9,9 @@
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_utility.hpp>
 #include <fts_share/fts_encdata.hpp>
-//#include <fts_share/fts_seckey.hpp>
 #include <fts_share/fts_packet.hpp>
+#include <fts_share/fts_plaindata.hpp>
+#include <fts_share/fts_csparam.hpp>
 #include <fts_user/fts_user_cs_client.hpp>
 
 namespace fts_client
@@ -45,14 +46,24 @@ public:
 
     int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input)
     {
-        //client_.send_request_blocking(fts_share::kControlCodeRequestQuery);
-        //
-        //stdsc::Buffer result;
-        //client_.recv_data_blocking(fts_share::kControlCodeDownloadQueryID, result);
-        //STDSC_LOG_INFO("sent the query");
-        //
-        //return *static_cast<const uint32_t*>(result.data());
-        return 0;
+        fts_share::PlainData<fts_share::CSParam> plaindata;
+        fts_share::CSParam csparam {key_id, func_no};
+        plaindata.push(csparam);
+
+        auto sz = plaindata.stream_size();
+        stdsc::BufferStream buffstream(sz);
+        std::iostream stream(&buffstream);
+        
+        plaindata.save_to_stream(stream);
+
+        stdsc::Buffer* sbuffer = &buffstream;
+        stdsc::Buffer rbuffer;
+        client_.send_recv_data_blocking(fts_share::kControlCodeUpDownloadQuery, *sbuffer, rbuffer);
+        STDSC_LOG_INFO("sent the query");
+
+        // 次回これを受け取るサーバ側から
+        
+        return *static_cast<int32_t*>(rbuffer.data());
     }
 
     bool recv_result(const int32_t query_id, fts_share::EncData& enc_result)
