@@ -25,27 +25,24 @@
 namespace fts_share
 {
 
-class PubKey;
-class SecKey;
-class Context;
-    
 /**
  * @brief This class is used to hold the encrypted data.
  */
-    struct EncData : public fts_share::BasicData<seal::Ciphertext>
+struct EncData : public fts_share::BasicData<seal::Ciphertext>
 {
-    explicit EncData(const seal::SEALContext& context);
+    explicit EncData(const seal::EncryptionParameters& params);
     virtual ~EncData(void) = default;
 
-    void encrypt(const std::vector<int64_t>& inputdata, const PubKey& pubkey);
-    void decrypt(const SecKey& seckey, std::vector<int64_t>& outputdata) const;
+    void encrypt(const int64_t input_value,
+                 const seal::PublicKey& pubkey,
+                 const seal::GaloisKeys& galoiskey);
+    void decrypt(const seal::SecretKey& seckey, int64_t& output_value) const;
 
     virtual void save_to_stream(std::ostream& os) const override;
     virtual void load_from_stream(std::istream& is) override;
 
     void save_to_file(const std::string& filepath) const;
     void load_from_file(const std::string& filepath);
-
 
 private:
     struct Impl;

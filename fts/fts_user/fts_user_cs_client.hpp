@@ -21,7 +21,12 @@
 #include <memory>
 #include <fts_share/fts_define.hpp>
 
-namespace fts_client
+namespace fts_share
+{
+    class EncData;
+}
+
+namespace fts_user
 {
 
 /**
@@ -72,6 +77,6 @@ private:
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace fts_client */
+} /* namespace fts_user */
 
-#endif /* FTS_CLIENT_CS_CLIENT_HPP */
+#endif /* FTS_USER_CS_CLIENT_HPP */

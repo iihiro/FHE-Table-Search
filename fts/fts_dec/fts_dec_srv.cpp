@@ -26,12 +26,8 @@ public:
 
     void start(void)
     {
-        STDSC_LOG_INFO("[starting fts_dec server]");
-
         bool enable_async_mode = true;
         server_->start(enable_async_mode);
-
-        STDSC_LOG_INFO("* done * [starting fts_dec server]");
     }
 
     void stop(void)

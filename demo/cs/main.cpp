@@ -52,27 +52,20 @@ void exec(Option& option)
     stdsc::CallbackFunctionContainer callback;
     fts_cs::CallbackParam param;
     {
-        //std::shared_ptr<stdsc::CallbackFunction> cb_send_query(
-        //    new fts_cs::CallbackFunctionForComputeRequest()
-        //);
-        //callback.set(fts_share::kControlCodeRequestQuery, cb_send_query);
-        //
-        //std::shared_ptr<stdsc::CallbackFunction> cb_return_query_id(
-        //    new fts_cs::CallbackFunctionForQueryID()
-        //);
-        //callback.set(fts_share::kControlCodeDownloadQueryID, cb_return_query_id);
-        //
-        //std::shared_ptr<stdsc::CallbackFunction> cb_result(
-        //    new fts_cs::CallbackFunctionForResultRequest()
-        //);
-        //callback.set(fts_share::kControlCodeDownloadResult, cb_result);
+        std::shared_ptr<stdsc::CallbackFunction> cb_query(
+            new fts_cs::CallbackFunctionQuery());
+        callback.set(fts_share::kControlCodeUpDownloadQuery, cb_query);
+
+        std::shared_ptr<stdsc::CallbackFunction> cb_result(
+            new fts_cs::CallbackFunctionResultRequest());
+        callback.set(fts_share::kControlCodeUpDownloadResult, cb_result);
     }
     callback.set_commondata(static_cast<void*>(&param), sizeof(param));
 
     const std::string LUT_dirpath = "hoge";
 
     std::shared_ptr<fts_cs::CSServer> cs_server
-        (new fts_cs::CSServer(PORT_DEC_SRV, LUT_dirpath, callback, state));
+        (new fts_cs::CSServer(PORT_CS_SRV, LUT_dirpath, callback, state));
 
     cs_server->start();
     

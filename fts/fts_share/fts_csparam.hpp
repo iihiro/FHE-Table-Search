@@ -15,37 +15,26 @@
  * limitations under the License.
  */
 
-#ifndef FTS_USER_HPP
-#define FTS_USER_HPP
+#ifndef FTS_CSPARAM_HPP
+#define FTS_CSPARAM_HPP
 
-#include <memory>
-#include <vector>
-#include <fts_share/fts_define.hpp>
+#include <iostream>
 
-namespace fts_user
+namespace fts_share
 {
-    
+
 /**
- * @brief Provides encryptor.
+ * @brief This class is used to hold the parameters to compute on encryptor.
  */
-class User
+struct CSParam
 {
-public:
-    
-    User(const std::string& dec_host, const std::string& dec_port,
-         const std::string& cs_host, const std::string& cs_port,
-         const uint32_t retry_interval_usec = FTS_RETRY_INTERVAL_USEC,
-         const uint32_t timeout_sec = FTS_TIMEOUT_SEC);
-    virtual ~User(void) = default;
-
-    int32_t new_keys();
-    void compute(const int32_t key_id, const int64_t val);
-    
-private:
-    struct Impl;
-    std::shared_ptr<Impl> pimpl_;
+    int32_t key_id;
+    int32_t func_no;
 };
 
-} /* namespace fts_user */
+std::ostream& operator<<(std::ostream& os, const CSParam& param);
+std::istream& operator>>(std::istream& is, CSParam& param);
 
-#endif /* FTS_USER_HPP */
+} /* namespace fts_share */
+
+#endif /* FTS_CSPARAM_HPP */

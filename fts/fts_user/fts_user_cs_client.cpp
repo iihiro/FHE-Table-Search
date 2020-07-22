@@ -14,7 +14,7 @@
 #include <fts_share/fts_csparam.hpp>
 #include <fts_user/fts_user_cs_client.hpp>
 
-namespace fts_client
+namespace fts_user
 {
 
 struct CSClient::Impl
@@ -46,24 +46,27 @@ public:
 
     int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input)
     {
-        fts_share::PlainData<fts_share::CSParam> plaindata;
+        fts_share::PlainData<fts_share::CSParam> splaindata;
         fts_share::CSParam csparam {key_id, func_no};
-        plaindata.push(csparam);
+        splaindata.push(csparam);
 
-        auto sz = plaindata.stream_size();
-        stdsc::BufferStream buffstream(sz);
-        std::iostream stream(&buffstream);
+        auto sz = splaindata.stream_size();
+        stdsc::BufferStream sbuffstream(sz);
+        std::iostream stream(&sbuffstream);
         
-        plaindata.save_to_stream(stream);
+        splaindata.save_to_stream(stream);
 
-        stdsc::Buffer* sbuffer = &buffstream;
+        stdsc::Buffer* sbuffer = &sbuffstream;
         stdsc::Buffer rbuffer;
         client_.send_recv_data_blocking(fts_share::kControlCodeUpDownloadQuery, *sbuffer, rbuffer);
         STDSC_LOG_INFO("sent the query");
 
-        // 次回これを受け取るサーバ側から
-        
-        return *static_cast<int32_t*>(rbuffer.data());
+        stdsc::BufferStream rbuffstream(rbuffer);
+        std::iostream rstream(&rbuffstream);
+        fts_share::PlainData<int32_t> rplaindata;
+        rplaindata.load_from_stream(rstream);
+
+        return rplaindata.data();
     }
 
     bool recv_result(const int32_t query_id, fts_share::EncData& enc_result)
@@ -115,4 +118,4 @@ bool CSClient::recv_result(const int32_t query_id, fts_share::EncData& enc_resul
 }
 
 
-} /* namespace fts_client */
+} /* namespace fts_user */

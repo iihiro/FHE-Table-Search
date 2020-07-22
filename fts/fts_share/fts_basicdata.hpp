@@ -105,7 +105,6 @@ struct BasicData
     {
         std::ostringstream oss;
         save_to_stream(oss);
-        printf("hogege: %s (%lu)\n", oss.str().c_str(), oss.str().size());
         return oss.str().size();
     }
 

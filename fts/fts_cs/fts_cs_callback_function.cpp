@@ -24,6 +24,7 @@
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_packet.hpp>
 #include <fts_share/fts_plaindata.hpp>
+#include <fts_share/fts_csparam.hpp>
 #include <fts_cs/fts_cs_callback_function.hpp>
 #include <fts_cs/fts_cs_callback_param.hpp>
 #include <fts_cs/fts_cs_state.hpp>
@@ -40,22 +41,28 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
     //DEF_CDATA_ON_ALL(fts_cs::CommonCallbackParam);
     //auto& keycont = cdata_a->keycont;
 
-    auto keyID = *static_cast<const int32_t*>(buffer.data());
-    STDSC_LOG_INFO("query with keyID: %d", keyID);
+    stdsc::BufferStream rbuffstream(buffer);
+    std::iostream rstream(&rbuffstream);
 
-    int32_t queryID = 456;
+    fts_share::PlainData<fts_share::CSParam> rplaindata;
+    rplaindata.load_from_stream(rstream);
 
-    fts_share::PlainData<int32_t> plaindata;
-    plaindata.push(queryID);
+    const auto& param = rplaindata.data();
+    STDSC_LOG_INFO("query with key_id: %d, func_no: %d", param.key_id, param.func_no);
+
+    int32_t query_id = 456;
+
+    fts_share::PlainData<int32_t> splaindata;
+    splaindata.push(query_id);
     
-    auto sz = plaindata.stream_size();
-    stdsc::BufferStream buffstream(sz);
-    std::iostream stream(&buffstream);
+    auto sz = splaindata.stream_size();
+    stdsc::BufferStream sbuffstream(sz);
+    std::iostream sstream(&sbuffstream);
 
-    plaindata.save_to_stream(stream);
+    splaindata.save_to_stream(sstream);
 
     STDSC_LOG_INFO("Sending queryID.");
-    stdsc::Buffer* bsbuff = &buffstream;
+    stdsc::Buffer* bsbuff = &sbuffstream;
     sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataQueryID, sz));
     sock.send_buffer(*bsbuff);
     state.set(kEventQuery);
