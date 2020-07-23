@@ -20,7 +20,6 @@
 
 #include <cstdint>
 #include <cstdbool>
-//#include <fts_share/fts_concurrent_queue.hpp>
 #include <fts_share/fts_concurrent_mapqueue.hpp>
 #include <seal/seal.h>
 
@@ -36,25 +35,15 @@ struct Result
     seal::Ciphertext ctxt_;
 };
 
-#if 1
 struct ResultQueue : public fts_share::ConcurrentMapQueue<int32_t, Result>
 {
     using super = fts_share::ConcurrentMapQueue<int32_t, Result>;
     
     ResultQueue() = default;
     virtual ~ResultQueue() = default;
-};
-#else
-struct ResultQueue : public fts_share::ConcurrentQueue<Result>
-{
-    using super = fts_share::ConcurrentQueue<Result>;
-    
-    ResultQueue() = default;
-    virtual ~ResultQueue() = default;
 
-    bool is_exist(const int32_t query_id) const;
+    bool try_get(const int32_t query_id, Result& result);
 };
-#endif
 
 } /* namespace fts_cs */
 

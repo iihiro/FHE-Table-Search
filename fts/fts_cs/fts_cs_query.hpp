@@ -20,7 +20,6 @@
 
 #include <cstdint>
 #include <vector>
-//#include <fts_share/fts_concurrent_queue.hpp>
 #include <fts_share/fts_concurrent_mapqueue.hpp>
 #include <seal/seal.h>
 
@@ -46,7 +45,6 @@ struct Query
     std::vector<seal::Ciphertext> ctxts_;
 };
 
-#if 1
 struct QueryQueue : public fts_share::ConcurrentMapQueue<int32_t, fts_cs::Query>
 {
     using super = fts_share::ConcurrentMapQueue<int32_t, fts_cs::Query>;
@@ -68,21 +66,6 @@ private:
     }
        
 };
-#else
-struct QueryQueue : public fts_share::ConcurrentQueue<Query>
-{
-    using super = fts_share::ConcurrentQueue<Query>;
-    
-    QueryQueue() = default;
-    virtual ~QueryQueue() = default;
-
-    virtual int32_t put(const Query& data)
-    {
-        super::push(data);
-        return 12333;
-    }
-};
-#endif
 
 } /* namespace fts_cs */
 

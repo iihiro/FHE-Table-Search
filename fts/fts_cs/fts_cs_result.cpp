@@ -21,14 +21,16 @@
 namespace fts_cs
 {
 
+// Result
 Result::Result(const int32_t query_id, const seal::Ciphertext& ctxt)
     : query_id_(query_id), ctxt_(ctxt)
 {
 }
 
-//bool ResultQueue::is_exist(const int32_t query_id) const
-//{
-//    return true;
-//}
+// ResultQueue
+bool ResultQueue::try_get(const int32_t query_id, Result& result)
+{
+    return super::get(query_id, result);
+}
 
 } /* namespace fts_cs */
