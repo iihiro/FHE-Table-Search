@@ -51,6 +51,7 @@ void exec(Option& option)
     
     stdsc::CallbackFunctionContainer callback;
     fts_cs::CallbackParam param;
+    fts_cs::CommonCallbackParam cparam;
     {
         std::shared_ptr<stdsc::CallbackFunction> cb_query(
             new fts_cs::CallbackFunctionQuery());
@@ -61,6 +62,8 @@ void exec(Option& option)
         callback.set(fts_share::kControlCodeUpDownloadResult, cb_result);
     }
     callback.set_commondata(static_cast<void*>(&param), sizeof(param));
+    callback.set_commondata(static_cast<void*>(&cparam), sizeof(cparam),
+                            stdsc::CommonDataKind_t::kCommonDataOnAllConnection);
 
     const std::string LUT_dirpath = "hoge";
 

@@ -15,33 +15,41 @@
  * limitations under the License.
  */
 
-#ifndef FTS_CS_CALLBACK_PARAM_HPP
-#define FTS_CS_CALLBACK_PARAM_HPP
+#ifndef FTS_CONCURRENT_QUEUE_HPP
+#define FTS_CONCURRENT_QUEUE_HPP
 
-#include <fts_share/fts_concurrent_queue.hpp>
-#include <fts_cs/fts_cs_query.hpp>
+#include <queue>
+#include <mutex>
 
-namespace fts_cs
+namespace fts_share
 {
 
-/**
- * @brief This class is used to hold the callback parameters for Decryptor.
- */
-struct CallbackParam
+template <class T>
+class ConcurrentQueue
 {
-    CallbackParam(void);
-    ~CallbackParam(void) = default;
+public:
+    ConcurrentQueue() = default;
+    virtual ~ConcurrentQueue() = default;
+
+    void push(const T& data)
+    {
+        std::lock_guard<std::mutex> lock(mtx_);
+        queue_.push(data);
+    }
+    
+    T pop()
+    {
+        std::lock_guard<std::mutex> lock(mtx_);
+        T data = queue_.front();
+        queue_.pop();
+        return data;
+    }
+
+private:
+    std::queue<T> queue_;
+    std::mutex mtx_;
 };
 
-/**
- * @brief This class is used to hold the callback parameters for Decryptor
- * This parameter to shared on all connections.
- */
-struct CommonCallbackParam
-{
-    fts_share::ConcurrentQueue<Query> query_queue;
-};
+} /* namespace fts_share */
 
-} /* namespace fts_cs */
-
-#endif /* FTS_CS_CALLBACK_PARAM_HPP */
+#endif /* FTS_CONCURRENT_QUEUE_HPP */

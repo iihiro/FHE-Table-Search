@@ -46,7 +46,7 @@ enum KeyKind_t : int32_t
 struct KeyContainer
 {
     KeyContainer();
-    ~KeyContainer() = default;
+    virtual ~KeyContainer() = default;
 
     int32_t new_keys(const fts_share::DecParam& param);
     void delete_keys(const int32_t keyID);

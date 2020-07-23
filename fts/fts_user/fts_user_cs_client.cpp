@@ -45,20 +45,12 @@ public:
         client_.close();
     }
 
-    //size_t calc_encparams_size(const seal::EncryptionParameters& params)
-    //{
-    //    std::ostringstream oss;
-    //    seal::EncryptionParameters::Save(params, oss);
-    //    return oss.str().size();
-    //}
-    
-    //int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input)
     int32_t send_query(const int32_t key_id, const int32_t func_no,
                        const seal::EncryptionParameters& params,
                        const fts_share::EncData& enc_inputs)
     {
         fts_share::PlainData<fts_share::CSParam> splaindata;
-        fts_share::CSParam csparam {key_id, func_no};
+        fts_share::CSParam csparam {key_id, static_cast<fts_share::FuncNo_t>(func_no)};
         splaindata.push(csparam);
 
         auto sz = (splaindata.stream_size()
@@ -118,12 +110,10 @@ void CSClient::disconnect(void)
     pimpl_->disconnect();
 }
 
-//int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input) const
 int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no,
                              const seal::EncryptionParameters& params,
                              const fts_share::EncData& enc_inputs) const
 {
-    //int32_t res = pimpl_->send_query(key_id, func_no, enc_input);
     int32_t res = pimpl_->send_query(key_id, func_no, params, enc_inputs);
 
     return res;

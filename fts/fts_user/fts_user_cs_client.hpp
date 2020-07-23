@@ -66,8 +66,7 @@ public:
     int32_t send_query(const int32_t key_id, const int32_t func_no,
                        const seal::EncryptionParameters& params,
                        const fts_share::EncData& enc_inputs) const;
-    //int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input) const;
-    
+    //int32_t send_query(const int32_t key_id, const int32_t fun    
     /**
      * receive results
      * @param[in] query_id queryID

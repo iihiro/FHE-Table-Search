@@ -15,33 +15,32 @@
  * limitations under the License.
  */
 
-#ifndef FTS_CS_CALLBACK_PARAM_HPP
-#define FTS_CS_CALLBACK_PARAM_HPP
+#ifndef FTS_CS_QUERY_HPP
+#define FTS_CS_QUERY_HPP
 
-#include <fts_share/fts_concurrent_queue.hpp>
-#include <fts_cs/fts_cs_query.hpp>
+#include <cstdint>
+#include <vector>
+#include <seal/seal.h>
+
+//namespace seal
+//{
+//    class Ciphertext;
+//}
 
 namespace fts_cs
 {
 
-/**
- * @brief This class is used to hold the callback parameters for Decryptor.
- */
-struct CallbackParam
+struct Query
 {
-    CallbackParam(void);
-    ~CallbackParam(void) = default;
-};
+    Query(const int32_t key_id, const int32_t func_no,
+          const std::vector<seal::Ciphertext>& ctxts);
+    virtual ~Query() = default;
 
-/**
- * @brief This class is used to hold the callback parameters for Decryptor
- * This parameter to shared on all connections.
- */
-struct CommonCallbackParam
-{
-    fts_share::ConcurrentQueue<Query> query_queue;
+    const int32_t key_id_;
+    const int32_t func_no_;
+    std::vector<seal::Ciphertext> ctxts_;
 };
 
 } /* namespace fts_cs */
 
-#endif /* FTS_CS_CALLBACK_PARAM_HPP */
+#endif /* FTS_CS_QUERY_HPP */

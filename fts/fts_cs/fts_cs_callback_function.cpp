@@ -26,6 +26,7 @@
 #include <fts_share/fts_plaindata.hpp>
 #include <fts_share/fts_encdata.hpp>
 #include <fts_share/fts_csparam.hpp>
+#include <fts_share/fts_seal_utility.hpp>
 #include <fts_cs/fts_cs_callback_function.hpp>
 #include <fts_cs/fts_cs_callback_param.hpp>
 #include <fts_cs/fts_cs_state.hpp>
@@ -55,6 +56,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
     
     fts_share::EncData enc_inputs(params);
     enc_inputs.load_from_stream(rstream);
+    fts_share::seal_utility::write_to_file("query.txt", enc_inputs.data());
 
     const auto& param = rplaindata.data();
     STDSC_LOG_INFO("query with key_id: %d, func_no: %d", param.key_id, param.func_no);

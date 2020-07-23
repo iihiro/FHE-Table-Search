@@ -19,7 +19,11 @@
 #define FTS_SEAL_UTILITY_HPP
 
 #include <string>
-#include <seal/seal.h>
+//#include <seal/seal.h>
+namespace seal
+{
+    class EncryptionParameters;
+}
 
 namespace fts_share
 {
@@ -28,36 +32,16 @@ namespace seal_utility
 {
     template <class T>
     void write_to_file(const std::string& filepath, const T& data);
-    //{
-    //    std::ofstream ofs(filepath, std::ios::binary);
-    //    data.save(ofs);
-    //    ofs.close();
-    //}
 
     template <>
     void write_to_file<seal::EncryptionParameters>(const std::string& filepath,
                                                    const seal::EncryptionParameters& params);
-    //{
-    //    std::ofstream ofs(filepath, std::ios::binary);
-    //    seal::EncryptionParameters::Save(params, ofs);
-    //    ofs.close();
-    //}
 
     template <class T>
     size_t stream_size(const T& data);
-    //{
-    //    std::ostringstream oss;
-    //    data.save(oss);
-    //    return oss.str().size();
-    //}
 
     template <>
     size_t stream_size<seal::EncryptionParameters>(const seal::EncryptionParameters& params);
-    //{
-    //    std::ostringstream oss;
-    //    seal::EncryptionParameters::Save(params, oss);
-    //    return oss.str().size();
-    //}
 
 } /* namespace seal_utility */
 

@@ -24,12 +24,22 @@ namespace fts_share
 {
 
 /**
+ * @brief Enumeration for functions.
+ */
+enum FuncNo_t : int32_t
+{
+    kFuncNil    = 0,
+    kFuncOne    = 1,
+    kFuncTwo    = 2,
+};
+    
+/**
  * @brief This class is used to hold the parameters to compute on encryptor.
  */
 struct CSParam
 {
-    int32_t key_id;
-    int32_t func_no;
+    int32_t  key_id;
+    FuncNo_t func_no;
 };
 
 std::ostream& operator<<(std::ostream& os, const CSParam& param);

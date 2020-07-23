@@ -17,6 +17,7 @@
 
 #include <fstream>
 #include <fts_share/fts_seal_utility.hpp>
+#include <seal/seal.h>
 
 namespace fts_share
 {
