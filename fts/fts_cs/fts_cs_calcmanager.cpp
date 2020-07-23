@@ -52,10 +52,13 @@ namespace fts_cs
 
     void CalcManager::start_threads(const uint32_t thread_num)
     {
-        // 次回、thread_num個のcalcthreadを起動時に立てて、qque_からpopしてダミー計算して、rque_へpushするダミーを作るところから
         pimpl_->threads_.clear();
         for (size_t i=0; i<thread_num; ++i) {
             pimpl_->threads_.emplace_back(std::make_shared<CalcThread>(pimpl_->qque_, pimpl_->rque_));
+        }
+
+        for (const auto& thread : pimpl_->threads_) {
+            thread->start();
         }
     }
     

@@ -33,9 +33,13 @@ class ResultQueue;
  */
 class CalcThread : public stdsc::Thread<CalcThreadParam>
 {
+    using super = Thread<CalcThreadParam>;
 public:
     CalcThread(const QueryQueue& in_queue, ResultQueue& out_queue);
     virtual ~CalcThread(void) = default;
+
+    void start();
+    void stop();
     
 private:
     virtual void exec(CalcThreadParam& args,

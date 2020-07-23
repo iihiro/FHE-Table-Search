@@ -37,8 +37,11 @@ public:
 
     void start(void)
     {
-        bool enable_async_mode = true;
+        const bool enable_async_mode = true;
         server_->start(enable_async_mode);
+
+        const uint32_t thread_num = 2;
+        calc_manager_->start_threads(thread_num);
     }
 
     void stop(void)
