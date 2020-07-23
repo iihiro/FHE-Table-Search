@@ -15,34 +15,43 @@
  * limitations under the License.
  */
 
-#ifndef FTS_CS_CALLBACK_PARAM_HPP
-#define FTS_CS_CALLBACK_PARAM_HPP
+#ifndef FTS_CS_CALCTHREAD_HPP
+#define FTS_CS_CALCTHREAD_HPP
 
-#include <fts_cs/fts_cs_query.hpp>
-#include <fts_cs/fts_cs_result.hpp>
+#include <memory>
+#include <stdsc/stdsc_thread.hpp>
 
 namespace fts_cs
 {
+    
+class CalcThreadParam;
+class QueryQueue;
+class ResultQueue;
 
 /**
- * @brief This class is used to hold the callback parameters for Decryptor.
+ * @brief Calculation thread
  */
-struct CallbackParam
+class CalcThread : public stdsc::Thread<CalcThreadParam>
 {
-    CallbackParam(void);
-    ~CallbackParam(void) = default;
+    CalcThread(const QueryQueue& in_queue, ResultQueue& out_queue);
+    ~CalcThread(void) = default;
+    
+private:
+    virtual void exec(CalcThreadParam& args,
+                      std::shared_ptr<stdsc::ThreadException> te) const override;
+
+    struct Impl;
+    std::shared_ptr<Impl> pimpl_;
 };
 
 /**
- * @brief This class is used to hold the callback parameters for Decryptor
- * This parameter to shared on all connections.
+ * @brief This class is used to hold the calcration parameters for CalcThread.
  */
-struct CommonCallbackParam
+struct CalcThreadParam
 {
-    QueryQueue query_queue;
-    ResultQueue result_queue;
+    int32_t dummy;
 };
 
 } /* namespace fts_cs */
 
-#endif /* FTS_CS_CALLBACK_PARAM_HPP */
+#endif /* FTS_CS_CALCTHREAD_HPP */

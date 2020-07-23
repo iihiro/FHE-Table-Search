@@ -15,34 +15,15 @@
  * limitations under the License.
  */
 
-#ifndef FTS_CS_CALLBACK_PARAM_HPP
-#define FTS_CS_CALLBACK_PARAM_HPP
-
-#include <fts_cs/fts_cs_query.hpp>
 #include <fts_cs/fts_cs_result.hpp>
+#include <seal/seal.h>
 
 namespace fts_cs
 {
 
-/**
- * @brief This class is used to hold the callback parameters for Decryptor.
- */
-struct CallbackParam
+Result::Result(const int32_t query_id, const seal::Ciphertext& ctxt)
+    : query_id_(query_id), ctxt_(ctxt)
 {
-    CallbackParam(void);
-    ~CallbackParam(void) = default;
-};
-
-/**
- * @brief This class is used to hold the callback parameters for Decryptor
- * This parameter to shared on all connections.
- */
-struct CommonCallbackParam
-{
-    QueryQueue query_queue;
-    ResultQueue result_queue;
-};
+}
 
 } /* namespace fts_cs */
-
-#endif /* FTS_CS_CALLBACK_PARAM_HPP */

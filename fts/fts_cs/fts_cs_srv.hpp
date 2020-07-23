@@ -34,14 +34,14 @@ class CSServer
 {
 public:
     /**
-     * コンストラクタ
-     * @param[in] port ポート番号
-     * @param[in] LUT_dirpath LUTファイルのディレクトリパス
-     * @param[in] callback コールバック関数定義
-     * @param[in] state 状態遷移定義
-     * @param[in] max_concurrent_queries 最大同時クエリー数
-     * @param[in] max_results 最大結果保持数
-     * @param[in] result_lifetime_sec 結果を保持する時間(秒)
+     * constructor
+     * @param[in] port port number
+     * @param[in] LUT_dirpath directory path of LUT file
+     * @param[in] callback callback functions
+     * @param[in] state state machine
+     * @param[in] max_concurrent_queries max concurrent query number
+     * @param[in] max_results max result number
+     * @param[in] result_lifetime_sec result linefile (sec)
      */
     CSServer(const char* port,
              const std::string& LUT_dirpath,
@@ -53,15 +53,15 @@ public:
     ~CSServer(void) = default;
 
     /**
-     * サーバ実行
+     * start server
      */
     void start(void);
     /**
-     * サーバ停止指示
+     * stop server
      */
     void stop(void);
     /**
-     * サーバ停止待ち
+     * wait for stopping
      */
     void wait(void);
 

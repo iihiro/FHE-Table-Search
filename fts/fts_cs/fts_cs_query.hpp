@@ -37,12 +37,12 @@ struct Query
     std::vector<seal::Ciphertext> ctxts_;
 };
 
-struct QueryQeueu : public fts_share::ConcurrentQueue<Query>
+struct QueryQueue : public fts_share::ConcurrentQueue<Query>
 {
     using super = fts_share::ConcurrentQueue<Query>;
     
-    QueryQeueu() = default;
-    virtual ~QueryQeueu() = default;
+    QueryQueue() = default;
+    virtual ~QueryQueue() = default;
 
     virtual int32_t regist(const Query& data)
     {
