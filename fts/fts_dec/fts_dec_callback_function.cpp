@@ -162,6 +162,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionParamRequest)
     STDSC_LOG_INFO("param request with keyID: %d", keyID);
 
     auto sz = keycont.size(keyID, KeyKind_t::kKindParam);
+    printf("hogefuga: %ld\n", sz);
     stdsc::BufferStream buffstream(sz);
     std::iostream stream(&buffstream);
 

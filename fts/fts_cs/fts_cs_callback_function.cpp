@@ -24,10 +24,13 @@
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_packet.hpp>
 #include <fts_share/fts_plaindata.hpp>
+#include <fts_share/fts_encdata.hpp>
 #include <fts_share/fts_csparam.hpp>
 #include <fts_cs/fts_cs_callback_function.hpp>
 #include <fts_cs/fts_cs_callback_param.hpp>
 #include <fts_cs/fts_cs_state.hpp>
+
+#include <seal/seal.h>
 
 namespace fts_cs
 {
@@ -46,6 +49,12 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
 
     fts_share::PlainData<fts_share::CSParam> rplaindata;
     rplaindata.load_from_stream(rstream);
+
+    seal::EncryptionParameters params(seal::scheme_type::BFV);
+    params = seal::EncryptionParameters::Load(rstream);
+    
+    fts_share::EncData enc_inputs(params);
+    enc_inputs.load_from_stream(rstream);
 
     const auto& param = rplaindata.data();
     STDSC_LOG_INFO("query with key_id: %d, func_no: %d", param.key_id, param.func_no);

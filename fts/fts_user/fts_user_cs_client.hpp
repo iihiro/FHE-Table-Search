@@ -36,39 +36,43 @@ class CSClient
 {
 public:
     /**
-     * コンストラクタ
-     * @param[in] host ComputationServerのホスト名
-     * @param[in] port ComputationServerのポート番号
+     * constructor
+     * @param[in] host hostname
+     * @param[in] port port number
      */
     CSClient(const char* host, const char* port);
     virtual ~CSClient(void) = default;
 
     /**
-     * 接続
-     * @param[in] retry_interval_usec リトライ間隔(usec)
-     * @param[in] timeout_sec タイムアウト時間(sec)
+     * connect
+     * @param[in] retry_interval_usec retry interval (usec)
+     * @param[in] timeout_sec timeout (sec)
      */
     void connect(const uint32_t retry_interval_usec = FTS_RETRY_INTERVAL_USEC,
                  const uint32_t timeout_sec = FTS_TIMEOUT_SEC);
     /**
-     * 切断
+     * disconnect
      */
     void disconnect();
     
     /**
-     * クエリ送信
+     * send query
      * @param[in] key_id keyID
-     * @param[in] func_no 関数番号
-     * @param[in] enc_input 暗号化された入力値(1つ or 2つ)
+     * @param[in] func_no function number
+     * @param[in] params parameters for seal
+     * @param[in] enc_input encrypted input values (1 or 2)
      * @return queryID
      */
-    int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input) const;
+    int32_t send_query(const int32_t key_id, const int32_t func_no,
+                       const seal::EncryptionParameters& params,
+                       const fts_share::EncData& enc_inputs) const;
+    //int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input) const;
     
     /**
-     * 結果受信
+     * receive results
      * @param[in] query_id queryID
-     * @param[out] enc_result 暗号化された結果
-     * @return 結果が受信できたか否か
+     * @param[out] enc_result encrypted result
+     * @return success or falied
      */
     bool recv_result(const int32_t query_id, fts_share::EncData& enc_result) const;
 

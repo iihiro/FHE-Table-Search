@@ -12,6 +12,7 @@
 #include <fts_share/fts_packet.hpp>
 #include <fts_share/fts_plaindata.hpp>
 #include <fts_share/fts_csparam.hpp>
+#include <fts_share/fts_seal_utility.hpp>
 #include <fts_user/fts_user_cs_client.hpp>
 
 namespace fts_user
@@ -44,17 +45,31 @@ public:
         client_.close();
     }
 
-    int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input)
+    //size_t calc_encparams_size(const seal::EncryptionParameters& params)
+    //{
+    //    std::ostringstream oss;
+    //    seal::EncryptionParameters::Save(params, oss);
+    //    return oss.str().size();
+    //}
+    
+    //int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input)
+    int32_t send_query(const int32_t key_id, const int32_t func_no,
+                       const seal::EncryptionParameters& params,
+                       const fts_share::EncData& enc_inputs)
     {
         fts_share::PlainData<fts_share::CSParam> splaindata;
         fts_share::CSParam csparam {key_id, func_no};
         splaindata.push(csparam);
 
-        auto sz = splaindata.stream_size();
+        auto sz = (splaindata.stream_size()
+                   + fts_share::seal_utility::stream_size(params)
+                   + enc_inputs.stream_size());
         stdsc::BufferStream sbuffstream(sz);
         std::iostream stream(&sbuffstream);
         
         splaindata.save_to_stream(stream);
+        seal::EncryptionParameters::Save(params, stream);
+        enc_inputs.save_to_stream(stream);
 
         stdsc::Buffer* sbuffer = &sbuffstream;
         stdsc::Buffer rbuffer;
@@ -103,9 +118,13 @@ void CSClient::disconnect(void)
     pimpl_->disconnect();
 }
 
-int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input) const
+//int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input) const
+int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no,
+                             const seal::EncryptionParameters& params,
+                             const fts_share::EncData& enc_inputs) const
 {
-    int32_t res = pimpl_->send_query(key_id, func_no, enc_input);
+    //int32_t res = pimpl_->send_query(key_id, func_no, enc_input);
+    int32_t res = pimpl_->send_query(key_id, func_no, params, enc_inputs);
 
     return res;
 }

@@ -26,6 +26,7 @@
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_encdata.hpp>
+#include <fts_share/fts_seal_utility.hpp>
 #include <fts_user/fts_user_dec_client.hpp>
 #include <fts_user/fts_user_cs_client.hpp>
 #include <fts_user/fts_user.hpp>
@@ -58,7 +59,7 @@ struct User::Impl
         dec_client.connect(retry_interval_usec_, timeout_sec_);
         auto key_id = dec_client.new_keys(seckey_);
         STDSC_LOG_INFO("generate new keys. (key_id:%d)", key_id);
-        dbg_dumpkey_to_file("seckey.txt", seckey_);
+        fts_share::seal_utility::write_to_file("seckey.txt", seckey_);
         return key_id;
     }
     
@@ -69,68 +70,73 @@ struct User::Impl
         
         seal::PublicKey pubkey;
         dec_client.get_pubkey(key_id, pubkey);
-        dbg_dumpkey_to_file("pubkey.txt", pubkey);
+        fts_share::seal_utility::write_to_file("pubkey.txt", pubkey);
 
         seal::GaloisKeys galoiskey;
         dec_client.get_galoiskey(key_id, galoiskey);
-        dbg_dumpkey_to_file("galoiskey.txt", galoiskey);
+        fts_share::seal_utility::write_to_file("galoiskey.txt", galoiskey);
 
         seal::RelinKeys relinkey;
         dec_client.get_relinkey(key_id, relinkey);
-        dbg_dumpkey_to_file("relinkey.txt", relinkey);
+        fts_share::seal_utility::write_to_file("relinkey.txt", relinkey);
         
         seal::EncryptionParameters params(seal::scheme_type::BFV);
         dec_client.get_param(key_id, params);
-        dbg_dumpparam_to_file("param.txt", params);
+        fts_share::seal_utility::write_to_file("param.txt", params);
+        //dbg_dumpparam_to_file("param.txt", params);
 
         CSClient cs_client(cs_host_.c_str(), cs_port_.c_str());
         cs_client.connect(retry_interval_usec_, timeout_sec_);
 
-        std::vector<fts_share::EncData> enc_inputs;
-        fts_share::EncData enc_data(params);
-        enc_data.encrypt(val, pubkey, galoiskey);
-        enc_inputs.push_back(enc_data);
+        //std::vector<fts_share::EncData> enc_inputs;
+        fts_share::EncData enc_inputs(params);
+        enc_inputs.encrypt(val, pubkey, galoiskey);
+        //enc_inputs.push_back(enc_data);
 
         // experiment
         // この実験ができたので、次回はCSへクエリを送って、それを受け取るCallbackを各ところから
         {
+            // save to file
+            fts_share::seal_utility::write_to_file("enc_input.txt", enc_inputs.data());
+            
             // save to stream
-            auto sz = enc_data.stream_size();
+            auto sz = enc_inputs.stream_size();
             stdsc::BufferStream buffstream(sz);
             std::iostream stream(&buffstream);
-            enc_data.save_to_stream(stream);
+            enc_inputs.save_to_stream(stream);
 
             // load from stream
-            fts_share::EncData enc_data2(params);
-            enc_data2.load_from_stream(stream);
+            fts_share::EncData enc_inputs2(params);
+            enc_inputs2.load_from_stream(stream);
 
             // decrypt
             int64_t output_value;
-            enc_data2.decrypt(seckey_, output_value);
+            enc_inputs2.decrypt(seckey_, output_value);
             printf("  -- %ld\n", output_value);
         }
         
         const int32_t func_no = 111;
-        auto query_id = cs_client.send_query(key_id, func_no, enc_inputs);
+        //auto query_id = cs_client.send_query(key_id, func_no, enc_inputs);
+        auto query_id = cs_client.send_query(key_id, func_no, params, enc_inputs);
         printf("query_id: %d\n", query_id);
     }
 
-private:
-    template <class T>
-    void dbg_dumpkey_to_file(const std::string& filepath, T& data)
-    {
-        std::ofstream ofs(filepath, std::ios::binary);
-        data.save(ofs);
-        ofs.close();
-    }
-    
-    void dbg_dumpparam_to_file(const std::string& filepath,
-                               seal::EncryptionParameters& param)
-    {
-        std::ofstream ofs(filepath, std::ios::binary);
-        seal::EncryptionParameters::Save(param, ofs);
-        ofs.close();
-    }
+//private:
+//    template <class T>
+//    void fts_share::seal_utility::write_to_file(const std::string& filepath, const T& data)
+//    {
+//        std::ofstream ofs(filepath, std::ios::binary);
+//        data.save(ofs);
+//        ofs.close();
+//    }
+//    
+//    void dbg_dumpparam_to_file(const std::string& filepath,
+//                               const seal::EncryptionParameters& param)
+//    {
+//        std::ofstream ofs(filepath, std::ios::binary);
+//        seal::EncryptionParameters::Save(param, ofs);
+//        ofs.close();
+//    }
 
 //    void encrypt(const int64_t val,
 //                 const seal::EncryptionParameters& params,
