@@ -48,18 +48,18 @@ DEFUN_DOWNLOAD(CallbackFunctionNewKeyRequest)
     fts_share::PlainData<int32_t> plaindata;
     plaindata.push(keyID);
 
-    auto seckey_sz = keycont.size(keyID, KeyKind_t::kKindSecKey);
     auto keyID_sz  = plaindata.stream_size();
+    auto seckey_sz = keycont.size(keyID, KeyKind_t::kKindSecKey);
     auto total_sz  = seckey_sz + keyID_sz;
     
     stdsc::BufferStream buffstream(total_sz);
     std::iostream stream(&buffstream);
 
+    plaindata.save_to_stream(stream);
+
     seal::SecretKey seckey;
     keycont.get(keyID, KeyKind_t::kKindSecKey, seckey);
     seckey.save(stream);
-
-    plaindata.save_to_stream(stream);
     
     STDSC_LOG_INFO("Sending keyID and secret key.");
     stdsc::Buffer* bsbuff = &buffstream;

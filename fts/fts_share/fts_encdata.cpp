@@ -134,20 +134,28 @@ void EncData::decrypt(const seal::SecretKey& secret_key,
 
 void EncData::save_to_stream(std::ostream& os) const
 {
-    if (0 < vec_.size()) {
-        vec_[0].save(os);
+    size_t sz = vec_.size();
+    os.write(reinterpret_cast<char*>(&sz), sizeof(sz));
+
+    for (const auto& v : vec_) {
+        v.save(os);
     }
 }
-
+             
 void EncData::load_from_stream(std::istream& is)
 {
+    size_t sz;
+    is.read(reinterpret_cast<char*>(&sz), sizeof(sz));
+    
     clear();
 
     auto context = seal::SEALContext::Create(pimpl_->params_);
-    // TODO: isが空かどうかを判定する
-    seal::Ciphertext ciphertext_query;
-    ciphertext_query.load(context, is);
-    vec_.push_back(ciphertext_query);
+    
+    for (size_t i=0; i<sz; ++i) {
+        seal::Ciphertext ciphertext_query;
+        ciphertext_query.load(context, is);
+        vec_.push_back(ciphertext_query);
+    }
 }
 
 void EncData::save_to_file(const std::string& filepath) const

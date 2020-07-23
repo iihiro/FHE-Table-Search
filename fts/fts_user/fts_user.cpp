@@ -92,6 +92,7 @@ struct User::Impl
         enc_inputs.push_back(enc_data);
 
         // experiment
+        // この実験ができたので、次回はCSへクエリを送って、それを受け取るCallbackを各ところから
         {
             // save to stream
             auto sz = enc_data.stream_size();
