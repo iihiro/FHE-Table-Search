@@ -25,8 +25,9 @@
 namespace fts_cs
 {
 
-class QueryQueue;
-class ResultQueue;
+//class QueryQueue;
+//class ResultQueue;
+class CalcManager;
     
 /**
  * @brief This class is used to hold the callback parameters for Decryptor.
@@ -46,8 +47,9 @@ struct CommonCallbackParam
     CommonCallbackParam(void);
     virtual ~CommonCallbackParam(void) = default;
     
-    std::shared_ptr<QueryQueue>  query_queue;
-    std::shared_ptr<ResultQueue> result_queue;
+    //std::shared_ptr<QueryQueue>  query_queue;
+    //std::shared_ptr<ResultQueue> result_queue;
+    std::shared_ptr<CalcManager> calc_manager;
     
 };
 

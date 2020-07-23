@@ -25,6 +25,7 @@ namespace fts_cs
 {
 
 class Query;
+class Result;
 
 class CalcManager
 {
@@ -34,9 +35,9 @@ public:
 
     void start_threads(const uint32_t thread_num);
     void stop_threads();
-    
-    int32_t push_query(const Query& query);
-    bool pop_result(const int32_t query_id, Result& result) const;
+
+    int32_t put(const Query& query);
+    bool try_get(const int32_t query_id, Result& result) const;
 
 private:
     class Impl;
