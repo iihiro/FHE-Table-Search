@@ -46,8 +46,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
                    state.current_state_str().c_str());
 
     DEF_CDATA_ON_ALL(fts_cs::CommonCallbackParam);
-    //auto& qq = cdata_a->query_queue;
-    auto& cmngr = cdata_a->calc_manager;
+    auto& cmngr = cdata_a->calc_manager_;
 
     stdsc::BufferStream rbuffstream(buffer);
     std::iostream rstream(&rbuffstream);
@@ -66,8 +65,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
     STDSC_LOG_INFO("query with key_id: %d, func_no: %d", param.key_id, param.func_no);
 
     Query query(param.key_id, param.func_no, enc_inputs.vdata());
-    //int32_t query_id = qq->push(query);
-    int32_t query_id = cmngr->put(query);
+    int32_t query_id = cmngr.put(query);
 
     fts_share::PlainData<int32_t> splaindata;
     splaindata.push(query_id);

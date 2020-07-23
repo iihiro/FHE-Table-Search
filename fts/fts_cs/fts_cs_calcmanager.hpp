@@ -30,7 +30,9 @@ class Result;
 class CalcManager
 {
 public:
-    CalcManager();
+    CalcManager(const uint32_t max_concurrent_queries,
+                const uint32_t max_results,
+                const uint32_t result_lifetime_sec);
     virtual ~CalcManager() = default;
 
     void start_threads(const uint32_t thread_num);

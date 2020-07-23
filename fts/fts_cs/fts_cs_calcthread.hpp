@@ -33,8 +33,9 @@ class ResultQueue;
  */
 class CalcThread : public stdsc::Thread<CalcThreadParam>
 {
+public:
     CalcThread(const QueryQueue& in_queue, ResultQueue& out_queue);
-    ~CalcThread(void) = default;
+    virtual ~CalcThread(void) = default;
     
 private:
     virtual void exec(CalcThreadParam& args,

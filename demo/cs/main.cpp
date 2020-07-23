@@ -50,8 +50,8 @@ void exec(Option& option)
     stdsc::StateContext state(std::make_shared<fts_cs::StateReady>());
     
     stdsc::CallbackFunctionContainer callback;
-    fts_cs::CallbackParam param;
-    fts_cs::CommonCallbackParam cparam;
+    //fts_cs::CallbackParam param;
+    //fts_cs::CommonCallbackParam cparam;
     {
         std::shared_ptr<stdsc::CallbackFunction> cb_query(
             new fts_cs::CallbackFunctionQuery());
@@ -61,9 +61,9 @@ void exec(Option& option)
             new fts_cs::CallbackFunctionResultRequest());
         callback.set(fts_share::kControlCodeUpDownloadResult, cb_result);
     }
-    callback.set_commondata(static_cast<void*>(&param), sizeof(param));
-    callback.set_commondata(static_cast<void*>(&cparam), sizeof(cparam),
-                            stdsc::CommonDataKind_t::kCommonDataOnAllConnection);
+    //callback.set_commondata(static_cast<void*>(&param), sizeof(param));
+    //callback.set_commondata(static_cast<void*>(&cparam), sizeof(cparam),
+    ///stdsc::CommonDataKind_t::kCommonDataOnAllConnection);
 
     const std::string LUT_dirpath = "hoge";
 
