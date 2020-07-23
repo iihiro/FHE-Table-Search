@@ -15,14 +15,22 @@
  * limitations under the License.
  */
 
-#include <memory>
+#include <fts_cs/fts_cs_query.hpp>
+#include <fts_cs/fts_cs_result.hpp>
 #include <fts_cs/fts_cs_callback_param.hpp>
 
 namespace fts_cs
 {
 
+// CallbackParam
 CallbackParam::CallbackParam(void)
 {
 }
+
+// CommonCallbackparam
+CommonCallbackParam::CommonCallbackParam()
+    : query_queue(new QueryQueue()),
+      result_queue(new ResultQueue())
+{}
 
 } /* namespace fts_cs */

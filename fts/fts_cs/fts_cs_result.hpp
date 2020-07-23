@@ -19,7 +19,9 @@
 #define FTS_CS_RESULT_HPP
 
 #include <cstdint>
-#include <fts_share/fts_concurrent_queue.hpp>
+#include <cstdbool>
+//#include <fts_share/fts_concurrent_queue.hpp>
+#include <fts_share/fts_concurrent_mapqueue.hpp>
 #include <seal/seal.h>
 
 namespace fts_cs
@@ -30,16 +32,29 @@ struct Result
     Result(const int32_t query_id, const seal::Ciphertext& ctxt);
     virtual ~Result() = default;
 
-    const int32_t query_id_;
+    int32_t query_id_;
     seal::Ciphertext ctxt_;
 };
 
-struct ResultQueue : public fts_share::ConcurrentQueue<Result>
+#if 1
+struct ResultQueue : public fts_share::ConcurrentMapQueue<int32_t, Result>
 {
+    using super = fts_share::ConcurrentMapQueue<int32_t, Result>;
+    
     ResultQueue() = default;
     virtual ~ResultQueue() = default;
 };
+#else
+struct ResultQueue : public fts_share::ConcurrentQueue<Result>
+{
+    using super = fts_share::ConcurrentQueue<Result>;
+    
+    ResultQueue() = default;
+    virtual ~ResultQueue() = default;
 
+    bool is_exist(const int32_t query_id) const;
+};
+#endif
 
 } /* namespace fts_cs */
 

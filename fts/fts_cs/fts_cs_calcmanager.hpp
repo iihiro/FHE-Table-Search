@@ -15,20 +15,34 @@
  * limitations under the License.
  */
 
-#include <fts_cs/fts_cs_result.hpp>
-#include <seal/seal.h>
+#ifndef FTS_CS_CALCMANAGER_HPP
+#define FTS_CS_CALCMANAGER_HPP
+
+#include <memory>
+#include <cstdbool>
 
 namespace fts_cs
 {
 
-Result::Result(const int32_t query_id, const seal::Ciphertext& ctxt)
-    : query_id_(query_id), ctxt_(ctxt)
-{
-}
+class Query;
 
-//bool ResultQueue::is_exist(const int32_t query_id) const
-//{
-//    return true;
-//}
+class CalcManager
+{
+public:
+    CalcManager();
+    virtual ~CalcManager() = default;
+
+    void start_threads(const uint32_t thread_num);
+    void stop_threads();
+    
+    int32_t push_query(const Query& query);
+    bool pop_result(const int32_t query_id, Result& result) const;
+
+private:
+    class Impl;
+    std::shared_ptr<Impl> pimpl_;
+};
 
 } /* namespace fts_cs */
+
+#endif /* FTS_CS_CALCMANAGER_HPP */

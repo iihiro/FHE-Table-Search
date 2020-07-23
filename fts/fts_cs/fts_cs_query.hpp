@@ -20,7 +20,8 @@
 
 #include <cstdint>
 #include <vector>
-#include <fts_share/fts_concurrent_queue.hpp>
+//#include <fts_share/fts_concurrent_queue.hpp>
+#include <fts_share/fts_concurrent_mapqueue.hpp>
 #include <seal/seal.h>
 
 namespace fts_cs
@@ -32,11 +33,42 @@ struct Query
           const std::vector<seal::Ciphertext>& ctxts);
     virtual ~Query() = default;
 
-    const int32_t key_id_;
-    const int32_t func_no_;
+    Query(const Query& q)
+    {
+        key_id_ = q.key_id_;
+        func_no_ = q.func_no_;
+        ctxts_.resize(q.ctxts_.size());
+        std::copy(q.ctxts_.begin(), q.ctxts_.end(), ctxts_.begin());
+    }
+
+    int32_t key_id_;
+    int32_t func_no_;
     std::vector<seal::Ciphertext> ctxts_;
 };
 
+#if 1
+struct QueryQueue : public fts_share::ConcurrentMapQueue<int32_t, fts_cs::Query>
+{
+    using super = fts_share::ConcurrentMapQueue<int32_t, fts_cs::Query>;
+    
+    QueryQueue() = default;
+    virtual ~QueryQueue() = default;
+    
+    virtual int32_t push(const Query& data)
+    {
+        auto id = generate_id();
+        super::push(id, data);
+        return id;
+    }
+
+private:
+    int32_t generate_id() const
+    {
+        return 123334;
+    }
+       
+};
+#else
 struct QueryQueue : public fts_share::ConcurrentQueue<Query>
 {
     using super = fts_share::ConcurrentQueue<Query>;
@@ -44,13 +76,13 @@ struct QueryQueue : public fts_share::ConcurrentQueue<Query>
     QueryQueue() = default;
     virtual ~QueryQueue() = default;
 
-    virtual int32_t regist(const Query& data)
+    virtual int32_t put(const Query& data)
     {
         super::push(data);
         return 12333;
     }
 };
-
+#endif
 
 } /* namespace fts_cs */
 

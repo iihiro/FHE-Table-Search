@@ -29,6 +29,8 @@
 #include <fts_share/fts_seal_utility.hpp>
 #include <fts_cs/fts_cs_callback_function.hpp>
 #include <fts_cs/fts_cs_callback_param.hpp>
+#include <fts_cs/fts_cs_query.hpp>
+#include <fts_cs/fts_cs_result.hpp>
 #include <fts_cs/fts_cs_state.hpp>
 
 #include <seal/seal.h>
@@ -62,7 +64,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
     STDSC_LOG_INFO("query with key_id: %d, func_no: %d", param.key_id, param.func_no);
 
     Query query(param.key_id, param.func_no, enc_inputs.vdata());
-    int32_t query_id = qq.regist(query);
+    int32_t query_id = qq->push(query);
 
     fts_share::PlainData<int32_t> splaindata;
     splaindata.push(query_id);

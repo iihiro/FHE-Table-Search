@@ -18,19 +18,23 @@
 #ifndef FTS_CS_CALLBACK_PARAM_HPP
 #define FTS_CS_CALLBACK_PARAM_HPP
 
-#include <fts_cs/fts_cs_query.hpp>
-#include <fts_cs/fts_cs_result.hpp>
+#include <memory>
+//#include <fts_cs/fts_cs_query.hpp>
+//#include <fts_cs/fts_cs_result.hpp>
 
 namespace fts_cs
 {
 
+class QueryQueue;
+class ResultQueue;
+    
 /**
  * @brief This class is used to hold the callback parameters for Decryptor.
  */
 struct CallbackParam
 {
     CallbackParam(void);
-    ~CallbackParam(void) = default;
+    virtual ~CallbackParam(void) = default;
 };
 
 /**
@@ -39,8 +43,12 @@ struct CallbackParam
  */
 struct CommonCallbackParam
 {
-    QueryQueue query_queue;
-    ResultQueue result_queue;
+    CommonCallbackParam(void);
+    virtual ~CommonCallbackParam(void) = default;
+    
+    std::shared_ptr<QueryQueue>  query_queue;
+    std::shared_ptr<ResultQueue> result_queue;
+    
 };
 
 } /* namespace fts_cs */

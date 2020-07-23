@@ -20,7 +20,6 @@
 
 namespace fts_cs
 {
-
 Query::Query(const int32_t key_id, const int32_t func_no,
              const std::vector<seal::Ciphertext>& ctxts)
     : key_id_(key_id),

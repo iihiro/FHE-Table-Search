@@ -18,8 +18,9 @@
 #ifndef FTS_CONCURRENT_QUEUE_HPP
 #define FTS_CONCURRENT_QUEUE_HPP
 
-#include <queue>
+#include <vector>
 #include <mutex>
+#include <cstdbool>
 
 namespace fts_share
 {
@@ -34,19 +35,29 @@ public:
     virtual void push(const T& data)
     {
         std::lock_guard<std::mutex> lock(mtx_);
-        queue_.push(data);
+        vec_.push_back(data);
     }
     
-    virtual T pop()
+    virtual bool pop(T& data)
+    {
+        if (0 == vec_.size()) {
+            return false;
+        }
+        
+        std::lock_guard<std::mutex> lock(mtx_);
+        data = vec_[0];
+        vec_.erase(vec_.begin());
+        return true;
+    }
+
+    virtual size_t size()
     {
         std::lock_guard<std::mutex> lock(mtx_);
-        T data = queue_.front();
-        queue_.pop();
-        return data;
+        return vec_.size();
     }
 
 private:
-    std::queue<T> queue_;
+    std::vector<T> vec_;
     std::mutex mtx_;
 };
 
