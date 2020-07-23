@@ -31,13 +31,13 @@ public:
     ConcurrentQueue() = default;
     virtual ~ConcurrentQueue() = default;
 
-    void push(const T& data)
+    virtual void push(const T& data)
     {
         std::lock_guard<std::mutex> lock(mtx_);
         queue_.push(data);
     }
     
-    T pop()
+    virtual T pop()
     {
         std::lock_guard<std::mutex> lock(mtx_);
         T data = queue_.front();

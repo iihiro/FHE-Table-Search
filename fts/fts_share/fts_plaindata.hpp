@@ -47,11 +47,6 @@ struct PlainData : public fts_share::BasicData<T>
         for (const auto& v : super::vec_) {
             os.write((char*)(&v), sizeof(v));
         }
-        //
-        //os << super::vec_.size() << std::endl;
-        //for (const auto& v : super::vec_) {
-        //    os << v << std::endl;
-        //}
     }        
     virtual void load_from_stream(std::istream& is) override
     {
@@ -65,17 +60,6 @@ struct PlainData : public fts_share::BasicData<T>
             is.read((char*)(&v), sizeof(v));
             super::vec_.push_back(v);
         }
-        
-        //size_t sz;
-        //is >> sz;
-        //
-        //super::clear();
-        //
-        //for (size_t i=0; i<sz; ++i) {
-        //    T v;
-        //    is >> v;
-        //    super::vec_.push_back(v);
-        //}
     }
 };
 

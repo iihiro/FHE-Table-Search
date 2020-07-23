@@ -18,7 +18,7 @@
 #ifndef FTS_CS_CALLBACK_PARAM_HPP
 #define FTS_CS_CALLBACK_PARAM_HPP
 
-#include <fts_share/fts_concurrent_queue.hpp>
+//#include <fts_share/fts_concurrent_queue.hpp>
 #include <fts_cs/fts_cs_query.hpp>
 
 namespace fts_cs
@@ -39,7 +39,8 @@ struct CallbackParam
  */
 struct CommonCallbackParam
 {
-    fts_share::ConcurrentQueue<Query> query_queue;
+    //fts_share::ConcurrentQueue<Query> query_queue;
+    QueryQeueu query_queue;
 };
 
 } /* namespace fts_cs */

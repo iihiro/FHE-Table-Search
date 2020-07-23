@@ -20,12 +20,8 @@
 
 #include <cstdint>
 #include <vector>
+#include <fts_share/fts_concurrent_queue.hpp>
 #include <seal/seal.h>
-
-//namespace seal
-//{
-//    class Ciphertext;
-//}
 
 namespace fts_cs
 {
@@ -40,6 +36,21 @@ struct Query
     const int32_t func_no_;
     std::vector<seal::Ciphertext> ctxts_;
 };
+
+struct QueryQeueu : public fts_share::ConcurrentQueue<Query>
+{
+    using super = fts_share::ConcurrentQueue<Query>;
+    
+    QueryQeueu() = default;
+    virtual ~QueryQeueu() = default;
+
+    virtual int32_t regist(const Query& data)
+    {
+        super::push(data);
+        return 12333;
+    }
+};
+
 
 } /* namespace fts_cs */
 
