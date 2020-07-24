@@ -24,6 +24,7 @@
 #include <functional>
 #include <stdsc/stdsc_thread.hpp>
 #include <fts_user/fts_user_result_cbfunc.hpp>
+#include <seal/seal.h>
 
 namespace fts_user
 {
@@ -34,20 +35,21 @@ class CSClient;
 /**
  * @brief The thread to receive result from CS.
  */
-template <class T = ResultThreadParam>
-class ResultThread : public stdsc::Thread<T>
+class ResultThread : public stdsc::Thread<ResultThreadParam>
 {
-    using super = stdsc::Thread<T>;
+    using super = stdsc::Thread<ResultThreadParam>;
 
 public:    
-    ResultThread(CSClient& cs_client, cbfunc_t cbfunc, void* cbargs);
+    ResultThread(const CSClient* cs_client,
+                 const seal::EncryptionParameters& enc_params,
+                 cbfunc_t cbfunc, void* cbargs);
     virtual ~ResultThread(void);
 
-    void start(T& param);
+    void start(ResultThreadParam& param);
     void wait(void);
 
 private:
-    virtual void exec(T& args,
+    virtual void exec(ResultThreadParam& args,
                       std::shared_ptr<stdsc::ThreadException> te) const override;
 
     struct Impl;

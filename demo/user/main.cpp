@@ -31,6 +31,8 @@
 #include <fts_share/fts_encdata.hpp>
 #include <fts_user/fts_user_dec_client.hpp>
 #include <fts_user/fts_user_cs_client.hpp>
+#include <fts_user/fts_user_result_thread.hpp>
+
 
 #define PRINT_USAGE_AND_EXIT() do {                         \
         printf("Usage: %s value_x [value_y]\n", argv[0]);   \
@@ -140,8 +142,10 @@ void compute_one(const int32_t key_id,
         
     fts_user::CSClient cs_client(cs_host.c_str(), cs_port.c_str(), params);
     cs_client.connect();
-    auto query_id = cs_client.send_query(key_id, fts_share::kFuncOne, params, enc_inputs,
-                                         result_cb, result_cbargs);
+
+    CallbackParam result_cbargs;
+    auto query_id = cs_client.send_query(key_id, fts_share::kFuncOne, enc_inputs,
+                                         result_cb, &result_cbargs);
     printf("query_id: %d\n", query_id);
 
     usleep(2*1000*1000);

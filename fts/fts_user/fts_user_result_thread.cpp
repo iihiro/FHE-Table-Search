@@ -25,35 +25,38 @@
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_packet.hpp>
+#include <fts_share/fts_encdata.hpp>
 #include <fts_user/fts_user_cs_client.hpp>
 #include <fts_user/fts_user_result_thread.hpp>
 
 namespace fts_user
 {
     
-template <class T>
-struct ResultThread<T>::Impl
+struct ResultThread::Impl
 {
     std::shared_ptr<stdsc::ThreadException> te_;
 
-    Impl(CSClient& client, cbfunc_t cbfunc, void* cbargs)
+    Impl(const CSClient* client,
+         const seal::EncryptionParameters& enc_params,
+         cbfunc_t cbfunc, void* cbargs)
         : client_(client),
+          enc_params_(enc_params),
           cbfunc_(cbfunc),
           cbargs_(cbargs)
     {
         te_ = stdsc::ThreadException::create();
     }
 
-    void exec(T& args, std::shared_ptr<stdsc::ThreadException> te)
+    void exec(ResultThreadParam& args, std::shared_ptr<stdsc::ThreadException> te)
     {
         try
         {
             STDSC_LOG_INFO("launched result thread for query#%d", args.query_id);
 
-            fts_share::EncData enc_result(params);
-            client_.recv_results(args.query_id, enc_result);
+            fts_share::EncData enc_result(enc_params_);
+            client_->recv_results(args.query_id, enc_result);
             STDSC_LOG_TRACE("get result of query#%d", args.query_id);
-            cbfunc_(enc_result, cbargs_);
+            cbfunc_(enc_result.data(), cbargs_);
         }
         catch (const stdsc::AbstractException& e)
         {
@@ -63,38 +66,36 @@ struct ResultThread<T>::Impl
     }
 
 private:
-    CSClient& client_;
+    const CSClient* client_;
+    const seal::EncryptionParameters& enc_params_;
     cbfunc_t cbfunc_;
     void* cbargs_;
 };
 
-template <class T>
-ResultThread<T>::ResultThread(CSClient& cs_client, cbfunc_t cbfunc, void* cbargs)
-    : pimpl_(new Impl(cs_client, cbfunc, cbargs))
+ResultThread::ResultThread(const CSClient* cs_client,
+                           const seal::EncryptionParameters& enc_params,
+                           cbfunc_t cbfunc, void* cbargs)
+    : pimpl_(new Impl(cs_client, enc_params, cbfunc, cbargs))
 {
 }
 
-template <class T>
-ResultThread<T>::~ResultThread(void)
+ResultThread::~ResultThread(void)
 {
     super::join();
 }
 
-template <class T>
-void ResultThread<T>::start(T& param)
+void ResultThread::start(ResultThreadParam& param)
 {
     super::start(param, pimpl_->te_);
 }
 
-template <class T>
-void ResultThread<T>::wait(void)
+void ResultThread::wait(void)
 {
     super::join();
     pimpl_->te_->rethrow_if_has_exception();
 }
 
-template <class T>
-void ResultThread<T>::exec(T& args,
+void ResultThread::exec(ResultThreadParam& args,
                         std::shared_ptr<stdsc::ThreadException> te) const
 {
     try
@@ -106,7 +107,5 @@ void ResultThread<T>::exec(T& args,
         te->set_current_exception();
     }
 }
-
-template class ResultThread<ResultThreadParam>;
 
 } /* namespace fts_user */

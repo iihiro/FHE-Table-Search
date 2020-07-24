@@ -13,19 +13,20 @@
 #include <fts_share/fts_plaindata.hpp>
 #include <fts_share/fts_csparam.hpp>
 #include <fts_share/fts_seal_utility.hpp>
+#include <fts_user/fts_user_result_thread.hpp>
 #include <fts_user/fts_user_cs_client.hpp>
 
 namespace fts_user
 {
 
+struct ResultCallback
+{
+    std::shared_ptr<ResultThread> thread;
+    ResultThreadParam param;
+};
+    
 struct CSClient::Impl
 {
-    struct ResultCallback
-    {
-        std::shared_ptr<ResultThread<>> thread;
-        ResultThreadParam param;
-    };
-    
     Impl(const char* host, const char* port,
          const seal::EncryptionParameters& enc_params)
         : host_(host),
@@ -106,13 +107,8 @@ struct CSClient::Impl
         fts_share::seal_utility::write_to_file("result.txt", enc_result.data());
     }
 
-    void set_callback(const int32_t query_id, nbc_client::cbfunc_t func, void* args)
+    void set_callback(const int32_t query_id, cbfunc_t func, void* args)
     {
-        ResultCallback rcb;
-        rcb.thread = std::make_shared<ResultThread<>>(client_, func, args);
-        rcb.param  = {query_id};
-        cbmap_[query_id] = rcb;
-        cbmap_[query_id].thread->start(cbmap_[query_id].param);
     }
 
     void wait(const int32_t query_id) const
@@ -124,16 +120,16 @@ struct CSClient::Impl
         }
     }
 
-private:
     const char* host_;
     const char* port_;
-    const seal::EncryptionParameters enc_params_;
+    const seal::EncryptionParameters& enc_params_;
     stdsc::Client client_;
     std::unordered_map<int32_t, ResultCallback> cbmap_;
 };
 
-CSClient::CSClient(const char* host, const char* port)
-    : pimpl_(new Impl(host, port))
+CSClient::CSClient(const char* host, const char* port,
+                   const seal::EncryptionParameters& enc_params)
+    : pimpl_(new Impl(host, port, enc_params))
 {
 }
 
@@ -156,7 +152,7 @@ int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no,
 
 int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no,
                              const fts_share::EncData& enc_inputs,
-                             nbc_client::cbfunc_t cbfunc,
+                             cbfunc_t cbfunc,
                              void* cbfunc_args) const
 {
     int32_t query_id = pimpl_->send_query(key_id, func_no, enc_inputs);
@@ -169,9 +165,13 @@ void CSClient::recv_results(const int32_t query_id, fts_share::EncData& enc_resu
     pimpl_->recv_results(query_id, enc_result);
 }
 
-void CSClient::set_callback(const int32_t query_id, nbc_client::cbfunc_t func, void* args) const
+void CSClient::set_callback(const int32_t query_id, cbfunc_t func, void* args) const
 {
-    pimpl_->set_callback(func, args);
+    ResultCallback rcb;
+    rcb.thread = std::make_shared<ResultThread>(this, pimpl_->enc_params_, func, args);
+    rcb.param  = {query_id};
+    pimpl_->cbmap_[query_id] = rcb;
+    pimpl_->cbmap_[query_id].thread->start(pimpl_->cbmap_[query_id].param);
 }
 
 void CSClient::wait(const int32_t query_id) const

@@ -85,7 +85,7 @@ struct User::Impl
         dec_client.get_param(key_id, params);
         fts_share::seal_utility::write_to_file("param.txt", params);
 
-        CSClient cs_client(cs_host_.c_str(), cs_port_.c_str());
+        CSClient cs_client(cs_host_.c_str(), cs_port_.c_str(), params);
         cs_client.connect(retry_interval_usec_, timeout_sec_);
 
         fts_share::EncData enc_inputs(params);
@@ -113,7 +113,7 @@ struct User::Impl
             printf("  -- %ld\n", output_value);
         }
         
-        auto query_id = cs_client.send_query(key_id, fts_share::kFuncOne, params, enc_inputs);
+        auto query_id = cs_client.send_query(key_id, fts_share::kFuncOne, enc_inputs);
         printf("query_id: %d\n", query_id);
     }
 

@@ -78,8 +78,8 @@ public:
      * @return queryID
      */
     int32_t send_query(const int32_t key_id, const int32_t func_no,
-                       const fts_share::EncData& enc_inputs
-                       nbc_client::cbfunc_t cbfunc,
+                       const fts_share::EncData& enc_inputs,
+                       cbfunc_t cbfunc,
                        void* cbfunc_args) const;
     
     /**
@@ -95,7 +95,7 @@ public:
      * @param[in] func callback function
      * @param[in] args arguments for callback function
      */
-    void set_callback(const int32_t query_id, nbc_client::cbfunc_t funvc, void* args) const;
+    void set_callback(const int32_t query_id, cbfunc_t funvc, void* args) const;
 
     /**
      * wait for finish of query
