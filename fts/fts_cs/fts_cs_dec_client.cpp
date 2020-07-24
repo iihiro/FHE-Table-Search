@@ -10,6 +10,8 @@
 #include <fts_share/fts_utility.hpp>
 #include <fts_share/fts_packet.hpp>
 #include <fts_share/fts_plaindata.hpp>
+#include <fts_share/fts_cs2decparam.hpp>
+#include <fts_share/fts_encdata.hpp>
 #include <fts_cs/fts_cs_dec_client.hpp>
 
 namespace fts_cs
@@ -67,10 +69,10 @@ public:
     //}
 
     template <class T>
-    void get_key(const int32_t keyID, const fts_share::ControlCode_t code, T& key)
+    void get_key(const int32_t key_id, const fts_share::ControlCode_t code, T& key)
     {
-        stdsc::Buffer sbuffer(sizeof(keyID)), rbuffer;
-        *(int32_t*)sbuffer.data() = keyID;
+        stdsc::Buffer sbuffer(sizeof(key_id)), rbuffer;
+        *(int32_t*)sbuffer.data() = key_id;
         client_.send_recv_data_blocking(code, sbuffer, rbuffer);
 
         stdsc::BufferStream buffstream(rbuffer);
@@ -78,16 +80,47 @@ public:
         key.unsafe_load(stream);
     }
     
-    void get_param(const int32_t keyID, seal::EncryptionParameters& param)
+    void get_param(const int32_t key_id, seal::EncryptionParameters& param)
     {
-        stdsc::Buffer sbuffer(sizeof(keyID)), rbuffer;
-        *(int32_t*)sbuffer.data() = keyID;
+        stdsc::Buffer sbuffer(sizeof(key_id)), rbuffer;
+        *(int32_t*)sbuffer.data() = key_id;
         client_.send_recv_data_blocking(fts_share::kControlCodeUpDownloadParam, sbuffer, rbuffer);
     
         stdsc::BufferStream buffstream(rbuffer);
         std::iostream stream(&buffstream);
         param = seal::EncryptionParameters::Load(stream);
     }
+
+    void set_midresults(const int32_t key_id, const int32_t query_id,
+                        const fts_share::EncData& enc_midresult,
+                        fts_share::EncData& enc_PIRquery,
+                        fts_share::EncData& enc_PIRindex)
+    {
+        fts_share::PlainData<fts_share::Cs2DecParam> splaindata;
+        fts_share::Cs2DecParam param = {key_id, query_id};
+        splaindata.push(param);
+
+        auto sz = splaindata.stream_size() + enc_midresult.stream_size();
+        stdsc::BufferStream sbuffstream(sz);
+        std::iostream stream(&sbuffstream);
+
+        splaindata.save_to_stream(stream);
+        enc_midresult.save_to_stream(stream);
+
+        stdsc::Buffer* sbuffer = &sbuffstream;
+        stdsc::Buffer rbuffer;
+        client_.send_recv_data_blocking(fts_share::kControlCodeUpDownloadCsMidResult, *sbuffer, rbuffer);
+        STDSC_LOG_INFO("sent mid-results");
+
+        stdsc::BufferStream rbuffstream(rbuffer);
+        std::iostream rstream(&rbuffstream);
+        //fts_share::PlainData<int32_t> rplaindata;
+        //rplaindata.load_from_stream(rstream);
+
+        enc_PIRquery.load_from_stream(rstream);
+        enc_PIRindex.load_from_stream(rstream);
+    }
+    
 
 private:
     const char* host_;
@@ -123,24 +156,34 @@ void DecClient::disconnect(void)
 //    return res;
 //}
 
-void DecClient::get_pubkey(const int32_t keyID, seal::PublicKey& pubkey)
+void DecClient::get_pubkey(const int32_t key_id, seal::PublicKey& pubkey)
 {
-    pimpl_->get_key(keyID, fts_share::kControlCodeUpDownloadPubKey, pubkey);
+    pimpl_->get_key(key_id, fts_share::kControlCodeUpDownloadPubKey, pubkey);
 }
     
-void DecClient::get_galoiskey(const int32_t keyID, seal::GaloisKeys& galoiskey)
+void DecClient::get_galoiskey(const int32_t key_id, seal::GaloisKeys& galoiskey)
 {
-    pimpl_->get_key(keyID, fts_share::kControlCodeUpDownloadGaloisKey, galoiskey);
+    pimpl_->get_key(key_id, fts_share::kControlCodeUpDownloadGaloisKey, galoiskey);
 }
     
-void DecClient::get_relinkey(const int32_t keyID, seal::RelinKeys& relinkey)
+void DecClient::get_relinkey(const int32_t key_id, seal::RelinKeys& relinkey)
 {
-    pimpl_->get_key(keyID, fts_share::kControlCodeUpDownloadRelinKey, relinkey);
+    pimpl_->get_key(key_id, fts_share::kControlCodeUpDownloadRelinKey, relinkey);
 }
 
-void DecClient::get_param(const int32_t keyID, seal::EncryptionParameters& param)
+void DecClient::get_param(const int32_t key_id, seal::EncryptionParameters& param)
 {
-    pimpl_->get_param(keyID, param);
+    pimpl_->get_param(key_id, param);
 }
+
+void DecClient::set_midresults(const int32_t key_id, const int32_t query_id,
+                               const fts_share::EncData& enc_midresult,
+                               fts_share::EncData& enc_PIRquery,
+                               fts_share::EncData& enc_PIRindex)
+                               
+{
+    pimpl_->set_midresults(key_id, query_id, enc_midresult, enc_PIRquery, enc_PIRindex);
+}
+
 
 } /* namespace fts_cs */

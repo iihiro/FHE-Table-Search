@@ -47,6 +47,7 @@ enum Event_t : uint64_t
     kEventGaloisKeyRequest  = 4,
     kEventRelinKeyRequest   = 5,
     kEventParamRequest      = 6,
+    kEventCsMidResult       = 7,
 };
 
 /**

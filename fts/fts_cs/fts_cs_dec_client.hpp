@@ -20,8 +20,12 @@
 
 #include <memory>
 #include <fts_share/fts_define.hpp>
-
 #include <seal/seal.h>
+
+namespace fts_share
+{
+    class EncData;
+}
 
 namespace fts_cs
 {
@@ -66,10 +70,15 @@ public:
      */
     //bool delete_keys(const int32_t key_id) const;
 
-    void get_pubkey(const int32_t keyID, seal::PublicKey& pubkey);
-    void get_galoiskey(const int32_t keyID, seal::GaloisKeys& galoiskey);
-    void get_relinkey(const int32_t keyID, seal::RelinKeys& relinkey);
-    void get_param(const int32_t key, seal::EncryptionParameters& param);
+    void get_pubkey(const int32_t key_id, seal::PublicKey& pubkey);
+    void get_galoiskey(const int32_t key_id, seal::GaloisKeys& galoiskey);
+    void get_relinkey(const int32_t key_id, seal::RelinKeys& relinkey);
+    void get_param(const int32_t key_id, seal::EncryptionParameters& param);
+
+    void set_midresults(const int32_t key_id, const int32_t query_id,
+                        const fts_share::EncData& enc_midresult,
+                        fts_share::EncData& enc_PIRquery,
+                        fts_share::EncData& enc_PIRindex);
     
 private:
     struct Impl;

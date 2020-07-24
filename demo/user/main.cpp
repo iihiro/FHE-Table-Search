@@ -39,7 +39,7 @@
         exit(1);                                            \
     } while (0)
 
-seal::SecretKey g_seckey;
+//seal::SecretKey g_seckey;
 
 struct Option
 {
@@ -50,12 +50,19 @@ struct Option
 
 struct CallbackParam
 {
-    int32_t dummy = 222;
+    seal::SecretKey* seckey = nullptr;
+    seal::EncryptionParameters* params = nullptr;
 };
 
-void result_cb(const seal::Ciphertext& enc_results, void* args)
+void result_cb(const seal::Ciphertext& enc_result, void* args)
 {
-    printf("called result callback.");
+    printf("called result callback. \n");
+    const auto* cbparam = reinterpret_cast<CallbackParam*>(args);
+
+    int64_t result_value;
+    fts_share::EncData encdata(*cbparam->params, enc_result);
+    encdata.decrypt(*cbparam->seckey, result_value);
+    printf("  --- %ld\n", result_value);
 }
 
 void init(Option& option, int argc, char* argv[])
@@ -113,7 +120,8 @@ void compute_one(const int32_t key_id,
                  const std::string& cs_port,
                  const seal::PublicKey& pubkey,
                  const seal::GaloisKeys& galoiskey,
-                 const seal::EncryptionParameters& params)
+                 const seal::EncryptionParameters& params,
+                 CallbackParam& cbparam)
 {
     fts_share::EncData enc_inputs(params);
     enc_inputs.encrypt(val, pubkey, galoiskey);
@@ -136,16 +144,16 @@ void compute_one(const int32_t key_id,
 
         // decrypt
         int64_t output_value;
-        enc_inputs2.decrypt(g_seckey, output_value);
+        enc_inputs2.decrypt(*cbparam.seckey, output_value);
         printf("  -- %ld\n", output_value);
     }
         
     fts_user::CSClient cs_client(cs_host.c_str(), cs_port.c_str(), params);
     cs_client.connect();
 
-    CallbackParam result_cbargs;
+    //CallbackParam result_cbargs;
     auto query_id = cs_client.send_query(key_id, fts_share::kFuncOne, enc_inputs,
-                                         result_cb, &result_cbargs);
+                                         result_cb, &cbparam);
     printf("query_id: %d\n", query_id);
 
     usleep(5*1000*1000);
@@ -155,14 +163,19 @@ void exec(Option& option)
 {
     const char* host = "localhost";
 
+    seal::SecretKey seckey;
     seal::PublicKey pubkey;
     seal::GaloisKeys galoiskey;
     seal::EncryptionParameters params(seal::scheme_type::BFV);
     auto key_id = init_keys(host, PORT_DEC_SRV,
-                            g_seckey, pubkey, galoiskey, params);
+                            seckey, pubkey, galoiskey, params);
+
+    
+    CallbackParam cbparam = {&seckey, &params};
 
     if (option.input_num == 1) {
-        compute_one(key_id, option.input_value_x, host, PORT_CS_SRV, pubkey, galoiskey, params);
+        compute_one(key_id, option.input_value_x, host, PORT_CS_SRV,
+                    pubkey, galoiskey, params, cbparam);
     }
 
 }

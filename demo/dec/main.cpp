@@ -63,6 +63,9 @@ void exec(Option& option)
         std::shared_ptr<stdsc::CallbackFunction> cb_param(
             new fts_dec::CallbackFunctionParamRequest());
         callback.set(fts_share::kControlCodeUpDownloadParam, cb_param);
+        std::shared_ptr<stdsc::CallbackFunction> cb_midresult(
+            new fts_dec::CallbackFunctionCsMidResult());
+        callback.set(fts_share::kControlCodeUpDownloadCsMidResult, cb_midresult);
     }
     callback.set_commondata(static_cast<void*>(&param), sizeof(param));
     callback.set_commondata(static_cast<void*>(&cparam), sizeof(cparam),
