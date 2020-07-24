@@ -42,11 +42,12 @@ public:
     
     virtual bool pop(Tk& key, Tv& val)
     {
+        std::lock_guard<std::mutex> lock(mtx_);
+
         if (0 == map_.size()) {
             return false;
         }
-        
-        std::lock_guard<std::mutex> lock(mtx_);
+
         const auto front = map_.begin();
         key = front->first;
         val = front->second;

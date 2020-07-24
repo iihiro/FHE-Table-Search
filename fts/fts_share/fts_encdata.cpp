@@ -30,8 +30,7 @@ struct EncData::Impl
 {
     explicit Impl(const seal::EncryptionParameters& params)
         : params_(params)
-    {
-    }
+    {}
 
     const seal::EncryptionParameters& params_;
 };
@@ -39,6 +38,12 @@ struct EncData::Impl
 EncData::EncData(const seal::EncryptionParameters& params)
     : pimpl_(new Impl(params))
 {}
+
+EncData::EncData(const seal::EncryptionParameters& params, const seal::Ciphertext& ctxt)
+    : pimpl_(new Impl(params))
+{
+    vec_.push_back(ctxt);
+}
 
 void EncData::encrypt(const int64_t input_value,
                       const seal::PublicKey& pubkey,

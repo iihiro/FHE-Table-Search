@@ -31,6 +31,7 @@ namespace fts_share
 struct EncData : public fts_share::BasicData<seal::Ciphertext>
 {
     explicit EncData(const seal::EncryptionParameters& params);
+    EncData(const seal::EncryptionParameters& params, const seal::Ciphertext& ctxt);
     virtual ~EncData(void) = default;
 
     void encrypt(const int64_t input_value,

@@ -16,6 +16,8 @@
  */
 
 #include <vector>
+#include <unistd.h>
+#include <stdsc/stdsc_log.hpp>
 #include <fts_cs/fts_cs_query.hpp>
 #include <fts_cs/fts_cs_result.hpp>
 #include <fts_cs/fts_cs_calcthread.hpp>
@@ -68,7 +70,24 @@ namespace fts_cs
     
     int32_t CalcManager::put(const Query& query)
     {
-        return pimpl_->qque_.push(query);
+        int32_t query_id = -1;
+        try {
+            query_id = pimpl_->qque_.push(query);
+        } catch (stdsc::AbstractException& ex) {
+            printf(" 2a");
+            STDSC_LOG_WARN(ex.what());
+            printf(" 2b");
+        }
+            
+        return query_id;
+    }
+
+    void CalcManager::get(const int32_t query_id, Result& result,
+                          const uint32_t retry_interval_msec) const
+    {
+        while (!try_get(query_id, result)) {
+            usleep(retry_interval_msec * 1000);
+        }
     }
     
     bool CalcManager::try_get(const int32_t query_id, Result& result) const

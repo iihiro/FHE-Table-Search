@@ -15,52 +15,50 @@
  * limitations under the License.
  */
 
-#ifndef FTS_CS_CALCTHREAD_HPP
-#define FTS_CS_CALCTHREAD_HPP
+#ifndef FTS_USER_RESULT_THREAD_HPP
+#define FTS_USER_RESULT_THREAD_HPP
 
 #include <memory>
-#include <cstdbool>
+#include <vector>
+#include <string>
+#include <functional>
 #include <stdsc/stdsc_thread.hpp>
+#include <fts_user/fts_user_result_cbfunc.hpp>
 
-namespace fts_cs
+namespace fts_user
 {
     
-class CalcThreadParam;
-class QueryQueue;
-class ResultQueue;
+class ResultThreadParam;
+class CSClient;
 
 /**
- * @brief Calculation thread
+ * @brief The thread to receive result from CS.
  */
-class CalcThread : public stdsc::Thread<CalcThreadParam>
+template <class T = ResultThreadParam>
+class ResultThread : public stdsc::Thread<T>
 {
-    using super = Thread<CalcThreadParam>;
-public:
-    CalcThread(QueryQueue& in_queue, ResultQueue& out_queue);
-    virtual ~CalcThread(void) = default;
+    using super = stdsc::Thread<T>;
 
-    void start();
-    void stop();
-    
+public:    
+    ResultThread(CSClient& cs_client, cbfunc_t cbfunc, void* cbargs);
+    virtual ~ResultThread(void);
+
+    void start(T& param);
+    void wait(void);
+
 private:
-    virtual void exec(CalcThreadParam& args,
+    virtual void exec(T& args,
                       std::shared_ptr<stdsc::ThreadException> te) const override;
 
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
 
-/**
- * @brief This class is used to hold the calcration parameters for CalcThread.
- */
-struct CalcThreadParam
+struct ResultThreadParam
 {
-    uint32_t retry_interval_msec = DefaultRetryIntervalMsec;
-    bool force_finish = false;
-
-    static constexpr uint32_t DefaultRetryIntervalMsec = 100;
+    int32_t query_id;
 };
 
-} /* namespace fts_cs */
+} /* namespace fts_user */
 
-#endif /* FTS_CS_CALCTHREAD_HPP */
+#endif /* FTS_USER_RESULT_THREAD_HPP */

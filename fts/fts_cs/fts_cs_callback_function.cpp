@@ -46,30 +46,32 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
                    state.current_state_str().c_str());
 
     DEF_CDATA_ON_ALL(fts_cs::CommonCallbackParam);
-    auto& cmngr = cdata_a->calc_manager_;
+    auto& calc_manager = cdata_a->calc_manager_;
 
     stdsc::BufferStream rbuffstream(buffer);
     std::iostream rstream(&rbuffstream);
 
+    // load plaindata (param)
     fts_share::PlainData<fts_share::CSParam> rplaindata;
     rplaindata.load_from_stream(rstream);
+    const auto& param = rplaindata.data();
+    STDSC_LOG_INFO("query with key_id: %d, func_no: %d", param.key_id, param.func_no);
 
+    // load encryption parameters
     seal::EncryptionParameters params(seal::scheme_type::BFV);
     params = seal::EncryptionParameters::Load(rstream);
-    
+
+    // load encryption inputs
     fts_share::EncData enc_inputs(params);
     enc_inputs.load_from_stream(rstream);
     fts_share::seal_utility::write_to_file("query.txt", enc_inputs.data());
 
-    const auto& param = rplaindata.data();
-    STDSC_LOG_INFO("query with key_id: %d, func_no: %d", param.key_id, param.func_no);
-
     Query query(param.key_id, param.func_no, enc_inputs.vdata());
-    int32_t query_id = cmngr.put(query);
+    int32_t query_id = calc_manager.put(query);
 
     fts_share::PlainData<int32_t> splaindata;
     splaindata.push(query_id);
-    
+
     auto sz = splaindata.stream_size();
     stdsc::BufferStream sbuffstream(sz);
     std::iostream sstream(&sbuffstream);
@@ -89,23 +91,36 @@ DEFUN_UPDOWNLOAD(CallbackFunctionResultRequest)
     STDSC_LOG_INFO("Received result request. (current state : %s)",
                    state.current_state_str().c_str());
 
-    //DEF_CDATA_ON_ALL(fts_cs::CommonCallbackParam);
-    //auto& keycont = cdata_a->keycont;
+    DEF_CDATA_ON_ALL(fts_cs::CommonCallbackParam);
+    auto& calc_manager = cdata_a->calc_manager_;
 
-    auto queryID = *static_cast<const int32_t*>(buffer.data());
-    STDSC_LOG_INFO("result request with queryID: %d", queryID);
+    stdsc::BufferStream rbuffstream(buffer);
+    std::iostream rstream(&rbuffstream);
 
-    fts_share::PlainData<int32_t> plaindata;
-    plaindata.push(queryID);
+    // load plaindata (param)
+    fts_share::PlainData<int32_t> rplaindata;
+    rplaindata.load_from_stream(rstream);
+    const auto query_id = rplaindata.data();
+    STDSC_LOG_INFO("result request with query_id: %d", query_id);
+
+    // load encryption parameters
+    seal::EncryptionParameters params(seal::scheme_type::BFV);
+    params = seal::EncryptionParameters::Load(rstream);
+
+    Result result;
+    calc_manager.get(query_id, result);
+
+    fts_share::EncData enc_outputs(params, result.ctxt_);
+    fts_share::seal_utility::write_to_file("result.txt", enc_outputs.data());
     
-    auto sz = plaindata.stream_size();
-    stdsc::BufferStream buffstream(sz);
-    std::iostream stream(&buffstream);
+    auto sz = enc_outputs.stream_size();
+    stdsc::BufferStream sbuffstream(sz);
+    std::iostream sstream(&sbuffstream);
 
-    plaindata.save_to_stream(stream);
+    enc_outputs.save_to_stream(sstream);
 
     STDSC_LOG_INFO("Sending result.");
-    stdsc::Buffer* bsbuff = &buffstream;
+    stdsc::Buffer* bsbuff = &sbuffstream;
     sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataResult, sz));
     sock.send_buffer(*bsbuff);
     state.set(kEventResultRequest);

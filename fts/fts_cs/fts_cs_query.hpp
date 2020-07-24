@@ -28,6 +28,7 @@ namespace fts_cs
 
 struct Query
 {
+    Query() = default;
     Query(const int32_t key_id, const int32_t func_no,
           const std::vector<seal::Ciphertext>& ctxts);
     virtual ~Query() = default;

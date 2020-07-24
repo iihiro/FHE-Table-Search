@@ -20,10 +20,17 @@ namespace fts_user
 
 struct CSClient::Impl
 {
-public:
-    Impl(const char* host, const char* port)
+    struct ResultCallback
+    {
+        std::shared_ptr<ResultThread<>> thread;
+        ResultThreadParam param;
+    };
+    
+    Impl(const char* host, const char* port,
+         const seal::EncryptionParameters& enc_params)
         : host_(host),
           port_(port),
+          enc_params_(enc_params),
           client_()
     {
     }
@@ -46,7 +53,6 @@ public:
     }
 
     int32_t send_query(const int32_t key_id, const int32_t func_no,
-                       const seal::EncryptionParameters& params,
                        const fts_share::EncData& enc_inputs)
     {
         fts_share::PlainData<fts_share::CSParam> splaindata;
@@ -54,19 +60,19 @@ public:
         splaindata.push(csparam);
 
         auto sz = (splaindata.stream_size()
-                   + fts_share::seal_utility::stream_size(params)
+                   + fts_share::seal_utility::stream_size(enc_params_)
                    + enc_inputs.stream_size());
         stdsc::BufferStream sbuffstream(sz);
         std::iostream stream(&sbuffstream);
         
         splaindata.save_to_stream(stream);
-        seal::EncryptionParameters::Save(params, stream);
+        seal::EncryptionParameters::Save(enc_params_, stream);
         enc_inputs.save_to_stream(stream);
 
         stdsc::Buffer* sbuffer = &sbuffstream;
         stdsc::Buffer rbuffer;
         client_.send_recv_data_blocking(fts_share::kControlCodeUpDownloadQuery, *sbuffer, rbuffer);
-        STDSC_LOG_INFO("sent the query");
+        STDSC_LOG_INFO("sent query");
 
         stdsc::BufferStream rbuffstream(rbuffer);
         std::iostream rstream(&rbuffstream);
@@ -76,22 +82,54 @@ public:
         return rplaindata.data();
     }
 
-    bool recv_result(const int32_t query_id, fts_share::EncData& enc_result)
+    void recv_results(const int32_t query_id, fts_share::EncData& enc_result)
     {
-        //client_.send_request_blocking(fts_share::kControlCodeRequestResults);
-        //
-        //stdsc::Buffer result;
-        //client_.recv_data_blocking(fts_share::kControlCodeDownloadResult, result);
-        //STDSC_LOG_INFO("recieved results");
+        fts_share::PlainData<int32_t> splaindata;
+        splaindata.push(query_id);
 
-        return true;
+        auto sz = (splaindata.stream_size()
+                   + fts_share::seal_utility::stream_size(enc_params_));
+        stdsc::BufferStream sbuffstream(sz);
+        std::iostream stream(&sbuffstream);
+
+        splaindata.save_to_stream(stream);
+        seal::EncryptionParameters::Save(enc_params_, stream);
+
+        stdsc::Buffer* sbuffer = &sbuffstream;
+        stdsc::Buffer rbuffer;
+        client_.send_recv_data_blocking(fts_share::kControlCodeUpDownloadResult, *sbuffer, rbuffer);
+        STDSC_LOG_INFO("request result for query#%d", query_id);
+
+        stdsc::BufferStream rbuffstream(rbuffer);
+        std::iostream rstream(&rbuffstream);
+        enc_result.load_from_stream(rstream);
+        fts_share::seal_utility::write_to_file("result.txt", enc_result.data());
     }
 
+    void set_callback(const int32_t query_id, nbc_client::cbfunc_t func, void* args)
+    {
+        ResultCallback rcb;
+        rcb.thread = std::make_shared<ResultThread<>>(client_, func, args);
+        rcb.param  = {query_id};
+        cbmap_[query_id] = rcb;
+        cbmap_[query_id].thread->start(cbmap_[query_id].param);
+    }
+
+    void wait(const int32_t query_id) const
+    {
+        STDSC_LOG_TRACE("waiting result for query#%d", query_id);
+        if (cbmap_.count(query_id)) {
+            auto& rcb = cbmap_.at(query_id);
+            rcb.thread->wait();
+        }
+    }
 
 private:
     const char* host_;
     const char* port_;
+    const seal::EncryptionParameters enc_params_;
     stdsc::Client client_;
+    std::unordered_map<int32_t, ResultCallback> cbmap_;
 };
 
 CSClient::CSClient(const char* host, const char* port)
@@ -111,20 +149,34 @@ void CSClient::disconnect(void)
 }
 
 int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no,
-                             const seal::EncryptionParameters& params,
                              const fts_share::EncData& enc_inputs) const
 {
-    int32_t res = pimpl_->send_query(key_id, func_no, params, enc_inputs);
-
-    return res;
+    return pimpl_->send_query(key_id, func_no, enc_inputs);
 }
 
-bool CSClient::recv_result(const int32_t query_id, fts_share::EncData& enc_result) const
+int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no,
+                             const fts_share::EncData& enc_inputs,
+                             nbc_client::cbfunc_t cbfunc,
+                             void* cbfunc_args) const
 {
-    bool res = pimpl_->recv_result(query_id, enc_result);
-
-    return res;
+    int32_t query_id = pimpl_->send_query(key_id, func_no, enc_inputs);
+    set_callback(query_id, cbfunc, cbfunc_args);
+    return query_id;
 }
 
+void CSClient::recv_results(const int32_t query_id, fts_share::EncData& enc_result) const
+{
+    pimpl_->recv_results(query_id, enc_result);
+}
+
+void CSClient::set_callback(const int32_t query_id, nbc_client::cbfunc_t func, void* args) const
+{
+    pimpl_->set_callback(func, args);
+}
+
+void CSClient::wait(const int32_t query_id) const
+{
+    pimpl_->wait(query_id);
+}
 
 } /* namespace fts_user */

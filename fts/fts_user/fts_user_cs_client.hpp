@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <fts_share/fts_define.hpp>
+#include <fts_user/fts_user_result_cbfunc.hpp>
 
 namespace fts_share
 {
@@ -39,8 +40,10 @@ public:
      * constructor
      * @param[in] host hostname
      * @param[in] port port number
+     * @param[in] enc_params parameters for seal
      */
-    CSClient(const char* host, const char* port);
+    CSClient(const char* host, const char* port,
+             const seal::EncryptionParameters& enc_params);
     virtual ~CSClient(void) = default;
 
     /**
@@ -59,21 +62,47 @@ public:
      * send query
      * @param[in] key_id keyID
      * @param[in] func_no function number
-     * @param[in] params parameters for seal
      * @param[in] enc_input encrypted input values (1 or 2)
      * @return queryID
      */
     int32_t send_query(const int32_t key_id, const int32_t func_no,
-                       const seal::EncryptionParameters& params,
                        const fts_share::EncData& enc_inputs) const;
-    //int32_t send_query(const int32_t key_id, const int32_t fun    
+
+    /**
+     * send query
+     * @param[in] key_id keyID
+     * @param[in] func_no function number
+     * @param[in] enc_input encrypted input values (1 or 2)
+     * @param[in] cbfunc callback function
+     * @param[in] cbfunc_args arguments for callback function
+     * @return queryID
+     */
+    int32_t send_query(const int32_t key_id, const int32_t func_no,
+                       const fts_share::EncData& enc_inputs
+                       nbc_client::cbfunc_t cbfunc,
+                       void* cbfunc_args) const;
+    
     /**
      * receive results
      * @param[in] query_id queryID
      * @param[out] enc_result encrypted result
-     * @return success or falied
      */
-    bool recv_result(const int32_t query_id, fts_share::EncData& enc_result) const;
+    void recv_results(const int32_t query_id, fts_share::EncData& enc_result) const;
+
+    /**
+     * set callback functions
+     * @param[in] query_id queryID
+     * @param[in] func callback function
+     * @param[in] args arguments for callback function
+     */
+    void set_callback(const int32_t query_id, nbc_client::cbfunc_t funvc, void* args) const;
+
+    /**
+     * wait for finish of query
+     * @param[in] query_id queryID
+     */
+    void wait(const int32_t query_id) const;
+
 
 private:
     struct Impl;

@@ -15,37 +15,17 @@
  * limitations under the License.
  */
 
-#ifndef FTS_CS_RESULT_HPP
-#define FTS_CS_RESULT_HPP
+#ifndef FTS_USER_RESULT_CBFUNC_HPP
+#define FTS_USER_RESULT_CBFUNC_HPP
 
-#include <cstdint>
-#include <cstdbool>
-#include <fts_share/fts_concurrent_mapqueue.hpp>
+#include <functional>
 #include <seal/seal.h>
 
-namespace fts_cs
+namespace fts_user
 {
 
-struct Result
-{
-    Result() = default;
-    Result(const int32_t query_id, const seal::Ciphertext& ctxt);
-    virtual ~Result() = default;
-
-    int32_t query_id_;
-    seal::Ciphertext ctxt_;
-};
-
-struct ResultQueue : public fts_share::ConcurrentMapQueue<int32_t, Result>
-{
-    using super = fts_share::ConcurrentMapQueue<int32_t, Result>;
+using cbfunc_t = std::function<void(const seal::Ciphertext&, void*)>;
     
-    ResultQueue() = default;
-    virtual ~ResultQueue() = default;
+} /* namespace fts_user */
 
-    virtual bool try_get(const int32_t query_id, Result& result);
-};
-
-} /* namespace fts_cs */
-
-#endif /* FTS_CS_RESULT_HPP */
+#endif /* FTS_USER_RESULT_CBFUNC_HPP */
