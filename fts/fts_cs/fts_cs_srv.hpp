@@ -38,7 +38,7 @@ public:
      * @param[in] port port number
      * @param[in] dec_host hostname of Decryptor
      * @param[in] dec_port port number of Decryptor
-     * @param[in] LUT_dirpath directory path of LUT file
+     * @param[in] LUT_dirpath LUT filepath
      * @param[in] callback callback functions
      * @param[in] state state machine
      * @param[in] max_concurrent_queries max concurrent query number
@@ -48,7 +48,7 @@ public:
     CSServer(const char* port,
              const char* dec_host,
              const char* dec_port,
-             const std::string& LUT_dirpath,
+             const std::string& LUT_filepath,
              stdsc::CallbackFunctionContainer& callback,
              stdsc::StateContext& state,
              const uint32_t max_concurrent_queries = DEFAULT_MAX_CONCURRENT_QUERIES,

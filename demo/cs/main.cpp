@@ -60,7 +60,7 @@ void exec(Option& option)
         callback.set(fts_share::kControlCodeUpDownloadResult, cb_result);
     }
 
-    const std::string LUT_dirpath = "hoge";
+    const std::string LUT_dirpath = "../../../test/ori_LUT";
     const char* dec_host = "localhost";
 
     std::shared_ptr<fts_cs::CSServer> cs_server

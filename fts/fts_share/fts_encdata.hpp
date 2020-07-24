@@ -19,6 +19,7 @@
 #define FTS_ENCDATA_HPP
 
 #include <memory>
+#include <vector>
 #include <fts_share/fts_basicdata.hpp>
 #include <seal/seal.h>
 
@@ -32,6 +33,7 @@ struct EncData : public fts_share::BasicData<seal::Ciphertext>
 {
     explicit EncData(const seal::EncryptionParameters& params);
     EncData(const seal::EncryptionParameters& params, const seal::Ciphertext& ctxt);
+    EncData(const seal::EncryptionParameters& params, const std::vector<seal::Ciphertext>& ctxts);
     virtual ~EncData(void) = default;
 
     void encrypt(const int64_t input_value,

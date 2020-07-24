@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <cstdbool>
+#include <vector>
 #include <stdsc/stdsc_thread.hpp>
 
 namespace fts_cs
@@ -37,6 +38,7 @@ class CalcThread : public stdsc::Thread<CalcThreadParam>
     using super = Thread<CalcThreadParam>;
 public:
     CalcThread(QueryQueue& in_queue, ResultQueue& out_queue,
+               std::vector<std::vector<int64_t>>& ori_lut,
                const std::string& dec_host, const std::string& dec_port);
     virtual ~CalcThread(void) = default;
 

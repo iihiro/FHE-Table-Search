@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <cstdbool>
+#include <string>
 
 namespace fts_cs
 {
@@ -30,7 +31,8 @@ class Result;
 class CalcManager
 {
 public:
-    CalcManager(const uint32_t max_concurrent_queries,
+    CalcManager(const std::string& LUT_filepath,
+                const uint32_t max_concurrent_queries,
                 const uint32_t max_results,
                 const uint32_t result_lifetime_sec);
     virtual ~CalcManager() = default;
