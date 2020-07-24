@@ -40,7 +40,7 @@ class ResultThread : public stdsc::Thread<ResultThreadParam>
     using super = stdsc::Thread<ResultThreadParam>;
 
 public:    
-    ResultThread(const CSClient* cs_client,
+    ResultThread(const CSClient& cs_client,
                  const seal::EncryptionParameters& enc_params,
                  cbfunc_t cbfunc, void* cbargs);
     virtual ~ResultThread(void);

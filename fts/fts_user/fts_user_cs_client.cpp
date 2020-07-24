@@ -85,6 +85,8 @@ struct CSClient::Impl
 
     void recv_results(const int32_t query_id, fts_share::EncData& enc_result)
     {
+        STDSC_LOG_INFO("request result for query#%d", query_id);
+        
         fts_share::PlainData<int32_t> splaindata;
         splaindata.push(query_id);
 
@@ -99,12 +101,15 @@ struct CSClient::Impl
         stdsc::Buffer* sbuffer = &sbuffstream;
         stdsc::Buffer rbuffer;
         client_.send_recv_data_blocking(fts_share::kControlCodeUpDownloadResult, *sbuffer, rbuffer);
-        STDSC_LOG_INFO("request result for query#%d", query_id);
+
+        STDSC_LOG_INFO("received result of query#%d", query_id);
 
         stdsc::BufferStream rbuffstream(rbuffer);
         std::iostream rstream(&rbuffstream);
+        printf("----------\n");
         enc_result.load_from_stream(rstream);
         fts_share::seal_utility::write_to_file("result.txt", enc_result.data());
+        printf("**********\n");
     }
 
     void set_callback(const int32_t query_id, cbfunc_t func, void* args)
@@ -168,7 +173,7 @@ void CSClient::recv_results(const int32_t query_id, fts_share::EncData& enc_resu
 void CSClient::set_callback(const int32_t query_id, cbfunc_t func, void* args) const
 {
     ResultCallback rcb;
-    rcb.thread = std::make_shared<ResultThread>(this, pimpl_->enc_params_, func, args);
+    rcb.thread = std::make_shared<ResultThread>(*this, pimpl_->enc_params_, func, args);
     rcb.param  = {query_id};
     pimpl_->cbmap_[query_id] = rcb;
     pimpl_->cbmap_[query_id].thread->start(pimpl_->cbmap_[query_id].param);

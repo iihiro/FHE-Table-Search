@@ -151,16 +151,19 @@ void EncData::load_from_stream(std::istream& is)
 {
     size_t sz;
     is.read(reinterpret_cast<char*>(&sz), sizeof(sz));
-    
+
+    printf("fuga1: sz:%lu\n", sz);
     clear();
 
     auto context = seal::SEALContext::Create(pimpl_->params_);
+    printf("fuga2\n");
     
     for (size_t i=0; i<sz; ++i) {
-        seal::Ciphertext ciphertext_query;
-        ciphertext_query.load(context, is);
-        vec_.push_back(ciphertext_query);
+        seal::Ciphertext ctxt;
+        ctxt.load(context, is);
+        vec_.push_back(ctxt);
     }
+    printf("fuga3\n");
 }
 
 void EncData::save_to_file(const std::string& filepath) const

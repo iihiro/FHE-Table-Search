@@ -52,11 +52,16 @@ namespace fts_cs
                          result_lifetime_sec))
     {}
 
-    void CalcManager::start_threads(const uint32_t thread_num)
+    void CalcManager::start_threads(const uint32_t thread_num,
+                                    const std::string& dec_host,
+                                    const std::string& dec_port)
     {
         pimpl_->threads_.clear();
         for (size_t i=0; i<thread_num; ++i) {
-            pimpl_->threads_.emplace_back(std::make_shared<CalcThread>(pimpl_->qque_, pimpl_->rque_));
+            pimpl_->threads_.emplace_back(std::make_shared<CalcThread>(pimpl_->qque_,
+                                                                       pimpl_->rque_,
+                                                                       dec_host,
+                                                                       dec_port));
         }
 
         for (const auto& thread : pimpl_->threads_) {

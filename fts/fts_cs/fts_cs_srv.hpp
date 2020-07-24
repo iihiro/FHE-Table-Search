@@ -36,6 +36,8 @@ public:
     /**
      * constructor
      * @param[in] port port number
+     * @param[in] dec_host hostname of Decryptor
+     * @param[in] dec_port port number of Decryptor
      * @param[in] LUT_dirpath directory path of LUT file
      * @param[in] callback callback functions
      * @param[in] state state machine
@@ -44,6 +46,8 @@ public:
      * @param[in] result_lifetime_sec result linefile (sec)
      */
     CSServer(const char* port,
+             const char* dec_host,
+             const char* dec_port,
              const std::string& LUT_dirpath,
              stdsc::CallbackFunctionContainer& callback,
              stdsc::StateContext& state,
@@ -55,7 +59,7 @@ public:
     /**
      * start server
      */
-    void start(void);
+    void start();
     /**
      * stop server
      */

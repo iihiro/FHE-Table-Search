@@ -114,6 +114,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionResultRequest)
     fts_share::seal_utility::write_to_file("result.txt", enc_outputs.data());
     
     auto sz = enc_outputs.stream_size();
+    printf("hoge: sz:%lu\n", sz);
     stdsc::BufferStream sbuffstream(sz);
     std::iostream sstream(&sbuffstream);
 

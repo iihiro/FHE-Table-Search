@@ -36,7 +36,7 @@ struct ResultThread::Impl
 {
     std::shared_ptr<stdsc::ThreadException> te_;
 
-    Impl(const CSClient* client,
+    Impl(const CSClient& client,
          const seal::EncryptionParameters& enc_params,
          cbfunc_t cbfunc, void* cbargs)
         : client_(client),
@@ -54,7 +54,7 @@ struct ResultThread::Impl
             STDSC_LOG_INFO("launched result thread for query#%d", args.query_id);
 
             fts_share::EncData enc_result(enc_params_);
-            client_->recv_results(args.query_id, enc_result);
+            client_.recv_results(args.query_id, enc_result);
             STDSC_LOG_TRACE("get result of query#%d", args.query_id);
             cbfunc_(enc_result.data(), cbargs_);
         }
@@ -66,13 +66,13 @@ struct ResultThread::Impl
     }
 
 private:
-    const CSClient* client_;
+    const CSClient& client_;
     const seal::EncryptionParameters& enc_params_;
     cbfunc_t cbfunc_;
     void* cbargs_;
 };
 
-ResultThread::ResultThread(const CSClient* cs_client,
+ResultThread::ResultThread(const CSClient& cs_client,
                            const seal::EncryptionParameters& enc_params,
                            cbfunc_t cbfunc, void* cbargs)
     : pimpl_(new Impl(cs_client, enc_params, cbfunc, cbargs))

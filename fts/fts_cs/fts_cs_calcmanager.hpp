@@ -35,7 +35,9 @@ public:
                 const uint32_t result_lifetime_sec);
     virtual ~CalcManager() = default;
 
-    void start_threads(const uint32_t thread_num);
+    void start_threads(const uint32_t thread_num,
+                       const std::string& dec_host,
+                       const std::string& dec_port);
     void stop_threads();
 
     int32_t put(const Query& query);

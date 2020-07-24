@@ -14,14 +14,18 @@ namespace fts_cs
 struct CSServer::Impl
 {
 public:
-    Impl(const char *port,
+    Impl(const char* port,
+         const char* dec_host,
+         const char* dec_port,
          const std::string& LUT_dirpath,
          stdsc::CallbackFunctionContainer& callback,
          stdsc::StateContext& state,
          const uint32_t max_concurrent_queries,
          const uint32_t max_results,
          const uint32_t result_lifetime_sec)
-        : calc_manager_(new CalcManager(max_concurrent_queries, max_results, result_lifetime_sec)),
+        : dec_host_(dec_host),
+          dec_port_(dec_port),
+          calc_manager_(new CalcManager(max_concurrent_queries, max_results, result_lifetime_sec)),
           param_(new CallbackParam()),
           cparam_(new CommonCallbackParam(*calc_manager_))
     {
@@ -35,13 +39,13 @@ public:
     ~Impl(void) = default;
 
 
-    void start(void)
+    void start()
     {
         const bool enable_async_mode = true;
         server_->start(enable_async_mode);
 
         const uint32_t thread_num = 2;
-        calc_manager_->start_threads(thread_num);
+        calc_manager_->start_threads(thread_num, dec_host_, dec_port_);
     }
 
     void stop(void)
@@ -56,27 +60,32 @@ public:
 
 
 private:
+    std::string dec_host_;
+    std::string dec_port_;
     std::shared_ptr<CalcManager> calc_manager_;
     std::shared_ptr<CallbackParam> param_;
     std::shared_ptr<CommonCallbackParam> cparam_;
     std::shared_ptr<stdsc::Server<>> server_;
 };
 
-CSServer::CSServer(const char *port,
+CSServer::CSServer(const char* port,
+                   const char* dec_host,
+                   const char* dec_port,
                    const std::string &LUT_dirpath,
                    stdsc::CallbackFunctionContainer &callback,
                    stdsc::StateContext &state,
                    const uint32_t max_concurrent_queries,
                    const uint32_t max_results,
                    const uint32_t result_lifetime_sec)
-    : pimpl_(new Impl(port, LUT_dirpath, callback, state,
+    : pimpl_(new Impl(port, dec_host, dec_port,
+                      LUT_dirpath, callback, state,
                       max_concurrent_queries,
                       max_results,
                       result_lifetime_sec))
 {
 }
 
-void CSServer::start(void)
+void CSServer::start()
 {
     pimpl_->start();
 }

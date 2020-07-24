@@ -148,7 +148,7 @@ void compute_one(const int32_t key_id,
                                          result_cb, &result_cbargs);
     printf("query_id: %d\n", query_id);
 
-    usleep(2*1000*1000);
+    usleep(5*1000*1000);
 }
 
 void exec(Option& option)

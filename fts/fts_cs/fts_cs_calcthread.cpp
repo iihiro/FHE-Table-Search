@@ -1,8 +1,10 @@
 #include <unistd.h>
 #include <stdsc/stdsc_log.hpp>
+#include <fts_share/fts_seal_utility.hpp>
 #include <fts_cs/fts_cs_query.hpp>
 #include <fts_cs/fts_cs_result.hpp>
 #include <fts_cs/fts_cs_calcthread.hpp>
+#include <fts_cs/fts_cs_dec_client.hpp>
 #include <seal/seal.h>
 
 namespace fts_cs
@@ -10,8 +12,10 @@ namespace fts_cs
     
 struct CalcThread::Impl
 {
-    Impl(QueryQueue& in_queue, ResultQueue& out_queue)
-        : in_queue_(in_queue), out_queue_(out_queue)
+    Impl(QueryQueue& in_queue, ResultQueue& out_queue,
+         const std::string& dec_host, const std::string& dec_port)
+        : dec_host_(dec_host), dec_port_(dec_port),
+          in_queue_(in_queue), out_queue_(out_queue)
     {
     }
 
@@ -21,7 +25,6 @@ struct CalcThread::Impl
 
         while (!args.force_finish) {
 
-            //printf("retry_interval_msec: %u\n", args.retry_interval_msec);
             int32_t query_id;
             Query query;
             while (!in_queue_.pop(query_id, query)) {
@@ -31,23 +34,46 @@ struct CalcThread::Impl
             // queryを使って処理をする
             // resultが生成される
             Result result;
+            compute(query, result);
             
             out_queue_.push(query_id, result);
         }
     }
 
+    void compute(const Query& query, Result& result)
+    {
+        DecClient dec_client(dec_host_.c_str(), dec_port_.c_str());
+        dec_client.connect();
 
-public:
-    CalcThreadParam param_;
-    std::shared_ptr<stdsc::ThreadException> te_;
-    
-private:
+        seal::PublicKey pubkey;
+        seal::GaloisKeys galoiskey;
+        seal::RelinKeys relinkey;
+        seal::EncryptionParameters params(seal::scheme_type::BFV);
+        
+        dec_client.get_pubkey(query.key_id_, pubkey);
+        fts_share::seal_utility::write_to_file("pubkey.txt", pubkey);
+
+        dec_client.get_galoiskey(query.key_id_, galoiskey);
+        fts_share::seal_utility::write_to_file("galoiskey.txt", galoiskey);
+
+        dec_client.get_relinkey(query.key_id_, relinkey);
+        fts_share::seal_utility::write_to_file("relinkey.txt", relinkey);
+
+        dec_client.get_param(query.key_id_, params);
+        fts_share::seal_utility::write_to_file("param.txt", params);
+    }
+
+    const std::string& dec_host_;
+    const std::string& dec_port_;
     QueryQueue& in_queue_;
     ResultQueue& out_queue_;
+    CalcThreadParam param_;
+    std::shared_ptr<stdsc::ThreadException> te_;
 };
 
-CalcThread::CalcThread(QueryQueue& in_queue, ResultQueue& out_queue)
-    : pimpl_(new Impl(in_queue, out_queue))
+CalcThread::CalcThread(QueryQueue& in_queue, ResultQueue& out_queue,
+                       const std::string& dec_host, const std::string& dec_port)
+    : pimpl_(new Impl(in_queue, out_queue, dec_host, dec_port))
 {}
 
 void CalcThread::start()

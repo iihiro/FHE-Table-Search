@@ -36,7 +36,8 @@ class CalcThread : public stdsc::Thread<CalcThreadParam>
 {
     using super = Thread<CalcThreadParam>;
 public:
-    CalcThread(QueryQueue& in_queue, ResultQueue& out_queue);
+    CalcThread(QueryQueue& in_queue, ResultQueue& out_queue,
+               const std::string& dec_host, const std::string& dec_port);
     virtual ~CalcThread(void) = default;
 
     void start();
