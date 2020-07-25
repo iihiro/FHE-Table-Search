@@ -19,8 +19,15 @@
 #define FTS_CLIENT_CS_CLIENT_HPP
 
 #include <memory>
+#include <fts_share/fts_define.hpp>
+#include <fts_user/fts_user_result_cbfunc.hpp>
 
-namespace fts_client
+namespace fts_share
+{
+    class EncData;
+}
+
+namespace fts_user
 {
 
 /**
@@ -30,47 +37,78 @@ class CSClient
 {
 public:
     /**
-     * コンストラクタ
-     * @param[in] host ComputationServerのホスト名
-     * @param[in] port ComputationServerのポート番号
+     * constructor
+     * @param[in] host hostname
+     * @param[in] port port number
+     * @param[in] enc_params parameters for seal
      */
-    CSClient(const char* host, const char* port);
+    CSClient(const char* host, const char* port,
+             const seal::EncryptionParameters& enc_params);
     virtual ~CSClient(void) = default;
 
     /**
-     * 接続
-     * @param[in] retry_interval_usec リトライ間隔(usec)
-     * @param[in] timeout_sec タイムアウト時間(sec)
+     * connect
+     * @param[in] retry_interval_usec retry interval (usec)
+     * @param[in] timeout_sec timeout (sec)
      */
     void connect(const uint32_t retry_interval_usec = FTS_RETRY_INTERVAL_USEC,
                  const uint32_t timeout_sec = FTS_TIMEOUT_SEC);
     /**
-     * 切断
+     * disconnect
      */
     void disconnect();
     
     /**
-     * クエリ送信
-     * @param[in] key_id keyID
-     * @param[in] func_no 関数番号
-     * @param[in] enc_input 暗号化された入力値(1つ or 2つ)
+     * send query
+     * @param[in] key_id key ID
+     * @param[in] func_no function number
+     * @param[in] enc_input encrypted input values (1 or 2)
      * @return queryID
      */
-    int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input) const;
+    int32_t send_query(const int32_t key_id, const int32_t func_no,
+                       const fts_share::EncData& enc_inputs) const;
+
+    /**
+     * send query
+     * @param[in] key_id key ID
+     * @param[in] func_no function number
+     * @param[in] enc_input encrypted input values (1 or 2)
+     * @param[in] cbfunc callback function
+     * @param[in] cbfunc_args arguments for callback function
+     * @return queryID
+     */
+    int32_t send_query(const int32_t key_id, const int32_t func_no,
+                       const fts_share::EncData& enc_inputs,
+                       cbfunc_t cbfunc,
+                       void* cbfunc_args) const;
     
     /**
-     * 結果受信
-     * @param[in] query_id queryID
-     * @param[out] enc_result 暗号化された結果
-     * @return 結果が受信できたか否か
+     * receive results
+     * @param[in] query_id query ID
+     * @param[out] enc_result encrypted result
      */
-    bool recv_result(const int32_t query_id, fts_share::EncData& enc_result) const;
+    void recv_results(const int32_t query_id, fts_share::EncData& enc_result) const;
+
+    /**
+     * set callback functions
+     * @param[in] query_id queryID
+     * @param[in] func callback function
+     * @param[in] args arguments for callback function
+     */
+    void set_callback(const int32_t query_id, cbfunc_t funvc, void* args) const;
+
+    /**
+     * wait for finish of query
+     * @param[in] query_id query ID
+     */
+    void wait(const int32_t query_id) const;
+
 
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace fts_client */
+} /* namespace fts_user */
 
-#endif /* FTS_CLIENT_CS_CLIENT_HPP */
+#endif /* FTS_USER_CS_CLIENT_HPP */

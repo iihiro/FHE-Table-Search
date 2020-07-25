@@ -30,6 +30,7 @@ namespace utility
 bool file_exist(const std::string& filename);
 bool dir_exist(const std::string& dirname);
 size_t file_size(const std::string& filename);
+bool remove_file(const std::string& filename);
 std::string basename(const std::string& filepath);
 bool isdigit(const std::string& str);
 std::string getenv(const char* env_var);

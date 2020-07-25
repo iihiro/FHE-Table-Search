@@ -1,0 +1,7 @@
+#ifndef FTS_DEFINE_HPP
+#define FTS_DEFINE_HPP
+
+#define FTS_TIMEOUT_SEC (60)
+#define FTS_RETRY_INTERVAL_USEC (2000000)
+
+#endif /* FTS_DEFINE_HPP */

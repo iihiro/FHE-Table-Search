@@ -18,9 +18,13 @@
 #ifndef FTS_CS_HPP
 #define FTS_CS_HPP
 
+#define DEFAULT_MAX_CONCURRENT_QUERIES 128
+#define DEFAULT_MAX_RESULTS 128
+#define DEFAULT_MAX_RESULT_LIFETIME_SEC 50000
+
 #include <memory>
 
-namespace ftscs
+namespace fts_cs
 {
 
 /**
@@ -30,17 +34,21 @@ class CSServer
 {
 public:
     /**
-     * コンストラクタ
-     * @param[in] port ポート番号
-     * @param[in] LUT_dirpath LUTファイルのディレクトリパス
-     * @param[in] callback コールバック関数定義
-     * @param[in] state 状態遷移定義
-     * @param[in] max_concurrent_queries 最大同時クエリー数
-     * @param[in] max_results 最大結果保持数
-     * @param[in] result_lifetime_sec 結果を保持する時間(秒)
+     * constructor
+     * @param[in] port port number
+     * @param[in] dec_host hostname of Decryptor
+     * @param[in] dec_port port number of Decryptor
+     * @param[in] LUT_dirpath LUT filepath
+     * @param[in] callback callback functions
+     * @param[in] state state machine
+     * @param[in] max_concurrent_queries max concurrent query number
+     * @param[in] max_results max result number
+     * @param[in] result_lifetime_sec result linefile (sec)
      */
     CSServer(const char* port,
-             const std::string& LUT_dirpath,
+             const char* dec_host,
+             const char* dec_port,
+             const std::string& LUT_filepath,
              stdsc::CallbackFunctionContainer& callback,
              stdsc::StateContext& state,
              const uint32_t max_concurrent_queries = DEFAULT_MAX_CONCURRENT_QUERIES,
@@ -49,15 +57,15 @@ public:
     ~CSServer(void) = default;
 
     /**
-     * サーバ実行
+     * start server
      */
-    void start(void);
+    void start();
     /**
-     * サーバ停止指示
+     * stop server
      */
     void stop(void);
     /**
-     * サーバ停止待ち
+     * wait for stopping
      */
     void wait(void);
 
@@ -66,6 +74,6 @@ private:
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace ftscs */
+} /* namespace fts_cs */
 
 #endif /* FTS_CS_SRV_HPP */
