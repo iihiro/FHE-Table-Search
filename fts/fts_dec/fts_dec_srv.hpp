@@ -30,10 +30,10 @@ class DecServer
 {
 public:
     /**
-     * コンストラクタ
-     * @param[in] port ポート番号
-     * @param[in] callback コールバック関数定義
-     * @param[in] state 状態遷移定義
+     * Constructor
+     * @param[in] port port number
+     * @param[in] callback callback functions
+     * @param[in] state state machine
      */
     DecServer(const char* port,
               stdsc::CallbackFunctionContainer& callback,
@@ -41,15 +41,15 @@ public:
     ~DecServer(void) = default;
 
     /**
-     * サーバ実行
+     * Start server
      */
     void start(void);
     /**
-     * サーバ停止指示
+     * Stop server
      */
     void stop(void);
     /**
-     * サーバ停止待ち
+     * Wait for stopping
      */
     void wait(void);
 

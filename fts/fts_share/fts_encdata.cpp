@@ -64,14 +64,12 @@ void EncData::encrypt(const int64_t input_value,
 
     size_t slot_count = batch_encoder.slot_count();
     size_t row_size = slot_count / 2;
-    std::cout << "Plaintext matrix row size: " << row_size << std::endl;
-    std::cout << "Slot nums = " << slot_count << std::endl;
 
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::mt19937 generator(seed);
 
     //encrypt the LUT query
-    std::cout << "Encrypt and save your query..." << std::flush;
+    std::cout << "  Encrypting ..." << std::flush;
     std::vector<int64_t> query;
     for(size_t i=0 ; i<row_size ; i++){
         query.push_back(input_value);
@@ -108,19 +106,16 @@ void EncData::encrypt(const int64_t input_value,
     print_matrix(query);
 
     seal::Ciphertext ciphertext_query;
-    std::cout << "Encrypting: ";
     encryptor.encrypt(plaintext_query, ciphertext_query);
-    std::cout << "Done" << std::endl;
+    std::cout << "  Done" << std::endl;
 
     //save in a file
-#if 1
-    std::cout << "Save in a file." << std::endl;
+#if defined ENABLE_LOCAL_DEBUG
     std::ofstream queryFile;
     queryFile.open("query", std::ios::binary);
     ciphertext_query.save(queryFile);
     queryFile.close();
 #endif
-    std::cout << "End" << std::endl;
 
     vec_.push_back(ciphertext_query);
 }
@@ -159,18 +154,15 @@ void EncData::load_from_stream(std::istream& is)
     size_t sz;
     is.read(reinterpret_cast<char*>(&sz), sizeof(sz));
 
-    printf("fuga1: sz:%lu\n", sz);
     clear();
 
     auto context = seal::SEALContext::Create(pimpl_->params_);
-    printf("fuga2\n");
     
     for (size_t i=0; i<sz; ++i) {
         seal::Ciphertext ctxt;
         ctxt.load(context, is);
         vec_.push_back(ctxt);
     }
-    printf("fuga3\n");
 }
 
 void EncData::save_to_file(const std::string& filepath) const

@@ -36,49 +36,67 @@ namespace fts_cs
 class DecClient
 {
 public:
+    
     /**
-     * コンストラクタ
-     * @param[in] host Decryptorのホスト名
-     * @param[in] port Decryptorのポート番号
+     * Constructor
+     * @param[in] host hostname of decryptor
+     * @param[in] port port number of decryptor
      */
     DecClient(const char* host, const char* port);
     virtual ~DecClient(void) = default;
 
     /**
-     * 接続
-     * @param[in] retry_interval_usec リトライ間隔(usec)
-     * @param[in] timeout_sec タイムアウト時間(sec)
+     * Connect
+     * @param[in] retry_interval_usec retry interval for connect to server (usec)
+     * @param[in] timeout_sec timeout for connection to server (sec)
      */
     void connect(const uint32_t retry_interval_usec = FTS_RETRY_INTERVAL_USEC,
                  const uint32_t timeout_sec = FTS_TIMEOUT_SEC);
     /**
-     * 切断
+     * Disconnect
      */
     void disconnect();
 
     /**
-     * 新規鍵ペア生成
-     * @param[out] pseckey Secret key
-     * @return keyID
+     * Get public key from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] pubkey public key
      */
-    //int32_t new_keys(seal::SecretKey& seckey);
+    void get_pubkey(const int32_t key_id, seal::PublicKey& pubkey);
+
+    /**
+     * Get galois keys from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] galiskey galois keys
+     */
+    void get_galoiskey(const int32_t key_id, seal::GaloisKeys& galoiskey);
     
     /**
-     * 鍵ペア削除
-     * @param[in] key_id keyID
-     * @return 処理に成功したか否か
+     * Get relin keys from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] relinkey relin keys
      */
-    //bool delete_keys(const int32_t key_id) const;
-
-    void get_pubkey(const int32_t key_id, seal::PublicKey& pubkey);
-    void get_galoiskey(const int32_t key_id, seal::GaloisKeys& galoiskey);
     void get_relinkey(const int32_t key_id, seal::RelinKeys& relinkey);
-    void get_param(const int32_t key_id, seal::EncryptionParameters& param);
+    
+    /**
+     * Get encryption parameters from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] params encryption parameters
+     */
+    void get_param(const int32_t key_id, seal::EncryptionParameters& params);
 
-    void set_midresults(const int32_t key_id, const int32_t query_id,
-                        const fts_share::EncData& enc_midresult,
-                        fts_share::EncData& enc_PIRquery,
-                        fts_share::EncData& enc_PIRindex);
+    /**
+     * Get PIR queries
+     * @param[in] key_id key ID
+     * @parma[in] query_id query ID
+     * @param[in] enc_midresult intermediate results
+     * @param[out] enc_PIRquery PIR queries
+     * @param[out] enc_PIRindex PIR indecies
+     */
+    void get_PIRquery(const int32_t key_id, const int32_t query_id,
+                      const fts_share::EncData& enc_midresult,
+                      fts_share::EncData& enc_PIRquery,
+                      fts_share::EncData& enc_PIRindex);
     
 private:
     struct Impl;

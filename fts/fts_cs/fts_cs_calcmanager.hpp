@@ -31,21 +31,47 @@ class Result;
 class CalcManager
 {
 public:
+    /**
+     * Constructor
+     * @param[in] LUT_filepath LUT filepath
+     * @param[in] max_concurrent_queries max number of concurrent queries
+     * @param[in] max_results max result number to hold
+     * @param[in] result_lifetime_sec lifetime to hold (sec)
+     */
     CalcManager(const std::string& LUT_filepath,
                 const uint32_t max_concurrent_queries,
                 const uint32_t max_results,
                 const uint32_t result_lifetime_sec);
     virtual ~CalcManager() = default;
 
+    /**
+     * Start calculation threads
+     * @param[in] thread_num number of threads
+     * @param[in] dec_host hostname of decryptor
+     * @param[in] dec_port port number of decryptor
+     */
     void start_threads(const uint32_t thread_num,
                        const std::string& dec_host,
                        const std::string& dec_port);
+
+    /**
+     * Stop calculation threads
+     */
     void stop_threads();
 
+    /**
+     * Set queries
+     * @param[in] query query
+     * @return query ID
+     */
     int32_t push_query(const Query& query);
-    //void get(const int32_t query_id, Result& result,
-    //         const uint32_t retry_interval_msec=100) const;
-    //bool try_get(const int32_t query_id, Result& result) const;
+
+    /**
+     * Get results of query
+     * @paran[in] query_id query ID
+     * @param[out] result result
+     * @param[in] retry_interval_usec retry interval (usec)
+     */
     void pop_result(const int32_t query_id, Result& result,
                     const uint32_t retry_interval_msec=100) const;
 

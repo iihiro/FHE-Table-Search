@@ -34,14 +34,14 @@ namespace fts_cs
         int64_t temp;
         std::string lineStr;
 
-        printf("**1\n");
+        STDSC_LOG_INFO("Read LUT file. (filepath:%s)", filepath);
+
         if (!fts_share::utility::file_exist(filepath)) {
             std::ostringstream oss;
             oss << "File not found. (" << filepath << ")";
             STDSC_THROW_FILE(oss.str());
         }
 
-        printf("**2: %s\n", filepath.c_str());
         std::ifstream ifs(filepath, std::ios::in);
         while (getline(ifs, lineStr)){
             std::vector<int64_t> table_col;
@@ -51,10 +51,8 @@ namespace fts_cs
                 temp = std::stoi(str);
                 table_col.push_back(temp);
             }
-            printf("**3 col:%lu\n", table_col.size());
             table.push_back(table_col);
         }
-        printf("**4 row:%lu\n", table.size());
     }
     
     struct CalcManager::Impl
@@ -68,10 +66,6 @@ namespace fts_cs
               result_lifetime_sec_(result_lifetime_sec)
         {
             read_table(LUT_filepath, oriLUT_);
-            {
-                auto& a = oriLUT_[0];
-                printf("hoge2: a.size():%lu\n", a.size());
-            }
         }
 
         const uint32_t max_concurrent_queries_;
@@ -97,6 +91,7 @@ namespace fts_cs
                                     const std::string& dec_host,
                                     const std::string& dec_port)
     {
+        STDSC_LOG_INFO("Start calculation threads. (n:%d)", thread_num);
         pimpl_->threads_.clear();
         for (size_t i=0; i<thread_num; ++i) {
             pimpl_->threads_.emplace_back(
@@ -114,10 +109,12 @@ namespace fts_cs
     
     void CalcManager::stop_threads()
     {
+        STDSC_LOG_INFO("Stop calculation threads.");
     }
     
     int32_t CalcManager::push_query(const Query& query)
     {
+        STDSC_LOG_INFO("Set queries.");
         int32_t query_id = -1;
         try {
             query_id = pimpl_->qque_.push(query);
@@ -131,6 +128,7 @@ namespace fts_cs
     void CalcManager::pop_result(const int32_t query_id, Result& result,
                                  const uint32_t retry_interval_msec) const
     {
+        STDSC_LOG_INFO("Getting results of query. (retry_interval_msec: %u ms)", retry_interval_msec);
         while (!pimpl_->rque_.pop(query_id, result)) {
             usleep(retry_interval_msec * 1000);
         }

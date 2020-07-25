@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     {
         Option option;
         init(option, argc, argv);
-        STDSC_LOG_INFO("Launched User demo app.");
+        STDSC_LOG_INFO("Launched Decryptor on port #%s", PORT_DEC_SRV);
         exec(option);
     }
     catch (stdsc::AbstractException& e)

@@ -18,7 +18,7 @@ public:
         : server_(new stdsc::Server<>(port, state, callback)),
           state_(state)
     {
-        STDSC_LOG_INFO("Launched Dec server [port]: %s", port);
+        STDSC_LOG_INFO("Initialized decryptor server with port #%s", port);
     }
 
     ~Impl(void) = default;
@@ -56,16 +56,19 @@ DecServer::DecServer(const char* port,
 
 void DecServer::start(void)
 {
+    STDSC_LOG_INFO("Start decryptor server.");
     pimpl_->start();
 }
 
 void DecServer::stop(void)
 {
+    STDSC_LOG_INFO("Stop decryptor server.");
     pimpl_->stop();
 }
 
 void DecServer::wait(void)
 {
+    STDSC_LOG_INFO("Waiting for decryptor server to stop.");
     pimpl_->wait();
 }
 

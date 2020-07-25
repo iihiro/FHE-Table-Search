@@ -37,12 +37,28 @@ class CalcThread : public stdsc::Thread<CalcThreadParam>
 {
     using super = Thread<CalcThreadParam>;
 public:
+    /**
+     * Constructor
+     * @param[in] in_queue query queue
+     * @param[out] out_queue result queue
+     * @param[in] ori_lut LUT
+     * @param[in] dec_host hostname of decryptor
+     * @param[in] dec_port port number of decryptor
+     */
     CalcThread(QueryQueue& in_queue, ResultQueue& out_queue,
                std::vector<std::vector<int64_t>>& ori_lut,
                const std::string& dec_host, const std::string& dec_port);
     virtual ~CalcThread(void) = default;
 
+    /**
+     * Start thread
+     */
     void start();
+    
+    /**
+     * Stop thread
+t thread
+     */
     void stop();
     
 private:

@@ -45,7 +45,6 @@ struct CSClient::Impl
                  const uint32_t timeout_sec)
     {
         client_.connect(host_, port_, retry_interval_usec, timeout_sec);
-        STDSC_LOG_INFO("Connected to Computation Server.");
     }
 
     void disconnect(void)
@@ -73,7 +72,6 @@ struct CSClient::Impl
         stdsc::Buffer* sbuffer = &sbuffstream;
         stdsc::Buffer rbuffer;
         client_.send_recv_data_blocking(fts_share::kControlCodeUpDownloadQuery, *sbuffer, rbuffer);
-        STDSC_LOG_INFO("sent query");
 
         stdsc::BufferStream rbuffstream(rbuffer);
         std::iostream rstream(&rbuffstream);
@@ -85,8 +83,6 @@ struct CSClient::Impl
 
     void recv_results(const int32_t query_id, fts_share::EncData& enc_result)
     {
-        STDSC_LOG_INFO("request result for query#%d", query_id);
-        
         fts_share::PlainData<int32_t> splaindata;
         splaindata.push(query_id);
 
@@ -102,23 +98,16 @@ struct CSClient::Impl
         stdsc::Buffer rbuffer;
         client_.send_recv_data_blocking(fts_share::kControlCodeUpDownloadResult, *sbuffer, rbuffer);
 
-        STDSC_LOG_INFO("received result of query#%d", query_id);
-
         stdsc::BufferStream rbuffstream(rbuffer);
         std::iostream rstream(&rbuffstream);
-        printf("----------\n");
         enc_result.load_from_stream(rstream);
+#if defined ENABLE_LOCAL_DEBUG
         fts_share::seal_utility::write_to_file("result.txt", enc_result.data());
-        printf("**********\n");
-    }
-
-    void set_callback(const int32_t query_id, cbfunc_t func, void* args)
-    {
+#endif
     }
 
     void wait(const int32_t query_id) const
     {
-        STDSC_LOG_TRACE("waiting result for query#%d", query_id);
         if (cbmap_.count(query_id)) {
             auto& rcb = cbmap_.at(query_id);
             rcb.thread->wait();
@@ -141,18 +130,24 @@ CSClient::CSClient(const char* host, const char* port,
 void CSClient::connect(const uint32_t retry_interval_usec,
                        const uint32_t timeout_sec)
 {
+    STDSC_LOG_INFO("Connect to computation server.");
     pimpl_->connect(retry_interval_usec, timeout_sec);
 }
 
 void CSClient::disconnect(void)
 {
+    STDSC_LOG_INFO("Disconnect from computation server.");
     pimpl_->disconnect();
 }
 
 int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no,
                              const fts_share::EncData& enc_inputs) const
 {
-    return pimpl_->send_query(key_id, func_no, enc_inputs);
+    STDSC_LOG_INFO("Send query: sending query to computation server. (key_id: %d, func_no:%d)",
+                   key_id, func_no);
+    auto query_id = pimpl_->send_query(key_id, func_no, enc_inputs);
+    STDSC_LOG_INFO("Send query: received query ID (#%d)", query_id);
+    return query_id;
 }
 
 int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no,
@@ -161,12 +156,14 @@ int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no,
                              void* cbfunc_args) const
 {
     int32_t query_id = pimpl_->send_query(key_id, func_no, enc_inputs);
+    STDSC_LOG_INFO("Set callback function for query #%d", query_id);
     set_callback(query_id, cbfunc, cbfunc_args);
     return query_id;
 }
 
 void CSClient::recv_results(const int32_t query_id, fts_share::EncData& enc_result) const
 {
+    STDSC_LOG_INFO("Waiting for query #%d results ...", query_id);
     pimpl_->recv_results(query_id, enc_result);
 }
 

@@ -29,7 +29,7 @@ public:
           param_(new CallbackParam()),
           cparam_(new CommonCallbackParam(*calc_manager_))
     {
-        STDSC_LOG_INFO("Launched CS server [port]: %s", port);
+        STDSC_LOG_INFO("Initialized computation server with port #%s", port);        
         callback.set_commondata(static_cast<void*>(param_.get()), sizeof(*param_));
         callback.set_commondata(static_cast<void*>(cparam_.get()), sizeof(*cparam_),
                                 stdsc::CommonDataKind_t::kCommonDataOnAllConnection);
@@ -87,16 +87,19 @@ CSServer::CSServer(const char* port,
 
 void CSServer::start()
 {
+    STDSC_LOG_INFO("Start computation server.");
     pimpl_->start();
 }
 
 void CSServer::stop(void)
 {
+    STDSC_LOG_INFO("Stop computation server.");
     pimpl_->stop();
 }
 
 void CSServer::wait(void)
 {
+    STDSC_LOG_INFO("Waiting for computation server to stop.");
     pimpl_->wait();
 }
 

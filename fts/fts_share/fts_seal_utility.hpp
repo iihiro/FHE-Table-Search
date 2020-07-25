@@ -19,7 +19,7 @@
 #define FTS_SEAL_UTILITY_HPP
 
 #include <string>
-//#include <seal/seal.h>
+
 namespace seal
 {
     class EncryptionParameters;

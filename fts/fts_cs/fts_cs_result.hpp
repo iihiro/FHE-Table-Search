@@ -26,9 +26,17 @@
 namespace fts_cs
 {
 
+/**
+ * @brief This class is used to hold the result data.
+ */
 struct Result
 {
     Result() = default;
+    /**
+     * Constructor
+     * @param[in] query_id query ID
+     * @param[in] ctxt cipher text
+     */
     Result(const int32_t query_id, const seal::Ciphertext& ctxt);
     virtual ~Result() = default;
 
@@ -36,6 +44,9 @@ struct Result
     seal::Ciphertext ctxt_;
 };
 
+/**
+ * @brief This class is used to hold the queue of results.
+ */
 struct ResultQueue : public fts_share::ConcurrentMapQueue<int32_t, Result>
 {
     using super = fts_share::ConcurrentMapQueue<int32_t, Result>;

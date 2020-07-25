@@ -35,38 +35,13 @@ public:
     void connect(const uint32_t retry_interval_usec,
                  const uint32_t timeout_sec)
     {
-        STDSC_LOG_INFO("Connecting to Decryptor.");
         client_.connect(host_, port_, retry_interval_usec, timeout_sec);
-        STDSC_LOG_INFO("Connected to Decryptor.");
     }
 
     void disconnect(void)
     {
         client_.close();
     }
-
-    //int32_t new_keys(seal::SecretKey& seckey)
-    //{
-    //    stdsc::Buffer buffer;
-    //    client_.recv_data_blocking(fts_share::kControlCodeDownloadNewKeys, buffer);
-    //    STDSC_LOG_INFO("generate new keys");
-    //
-    //    stdsc::BufferStream buffstream(buffer);
-    //    std::iostream stream(&buffstream);
-    //
-    //    fts_share::PlainData<int32_t> plaindata;
-    //    plaindata.load_from_stream(stream);
-    //    
-    //    seckey.unsafe_load(stream);
-    //    
-    //    return plaindata.data();
-    //}
-    //
-    //bool delete_keys(const int32_t key_id) const
-    //{
-    //    STDSC_LOG_INFO("delete keys(%d) [DECClient::delete_keys()]", key_id);
-    //    return true;
-    //}
 
     template <class T>
     void get_key(const int32_t key_id, const fts_share::ControlCode_t code, T& key)
@@ -91,10 +66,10 @@ public:
         param = seal::EncryptionParameters::Load(stream);
     }
 
-    void set_midresults(const int32_t key_id, const int32_t query_id,
-                        const fts_share::EncData& enc_midresult,
-                        fts_share::EncData& enc_PIRquery,
-                        fts_share::EncData& enc_PIRindex)
+    void get_PIRquery(const int32_t key_id, const int32_t query_id,
+                      const fts_share::EncData& enc_midresult,
+                      fts_share::EncData& enc_PIRquery,
+                      fts_share::EncData& enc_PIRindex)
     {
         fts_share::PlainData<fts_share::Cs2DecParam> splaindata;
         fts_share::Cs2DecParam param = {key_id, query_id};
@@ -114,8 +89,6 @@ public:
 
         stdsc::BufferStream rbuffstream(rbuffer);
         std::iostream rstream(&rbuffstream);
-        //fts_share::PlainData<int32_t> rplaindata;
-        //rplaindata.load_from_stream(rstream);
 
         enc_PIRquery.load_from_stream(rstream);
         enc_PIRindex.load_from_stream(rstream);
@@ -136,53 +109,53 @@ DecClient::DecClient(const char* host, const char* port)
 void DecClient::connect(const uint32_t retry_interval_usec,
                        const uint32_t timeout_sec)
 {
+    STDSC_LOG_INFO("Connect to decryptor.");
     pimpl_->connect(retry_interval_usec, timeout_sec);
 }
 
 void DecClient::disconnect(void)
 {
+    STDSC_LOG_INFO("Disconnect from decryptor.");
     pimpl_->disconnect();
 }
 
-//int32_t DecClient::new_keys(seal::SecretKey& seckey)
-//{
-//    return pimpl_->new_keys(seckey);
-//}
-//
-//bool DecClient::delete_keys(const int32_t key_id) const
-//{
-//    bool res = pimpl_->delete_keys(key_id);
-//
-//    return res;
-//}
-
 void DecClient::get_pubkey(const int32_t key_id, seal::PublicKey& pubkey)
 {
+    STDSC_LOG_INFO("Get public key: sending request of #%d to decryptor.", key_id);
     pimpl_->get_key(key_id, fts_share::kControlCodeUpDownloadPubKey, pubkey);
+    STDSC_LOG_INFO("Get public key: received key of #%d", key_id);
 }
     
 void DecClient::get_galoiskey(const int32_t key_id, seal::GaloisKeys& galoiskey)
 {
+    STDSC_LOG_INFO("Get galois keys: sending request of #%d to decryptor.", key_id);
     pimpl_->get_key(key_id, fts_share::kControlCodeUpDownloadGaloisKey, galoiskey);
+    STDSC_LOG_INFO("Get galois keys: received key of #%d", key_id);
 }
     
 void DecClient::get_relinkey(const int32_t key_id, seal::RelinKeys& relinkey)
 {
+    STDSC_LOG_INFO("Get relin keys: sending request of #%d to decryptor.", key_id);
     pimpl_->get_key(key_id, fts_share::kControlCodeUpDownloadRelinKey, relinkey);
+    STDSC_LOG_INFO("Get relin keys: received key of #%d", key_id);
 }
 
 void DecClient::get_param(const int32_t key_id, seal::EncryptionParameters& param)
 {
+    STDSC_LOG_INFO("Get encryption parameters: sending request of #%d to decryptor.", key_id);
     pimpl_->get_param(key_id, param);
+    STDSC_LOG_INFO("Get encryption parameters: received key of #%d", key_id);
 }
 
-void DecClient::set_midresults(const int32_t key_id, const int32_t query_id,
-                               const fts_share::EncData& enc_midresult,
-                               fts_share::EncData& enc_PIRquery,
-                               fts_share::EncData& enc_PIRindex)
+void DecClient::get_PIRquery(const int32_t key_id, const int32_t query_id,
+                             const fts_share::EncData& enc_midresult,
+                             fts_share::EncData& enc_PIRquery,
+                             fts_share::EncData& enc_PIRindex)
                                
 {
-    pimpl_->set_midresults(key_id, query_id, enc_midresult, enc_PIRquery, enc_PIRindex);
+    STDSC_LOG_INFO("Get PIR queries: sending request of query #%d to decryptor.", query_id);
+    pimpl_->get_PIRquery(key_id, query_id, enc_midresult, enc_PIRquery, enc_PIRindex);
+    STDSC_LOG_INFO("Get PIR queries:: received PIR queries of query #%d", query_id);
 }
 
 

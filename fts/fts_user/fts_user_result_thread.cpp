@@ -51,16 +51,16 @@ struct ResultThread::Impl
     {
         try
         {
-            STDSC_LOG_INFO("launched result thread for query#%d", args.query_id);
+            STDSC_LOG_INFO("Launched result thread for query #%d", args.query_id);
 
             fts_share::EncData enc_result(enc_params_);
             client_.recv_results(args.query_id, enc_result);
-            STDSC_LOG_TRACE("get result of query#%d", args.query_id);
-            cbfunc_(enc_result.data(), cbargs_);
+            STDSC_LOG_TRACE("Invoke callback function of query #%d", args.query_id);
+            cbfunc_(args.query_id, enc_result.data(), cbargs_);
         }
         catch (const stdsc::AbstractException& e)
         {
-            STDSC_LOG_TRACE("Failed to client process (%s)", e.what());
+            STDSC_LOG_TRACE("Failed to execute result thread. (%s)", e.what());
             te->set_current_exception();
         }
     }
@@ -86,11 +86,13 @@ ResultThread::~ResultThread(void)
 
 void ResultThread::start(ResultThreadParam& param)
 {
+    STDSC_LOG_INFO("Start result thread.");
     super::start(param, pimpl_->te_);
 }
 
 void ResultThread::wait(void)
 {
+    STDSC_LOG_INFO("Waiting for finish of result thread.");
     super::join();
     pimpl_->te_->rethrow_if_has_exception();
 }

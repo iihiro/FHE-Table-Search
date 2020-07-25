@@ -48,13 +48,40 @@ struct KeyContainer
     KeyContainer();
     virtual ~KeyContainer() = default;
 
+    /**
+     * Generate new keys.
+     * @param[in] param parameters
+     * @return key ID
+     */
     int32_t new_keys(const fts_share::DecParam& param);
-    void delete_keys(const int32_t keyID);
 
-    template <class T>
-    void get(const int32_t keyID, const KeyKind_t kind, T& data) const;
-    void get_param(const int32_t keyID, seal::EncryptionParameters& param) const;
-    size_t size(const int32_t keyID, const KeyKind_t kind) const;
+    /**
+     * Delete keys.
+     * @param[in] key_id key ID
+     */
+    void delete_keys(const int32_t key_id);
+
+    /**
+     * get keys.
+     * @param[in] key_id key ID
+     * @param[in] kind key kind
+     * @param[out] data key data
+     */
+    template <class T> void get(const int32_t key_id, const KeyKind_t kind, T& data) const;
+
+    /**
+     * get encryption parameters
+     * @param[in] key_id key ID
+     * @param[out] params encryption parameters
+     */
+    void get_param(const int32_t key_id, seal::EncryptionParameters& params) const;
+
+    /**
+     * get data size
+     * @param[in] key_id key ID
+     * @param[in] kind key kind
+     */
+    size_t data_size(const int32_t key_id, const KeyKind_t kind) const;
 
 private:
     struct Impl;

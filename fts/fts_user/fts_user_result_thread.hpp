@@ -33,19 +33,34 @@ class ResultThreadParam;
 class CSClient;
 
 /**
- * @brief The thread to receive result from CS.
+ * @brief The thread to receive result from computation server.
  */
 class ResultThread : public stdsc::Thread<ResultThreadParam>
 {
     using super = stdsc::Thread<ResultThreadParam>;
 
-public:    
+public:
+    /**
+     * Constructor
+     * @param[in] cs_client computation server client
+     * @parma[in] enc_params encryption parameters
+     * @paran[in] cbfunc callback function
+     * @param[in] cbargs arguments for callback function
+     */
     ResultThread(const CSClient& cs_client,
                  const seal::EncryptionParameters& enc_params,
                  cbfunc_t cbfunc, void* cbargs);
     virtual ~ResultThread(void);
 
+    /**
+     * Start threads
+     * @param[in] param thread parameters
+     */
     void start(ResultThreadParam& param);
+
+    /**
+     * Wait for finish
+     */
     void wait(void);
 
 private:
@@ -56,6 +71,9 @@ private:
     std::shared_ptr<Impl> pimpl_;
 };
 
+/**
+ * @brief The thread parameters
+ */
 struct ResultThreadParam
 {
     int32_t query_id;

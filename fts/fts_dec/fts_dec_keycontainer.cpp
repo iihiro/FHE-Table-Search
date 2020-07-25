@@ -94,22 +94,22 @@ struct KeyContainer::Impl
 
     int32_t new_keys(const fts_share::DecParam& param)
     {
-        int32_t keyID = generate_keyID();
-        map_.emplace(keyID, KeyFilenames(keyID));
-        generate_keyfiles(param.poly_mod_degree, param.coef_mod_192, param.plain_mod, map_.at(keyID));
-        return keyID;
+        int32_t key_id = generate_key_id();
+        map_.emplace(key_id, KeyFilenames(key_id));
+        generate_keyfiles(param.poly_mod_degree, param.coef_mod_192, param.plain_mod, map_.at(key_id));
+        return key_id;
     }
     
-    void delete_keys(const int32_t keyID)
+    void delete_keys(const int32_t key_id)
     {
-        remove_keyfiles(map_.at(keyID));
-        map_.erase(keyID);
+        remove_keyfiles(map_.at(key_id));
+        map_.erase(key_id);
     }
 
     template <class T>
-    void get(const int32_t keyID, const KeyKind_t kind, T& data) const
+    void get(const int32_t key_id, const KeyKind_t kind, T& data) const
     {
-        const auto& filename = map_.at(keyID).filename(kind);
+        const auto& filename = map_.at(key_id).filename(kind);
         if (!fts_share::utility::file_exist(filename)) {
             std::ostringstream oss;
             oss << "File is not found. (" << filename << ")";
@@ -128,9 +128,9 @@ struct KeyContainer::Impl
         ifs.close();
     }
 
-    void get_param(const int32_t keyID, seal::EncryptionParameters& param) const
+    void get_param(const int32_t key_id, seal::EncryptionParameters& param) const
     {
-        const auto& filename = map_.at(keyID).filename(KeyKind_t::kKindParam);
+        const auto& filename = map_.at(key_id).filename(KeyKind_t::kKindParam);
         if (!fts_share::utility::file_exist(filename)) {
             std::ostringstream oss;
             oss << "File is not found. (" << filename << ")";
@@ -141,9 +141,9 @@ struct KeyContainer::Impl
         ifs.close();
     }
 
-    size_t size(const int32_t keyID, const KeyKind_t kind) const
+    size_t data_size(const int32_t key_id, const KeyKind_t kind) const
     {
-        const auto& filename = map_.at(keyID).filename(kind);
+        const auto& filename = map_.at(key_id).filename(kind);
         if (!fts_share::utility::file_exist(filename)) {
             std::ostringstream oss;
             oss << "File is not found. (" << filename << ")";
@@ -153,7 +153,7 @@ struct KeyContainer::Impl
     }
     
 private:
-    int32_t generate_keyID()
+    int32_t generate_key_id()
     {
         return 123;
     }
@@ -235,42 +235,47 @@ KeyContainer::KeyContainer()
 
 int32_t KeyContainer::new_keys(const fts_share::DecParam& param)
 {
-    return pimpl_->new_keys(param);
+    auto key_id = pimpl_->new_keys(param);
+    STDSC_LOG_INFO("Generate new keys. (key ID: %d)", key_id);
+    return key_id;
 }
 
-void KeyContainer::delete_keys(const int32_t keyID)
+void KeyContainer::delete_keys(const int32_t key_id)
 {
-    pimpl_->delete_keys(keyID);
+    pimpl_->delete_keys(key_id);
+    STDSC_LOG_INFO("Deleted key #d.", key_id);
 }
 
 template <class T>
-void KeyContainer::get(const int32_t keyID, const KeyKind_t kind, T& data) const
+void KeyContainer::get(const int32_t key_id, const KeyKind_t kind, T& data) const
 {
-    pimpl_->get<T>(keyID, kind, data);
+    pimpl_->get<T>(key_id, kind, data);
 }
 
-#define DEF_GET_WITH_TYPE(type)                                         \
-    template <>                                                         \
-    void KeyContainer::get(const int32_t keyID,                         \
-                           const KeyKind_t kind, type& data) const {    \
-        pimpl_->get(keyID, kind, data);                                 \
+#define DEF_GET_WITH_TYPE(type, name)                                     \
+    template <>                                                           \
+    void KeyContainer::get(const int32_t key_id,                          \
+                           const KeyKind_t kind, type& data) const {      \
+        STDSC_LOG_INFO("Get keys. (key ID: %d, kind: %s)", key_id, name); \
+        pimpl_->get(key_id, kind, data);                                  \
     }
 
-DEF_GET_WITH_TYPE(seal::PublicKey);
-DEF_GET_WITH_TYPE(seal::SecretKey);
-DEF_GET_WITH_TYPE(seal::GaloisKeys)
-DEF_GET_WITH_TYPE(seal::RelinKeys);
+    DEF_GET_WITH_TYPE(seal::PublicKey,  "public key");
+    DEF_GET_WITH_TYPE(seal::SecretKey,  "secret key");
+    DEF_GET_WITH_TYPE(seal::GaloisKeys, "galois keys")
+    DEF_GET_WITH_TYPE(seal::RelinKeys,  "relin keys");
 
 #undef DEF_GET_WITH_TYPE
 
-size_t KeyContainer::size(const int32_t keyID, const KeyKind_t kind) const
+size_t KeyContainer::data_size(const int32_t key_id, const KeyKind_t kind) const
 {
-    return pimpl_->size(keyID, kind);
+    return pimpl_->data_size(key_id, kind);
 }
 
-void KeyContainer::get_param(const int32_t keyID, seal::EncryptionParameters& param) const
+void KeyContainer::get_param(const int32_t key_id, seal::EncryptionParameters& param) const
 {
-    pimpl_->get_param(keyID, param);
+    STDSC_LOG_INFO("Get encryption parameters. (key ID: %d)", key_id);
+    pimpl_->get_param(key_id, param);
 }
 
 } /* namespace fts_dec */

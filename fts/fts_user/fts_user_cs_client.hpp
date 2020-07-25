@@ -60,7 +60,7 @@ public:
     
     /**
      * send query
-     * @param[in] key_id keyID
+     * @param[in] key_id key ID
      * @param[in] func_no function number
      * @param[in] enc_input encrypted input values (1 or 2)
      * @return queryID
@@ -70,7 +70,7 @@ public:
 
     /**
      * send query
-     * @param[in] key_id keyID
+     * @param[in] key_id key ID
      * @param[in] func_no function number
      * @param[in] enc_input encrypted input values (1 or 2)
      * @param[in] cbfunc callback function
@@ -84,7 +84,7 @@ public:
     
     /**
      * receive results
-     * @param[in] query_id queryID
+     * @param[in] query_id query ID
      * @param[out] enc_result encrypted result
      */
     void recv_results(const int32_t query_id, fts_share::EncData& enc_result) const;
@@ -99,7 +99,7 @@ public:
 
     /**
      * wait for finish of query
-     * @param[in] query_id queryID
+     * @param[in] query_id query ID
      */
     void wait(const int32_t query_id) const;
 

@@ -32,44 +32,69 @@ namespace fts_user
 class DecClient
 {
 public:
+    
     /**
-     * コンストラクタ
-     * @param[in] host Decryptorのホスト名
-     * @param[in] port Decryptorのポート番号
+     * Constructor
+     * @param[in] host hostname of decryptor
+     * @param[in] port port number of decryptor
      */
     DecClient(const char* host, const char* port);
     virtual ~DecClient(void) = default;
 
     /**
-     * 接続
-     * @param[in] retry_interval_usec リトライ間隔(usec)
-     * @param[in] timeout_sec タイムアウト時間(sec)
+     * Connect
+     * @param[in] retry_interval_usec retry interval for connect to server (usec)
+     * @param[in] timeout_sec timeout for connection to server (sec)
      */
     void connect(const uint32_t retry_interval_usec = FTS_RETRY_INTERVAL_USEC,
                  const uint32_t timeout_sec = FTS_TIMEOUT_SEC);
     /**
-     * 切断
+     * Disconnect
      */
     void disconnect();
 
     /**
-     * 新規鍵ペア生成
-     * @param[out] pseckey Secret key
-     * @return keyID
+     * Generate new keys
+     * @param[out] seckey secret key
+     * @return key ID
      */
     int32_t new_keys(seal::SecretKey& seckey);
+
     
     /**
-     * 鍵ペア削除
-     * @param[in] key_id keyID
-     * @return 処理に成功したか否か
+     * Delete keys
+     * @param[in] key_id key ID
+     * @return success or failed
      */
     bool delete_keys(const int32_t key_id) const;
 
-    void get_pubkey(const int32_t keyID, seal::PublicKey& pubkey);
-    void get_galoiskey(const int32_t keyID, seal::GaloisKeys& galoiskey);
-    void get_relinkey(const int32_t keyID, seal::RelinKeys& relinkey);
-    void get_param(const int32_t key, seal::EncryptionParameters& param);
+    /**
+     * Get public key from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] pubkey public key
+     */
+    void get_pubkey(const int32_t key_id, seal::PublicKey& pubkey);
+
+    /**
+     * Get galois keys from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] galiskey galois keys
+     */
+    void get_galoiskey(const int32_t key_id, seal::GaloisKeys& galoiskey);
+    
+    /**
+     * Get relin keys from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] relinkey relin keys
+     */
+    void get_relinkey(const int32_t key_id, seal::RelinKeys& relinkey);
+    
+    /**
+     * Get encryption parameters from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] params encryption parameters
+     */
+    void get_param(const int32_t key_id, seal::EncryptionParameters& params);
     
 private:
     struct Impl;

@@ -26,13 +26,26 @@
 namespace fts_cs
 {
 
+/**
+ * @brief This class is used to hold the query data.
+ */
 struct Query
 {
     Query() = default;
+    /**
+     * Constructor
+     * @param[in] key_id key ID
+     * @param[in] func_no function NO
+     * @param[in] ctxts cipher texts
+     */
     Query(const int32_t key_id, const int32_t func_no,
           const std::vector<seal::Ciphertext>& ctxts);
     virtual ~Query() = default;
 
+    /**
+     * Copy constructor
+     * @param[in] q query
+     */
     Query(const Query& q)
     {
         key_id_ = q.key_id_;
@@ -46,13 +59,20 @@ struct Query
     std::vector<seal::Ciphertext> ctxts_;
 };
 
+/**
+ * @brief This class is used to hold the queue of queries.
+ */
 struct QueryQueue : public fts_share::ConcurrentMapQueue<int32_t, fts_cs::Query>
 {
     using super = fts_share::ConcurrentMapQueue<int32_t, fts_cs::Query>;
     
     QueryQueue() = default;
     virtual ~QueryQueue() = default;
-    
+
+    /**
+     * Push query in queue
+     * @param[in] data query
+     */
     virtual int32_t push(const Query& data)
     {
         auto id = generate_id();

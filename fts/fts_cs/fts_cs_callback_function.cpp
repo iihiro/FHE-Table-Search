@@ -55,7 +55,6 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
     fts_share::PlainData<fts_share::CSParam> rplaindata;
     rplaindata.load_from_stream(rstream);
     const auto& param = rplaindata.data();
-    STDSC_LOG_INFO("query with key_id: %d, func_no: %d", param.key_id, param.func_no);
 
     // load encryption parameters
     seal::EncryptionParameters params(seal::scheme_type::BFV);
@@ -66,7 +65,6 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
     enc_inputs.load_from_stream(rstream);
     fts_share::seal_utility::write_to_file("query.txt", enc_inputs.data());
 
-    printf("a\n");
     Query query(param.key_id, param.func_no, enc_inputs.vdata());
     int32_t query_id = calc_manager.push_query(query);
 
@@ -79,7 +77,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
 
     splaindata.save_to_stream(sstream);
 
-    STDSC_LOG_INFO("Sending queryID.");
+    STDSC_LOG_INFO("Sending query ack. (query ID: %d)", query_id);
     stdsc::Buffer* bsbuff = &sbuffstream;
     sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataQueryID, sz));
     sock.send_buffer(*bsbuff);
@@ -102,7 +100,6 @@ DEFUN_UPDOWNLOAD(CallbackFunctionResultRequest)
     fts_share::PlainData<int32_t> rplaindata;
     rplaindata.load_from_stream(rstream);
     const auto query_id = rplaindata.data();
-    STDSC_LOG_INFO("result request with query_id: %d", query_id);
 
     // load encryption parameters
     seal::EncryptionParameters params(seal::scheme_type::BFV);
@@ -112,16 +109,17 @@ DEFUN_UPDOWNLOAD(CallbackFunctionResultRequest)
     calc_manager.pop_result(query_id, result);
 
     fts_share::EncData enc_outputs(params, result.ctxt_);
+#if defined ENABLE_LOCAL_DEBUG
     fts_share::seal_utility::write_to_file("result.txt", enc_outputs.data());
+#endif
     
     auto sz = enc_outputs.stream_size();
-    printf("hoge: sz:%lu\n", sz);
     stdsc::BufferStream sbuffstream(sz);
     std::iostream sstream(&sbuffstream);
 
     enc_outputs.save_to_stream(sstream);
 
-    STDSC_LOG_INFO("Sending result.");
+    STDSC_LOG_INFO("Sending result. (query ID: %d)", query_id);
     stdsc::Buffer* bsbuff = &sbuffstream;
     sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataResult, sz));
     sock.send_buffer(*bsbuff);

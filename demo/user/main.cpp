@@ -33,18 +33,17 @@
 #include <fts_user/fts_user_cs_client.hpp>
 #include <fts_user/fts_user_result_thread.hpp>
 
+#define ENABLE_DEBUG
 
 #define PRINT_USAGE_AND_EXIT() do {                         \
         printf("Usage: %s value_x [value_y]\n", argv[0]);   \
         exit(1);                                            \
     } while (0)
 
-//seal::SecretKey g_seckey;
-
 struct Option
 {
-    int64_t input_value_x;
-    int64_t input_value_y;
+    int64_t input_value_x = -1;
+    int64_t input_value_y = -1;
     int32_t input_num = 0;
 };
 
@@ -54,15 +53,15 @@ struct CallbackParam
     seal::EncryptionParameters* params = nullptr;
 };
 
-void result_cb(const seal::Ciphertext& enc_result, void* args)
+void callback_func(const int32_t query_id, const seal::Ciphertext& enc_result, void* args)
 {
-    printf("called result callback. \n");
-    const auto* cbparam = reinterpret_cast<CallbackParam*>(args);
+    STDSC_LOG_INFO("Callback function for query #%d", query_id);
+    const auto* callback_param = reinterpret_cast<CallbackParam*>(args);
 
     int64_t result_value;
-    fts_share::EncData encdata(*cbparam->params, enc_result);
-    encdata.decrypt(*cbparam->seckey, result_value);
-    printf("  --- %ld\n", result_value);
+    fts_share::EncData encdata(*callback_param->params, enc_result);
+    encdata.decrypt(*callback_param->seckey, result_value);
+    STDSC_LOG_INFO("Result of query #%d: %ld", query_id, result_value);
 }
 
 void init(Option& option, int argc, char* argv[])
@@ -81,7 +80,15 @@ void init(Option& option, int argc, char* argv[])
             option.input_value_y = std::stol(argv[2]);
             option.input_num++;
         }
-    } 
+    }
+
+    if (option.input_num == 1) {
+        STDSC_LOG_INFO("input_values (n:%d): x: %ld",
+                       option.input_num, option.input_value_x);
+    } else {
+        STDSC_LOG_INFO("input_values (n:%d): x: %ld, y: %ld",
+                       option.input_num, option.input_value_x, option.input_value_y);
+    }
 }
 
 int32_t init_keys(const std::string& dec_host,
@@ -95,21 +102,43 @@ int32_t init_keys(const std::string& dec_host,
     dec_client.connect();
     
     auto key_id = dec_client.new_keys(seckey);
-    STDSC_LOG_INFO("generate new keys. (key_id:%d)", key_id);
-    fts_share::seal_utility::write_to_file("seckey.txt", seckey);
 
     dec_client.get_pubkey(key_id, pubkey);
-    fts_share::seal_utility::write_to_file("pubkey.txt", pubkey);
-
     dec_client.get_galoiskey(key_id, galoiskey);
-    fts_share::seal_utility::write_to_file("galoiskey.txt", galoiskey);
-
-    seal::RelinKeys relinkey;
-    dec_client.get_relinkey(key_id, relinkey);
-    fts_share::seal_utility::write_to_file("relinkey.txt", relinkey);
-        
     dec_client.get_param(key_id, params);
-    fts_share::seal_utility::write_to_file("param.txt", params);
+
+#if define ENABLE_DEBUG
+    {
+        std::string dbg_seckey_filename    = "dbg_seckey";
+        std::string dbg_pukey_filename     = "dbg_pukey";
+        std::string dbg_galoiskey_filename = "dbg_galoiskey";
+        std::string dbg_relinkey_filename  = "dbg_relinkey";
+        std::string dbg_params_filename    = "dbg_params";
+
+        seal::RelinKeys relinkey;
+        dec_client.get_relinkey(key_id, relinkey);
+        
+        STDSC_LOG_DEBUG("Write the securet key to file. (key_id:%d, file:%s)",
+                        key_id, dbg_seckey_filename.c_str());
+        fts_share::seal_utility::write_to_file(dbg_seckey_filename, seckey);
+    
+        STDSC_LOG_DEBUG("Write the public key to file. (key_id:%d, file:%s)",
+                        key_id, dbg_pubkey_filename.c_str());
+        fts_share::seal_utility::write_to_file(dbg_pubkey_filename, pubkey);
+    
+        STDSC_LOG_DEBUG("Write the galois keys to file. (key_id:%d, file:%s)",
+                        key_id, dbg_galoiskey_filename.c_str());
+        fts_share::seal_utility::write_to_file("galoiskey.txt", galoiskey);
+    
+        STDSC_LOG_DEBUG("Write the relin keys to file. (key_id:%d, file:%s)",
+                        key_id, dbg_relinkey_filename.c_str());
+        fts_share::seal_utility::write_to_file(dbg_relinkey_filename, relinkey);
+            
+        STDSC_LOG_DEBUG("Write the params to file. (key_id:%d, file:%s)",
+                        key_id, dbg_param_filename.c_str());
+        fts_share::seal_utility::write_to_file(dbg_param_filename, params);
+    }
+#endif
     
     return key_id;
 }
@@ -121,13 +150,13 @@ void compute_one(const int32_t key_id,
                  const seal::PublicKey& pubkey,
                  const seal::GaloisKeys& galoiskey,
                  const seal::EncryptionParameters& params,
-                 CallbackParam& cbparam)
+                 CallbackParam& callback_param)
 {
+    STDSC_LOG_INFO("Encrypt input values.");
     fts_share::EncData enc_inputs(params);
     enc_inputs.encrypt(val, pubkey, galoiskey);
 
-    // experiment
-    // この実験ができたので、次回はCSへクエリを送って、それを受け取るCallbackを各ところから
+#if defined ENABLE_DEBUG
     {
         // save to file
         fts_share::seal_utility::write_to_file("query.txt", enc_inputs.data());
@@ -144,18 +173,18 @@ void compute_one(const int32_t key_id,
 
         // decrypt
         int64_t output_value;
-        enc_inputs2.decrypt(*cbparam.seckey, output_value);
-        printf("  -- %ld\n", output_value);
+        enc_inputs2.decrypt(*callback_param.seckey, output_value);
+        STDSC_LOG_DEBUG("Debug: decrypt query: %ld", output_value);
     }
+#endif
         
     fts_user::CSClient cs_client(cs_host.c_str(), cs_port.c_str(), params);
     cs_client.connect();
 
-    //CallbackParam result_cbargs;
-    auto query_id = cs_client.send_query(key_id, fts_share::kFuncOne, enc_inputs,
-                                         result_cb, &cbparam);
-    printf("query_id: %d\n", query_id);
+    cs_client.send_query(key_id, fts_share::kFuncOne, enc_inputs,
+                         callback_func, &callback_param);
 
+    // wait for finish
     usleep(5*1000*1000);
 }
 
@@ -163,19 +192,22 @@ void exec(Option& option)
 {
     const char* host = "localhost";
 
+    STDSC_LOG_INFO("decryptor: %s:%s, computation server: %s:%s",
+                   host, PORT_DEC_SRV,
+                   host, PORT_CS_SRV);
+
     seal::SecretKey seckey;
     seal::PublicKey pubkey;
     seal::GaloisKeys galoiskey;
     seal::EncryptionParameters params(seal::scheme_type::BFV);
     auto key_id = init_keys(host, PORT_DEC_SRV,
                             seckey, pubkey, galoiskey, params);
-
     
-    CallbackParam cbparam = {&seckey, &params};
+    CallbackParam callback_param = {&seckey, &params};
 
     if (option.input_num == 1) {
         compute_one(key_id, option.input_value_x, host, PORT_CS_SRV,
-                    pubkey, galoiskey, params, cbparam);
+                    pubkey, galoiskey, params, callback_param);
     }
 
 }

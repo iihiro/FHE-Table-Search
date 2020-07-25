@@ -33,9 +33,7 @@ public:
     void connect(const uint32_t retry_interval_usec,
                  const uint32_t timeout_sec)
     {
-        STDSC_LOG_INFO("Connecting to Decryptor.");
         client_.connect(host_, port_, retry_interval_usec, timeout_sec);
-        STDSC_LOG_INFO("Connected to Decryptor.");
     }
 
     void disconnect(void)
@@ -47,7 +45,6 @@ public:
     {
         stdsc::Buffer buffer;
         client_.recv_data_blocking(fts_share::kControlCodeDownloadNewKeys, buffer);
-        STDSC_LOG_INFO("generate new keys");
 
         stdsc::BufferStream buffstream(buffer);
         std::iostream stream(&buffstream);
@@ -62,15 +59,14 @@ public:
 
     bool delete_keys(const int32_t key_id) const
     {
-        STDSC_LOG_INFO("delete keys(%d) [DECClient::delete_keys()]", key_id);
         return true;
     }
 
     template <class T>
-    void get_key(const int32_t keyID, const fts_share::ControlCode_t code, T& key)
+    void get_key(const int32_t key_id, const fts_share::ControlCode_t code, T& key)
     {
-        stdsc::Buffer sbuffer(sizeof(keyID)), rbuffer;
-        *(int32_t*)sbuffer.data() = keyID;
+        stdsc::Buffer sbuffer(sizeof(key_id)), rbuffer;
+        *(int32_t*)sbuffer.data() = key_id;
         client_.send_recv_data_blocking(code, sbuffer, rbuffer);
 
         stdsc::BufferStream buffstream(rbuffer);
@@ -78,10 +74,10 @@ public:
         key.unsafe_load(stream);
     }
     
-    void get_param(const int32_t keyID, seal::EncryptionParameters& param)
+    void get_param(const int32_t key_id, seal::EncryptionParameters& param)
     {
-        stdsc::Buffer sbuffer(sizeof(keyID)), rbuffer;
-        *(int32_t*)sbuffer.data() = keyID;
+        stdsc::Buffer sbuffer(sizeof(key_id)), rbuffer;
+        *(int32_t*)sbuffer.data() = key_id;
         client_.send_recv_data_blocking(fts_share::kControlCodeUpDownloadParam, sbuffer, rbuffer);
     
         stdsc::BufferStream buffstream(rbuffer);
@@ -103,44 +99,58 @@ DecClient::DecClient(const char* host, const char* port)
 void DecClient::connect(const uint32_t retry_interval_usec,
                        const uint32_t timeout_sec)
 {
+    STDSC_LOG_INFO("Connect to decryptor.");
     pimpl_->connect(retry_interval_usec, timeout_sec);
 }
 
 void DecClient::disconnect(void)
 {
+    STDSC_LOG_INFO("Disconnect from decryptor.");
     pimpl_->disconnect();
 }
 
 int32_t DecClient::new_keys(seal::SecretKey& seckey)
 {
-    return pimpl_->new_keys(seckey);
+    STDSC_LOG_INFO("New keys: sending new key request to decryptor.");
+    auto key_id = pimpl_->new_keys(seckey);
+    STDSC_LOG_INFO("New keys: received key ID (#%d)", key_id);
+    return key_id;
 }
 
 bool DecClient::delete_keys(const int32_t key_id) const
 {
+    STDSC_LOG_INFO("Delete keys: sending delete key request to decryptor.");
     bool res = pimpl_->delete_keys(key_id);
-
+    STDSC_LOG_INFO("Delete keys: received result: %s", res? "success" : "failed");
     return res;
 }
 
-void DecClient::get_pubkey(const int32_t keyID, seal::PublicKey& pubkey)
+void DecClient::get_pubkey(const int32_t key_id, seal::PublicKey& pubkey)
 {
-    pimpl_->get_key(keyID, fts_share::kControlCodeUpDownloadPubKey, pubkey);
+    STDSC_LOG_INFO("Get public key: sending request of #%d to decryptor.", key_id);
+    pimpl_->get_key(key_id, fts_share::kControlCodeUpDownloadPubKey, pubkey);
+    STDSC_LOG_INFO("Get public key: received key of #%d", key_id);
 }
     
-void DecClient::get_galoiskey(const int32_t keyID, seal::GaloisKeys& galoiskey)
+void DecClient::get_galoiskey(const int32_t key_id, seal::GaloisKeys& galoiskey)
 {
-    pimpl_->get_key(keyID, fts_share::kControlCodeUpDownloadGaloisKey, galoiskey);
+    STDSC_LOG_INFO("Get galois keys: sending request of #%d to decryptor.", key_id);
+    pimpl_->get_key(key_id, fts_share::kControlCodeUpDownloadGaloisKey, galoiskey);
+    STDSC_LOG_INFO("Get galois keys: received key of #%d", key_id);
 }
     
-void DecClient::get_relinkey(const int32_t keyID, seal::RelinKeys& relinkey)
+void DecClient::get_relinkey(const int32_t key_id, seal::RelinKeys& relinkey)
 {
-    pimpl_->get_key(keyID, fts_share::kControlCodeUpDownloadRelinKey, relinkey);
+    STDSC_LOG_INFO("Get relin keys: sending request of #%d to decryptor.", key_id);
+    pimpl_->get_key(key_id, fts_share::kControlCodeUpDownloadRelinKey, relinkey);
+    STDSC_LOG_INFO("Get relin keys: received key of #%d", key_id);
 }
 
-void DecClient::get_param(const int32_t keyID, seal::EncryptionParameters& param)
+void DecClient::get_param(const int32_t key_id, seal::EncryptionParameters& param)
 {
-    pimpl_->get_param(keyID, param);
+    STDSC_LOG_INFO("Get encryption parameters: sending request of #%d to decryptor.", key_id);
+    pimpl_->get_param(key_id, param);
+    STDSC_LOG_INFO("Get encryption parameters: received key of #%d", key_id);
 }
 
 } /* namespace fts_user */

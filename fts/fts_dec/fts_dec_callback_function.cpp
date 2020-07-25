@@ -54,7 +54,7 @@ DEFUN_DOWNLOAD(CallbackFunctionNewKeyRequest)
     plaindata.push(key_id);
 
     auto key_id_sz  = plaindata.stream_size();
-    auto seckey_sz = keycont.size(key_id, KeyKind_t::kKindSecKey);
+    auto seckey_sz = keycont.data_size(key_id, KeyKind_t::kKindSecKey);
     auto total_sz  = seckey_sz + key_id_sz;
     
     stdsc::BufferStream buffstream(total_sz);
@@ -66,7 +66,7 @@ DEFUN_DOWNLOAD(CallbackFunctionNewKeyRequest)
     keycont.get(key_id, KeyKind_t::kKindSecKey, seckey);
     seckey.save(stream);
     
-    STDSC_LOG_INFO("Sending key_id and secret key.");
+    STDSC_LOG_INFO("Sending new key request ack. (key ID: %d)", key_id);
     stdsc::Buffer* bsbuff = &buffstream;
     sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataNewKeys, total_sz));
     sock.send_buffer(*bsbuff);
@@ -83,9 +83,8 @@ DEFUN_UPDOWNLOAD(CallbackFunctionPubKeyRequest)
     auto& keycont = cdata_a->keycont;
 
     auto key_id = *static_cast<const int32_t*>(buffer.data());
-    STDSC_LOG_INFO("public key request with key_id: %d", key_id);
 
-    auto sz = keycont.size(key_id, KeyKind_t::kKindPubKey);
+    auto sz = keycont.data_size(key_id, KeyKind_t::kKindPubKey);
     stdsc::BufferStream buffstream(sz);
     std::iostream stream(&buffstream);
 
@@ -93,7 +92,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionPubKeyRequest)
     keycont.get(key_id, KeyKind_t::kKindPubKey, pubkey);
     pubkey.save(stream);
 
-    STDSC_LOG_INFO("Sending publick key.");
+    STDSC_LOG_INFO("Sending public key request ack. (key ID: %d)", key_id);
     stdsc::Buffer* bsbuff = &buffstream;
     sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataPubKey, sz));
     sock.send_buffer(*bsbuff);
@@ -103,16 +102,15 @@ DEFUN_UPDOWNLOAD(CallbackFunctionPubKeyRequest)
 // CallbackFunction for Galoiskey Request
 DEFUN_UPDOWNLOAD(CallbackFunctionGaloisKeyRequest)
 {
-    STDSC_LOG_INFO("Received galois key request. (current state : %s)",
+    STDSC_LOG_INFO("Received galois keys request. (current state : %s)",
                    state.current_state_str().c_str());
 
     DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
     auto& keycont = cdata_a->keycont;
 
     auto key_id = *static_cast<const int32_t*>(buffer.data());
-    STDSC_LOG_INFO("galois key request with key_id: %d", key_id);
 
-    auto sz = keycont.size(key_id, KeyKind_t::kKindGaloisKey);
+    auto sz = keycont.data_size(key_id, KeyKind_t::kKindGaloisKey);
     stdsc::BufferStream buffstream(sz);
     std::iostream stream(&buffstream);
 
@@ -120,7 +118,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionGaloisKeyRequest)
     keycont.get(key_id, KeyKind_t::kKindGaloisKey, galoiskey);
     galoiskey.save(stream);
 
-    STDSC_LOG_INFO("Sending galois key.");
+    STDSC_LOG_INFO("Sending galois keys request ack. (key ID: %d)", key_id);
     stdsc::Buffer* bsbuff = &buffstream;
     sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataGaloisKey, sz));
     sock.send_buffer(*bsbuff);
@@ -130,16 +128,15 @@ DEFUN_UPDOWNLOAD(CallbackFunctionGaloisKeyRequest)
 // CallbackFunction for Relinkey Request
 DEFUN_UPDOWNLOAD(CallbackFunctionRelinKeyRequest)
 {
-    STDSC_LOG_INFO("Received relin key request. (current state : %s)",
+    STDSC_LOG_INFO("Received relin keys request. (current state : %s)",
                    state.current_state_str().c_str());
 
     DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
     auto& keycont = cdata_a->keycont;
 
     auto key_id = *static_cast<const int32_t*>(buffer.data());
-    STDSC_LOG_INFO("relin key request with key_id: %d", key_id);
 
-    auto sz = keycont.size(key_id, KeyKind_t::kKindRelinKey);
+    auto sz = keycont.data_size(key_id, KeyKind_t::kKindRelinKey);
     stdsc::BufferStream buffstream(sz);
     std::iostream stream(&buffstream);
 
@@ -147,7 +144,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionRelinKeyRequest)
     keycont.get(key_id, KeyKind_t::kKindRelinKey, relinkey);
     relinkey.save(stream);
 
-    STDSC_LOG_INFO("Sending relin key.");
+    
     stdsc::Buffer* bsbuff = &buffstream;
     sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataRelinKey, sz));
     sock.send_buffer(*bsbuff);
@@ -157,17 +154,15 @@ DEFUN_UPDOWNLOAD(CallbackFunctionRelinKeyRequest)
 // CallbackFunction for Param Request
 DEFUN_UPDOWNLOAD(CallbackFunctionParamRequest)
 {
-    STDSC_LOG_INFO("Received param request. (current state : %s)",
+    STDSC_LOG_INFO("Received encryption parameters request. (current state : %s)",
                    state.current_state_str().c_str());
 
     DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
     auto& keycont = cdata_a->keycont;
 
     auto key_id = *static_cast<const int32_t*>(buffer.data());
-    STDSC_LOG_INFO("param request with key_id: %d", key_id);
 
-    auto sz = keycont.size(key_id, KeyKind_t::kKindParam);
-    printf("hogefuga: %ld\n", sz);
+    auto sz = keycont.data_size(key_id, KeyKind_t::kKindParam);
     stdsc::BufferStream buffstream(sz);
     std::iostream stream(&buffstream);
 
@@ -175,7 +170,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionParamRequest)
     keycont.get_param(key_id, params);
     seal::EncryptionParameters::Save(params, stream);
 
-    STDSC_LOG_INFO("Sending param.");
+    STDSC_LOG_INFO("Sending encryption parameters ack. (key ID: %d)", key_id);
     stdsc::Buffer* bsbuff = &buffstream;
     sock.send_packet(stdsc::make_data_packet(fts_share::kControlCodeDataParam, sz));
     sock.send_buffer(*bsbuff);
@@ -192,7 +187,6 @@ DEFUN_DATA(CallbackFunctionDeleteKeyRequest)
     auto& keycont = cdata_a->keycont;
 
     auto key_id = *static_cast<const int32_t*>(buffer.data());
-    STDSC_LOG_INFO("delete key request with key_id: %d", key_id);
 
     keycont.delete_keys(key_id);
     state.set(kEventDeleteKeysRequest);
@@ -216,14 +210,16 @@ static std::vector<int64_t> shift_work(const std::vector<int64_t>& query,
     }
     return new_index;
 }
-    
-static void compute(const std::vector<seal::Ciphertext>& midresults,
-                    const seal::SecretKey& seckey,
-                    const seal::PublicKey& pubkey,
-                    const seal::EncryptionParameters& params,
-                    seal::Ciphertext& new_PIR_query,
-                    seal::Ciphertext& new_PIR_index)
+
+static void calc_PIRqueries(const std::vector<seal::Ciphertext>& midresults,
+                            const seal::SecretKey& seckey,
+                            const seal::PublicKey& pubkey,
+                            const seal::EncryptionParameters& params,
+                            seal::Ciphertext& new_PIR_query,
+                            seal::Ciphertext& new_PIR_index)
 {
+    STDSC_LOG_INFO("Start calculation of PIR queries.");
+    
     auto context = seal::SEALContext::Create(params);
 
     seal::Encryptor encryptor(context, pubkey);
@@ -233,8 +229,8 @@ static void compute(const std::vector<seal::Ciphertext>& midresults,
     seal::BatchEncoder batch_encoder(context);
     size_t slot_count = batch_encoder.slot_count();
     size_t row_size = slot_count / 2;
-    std::cout << "Plaintext matrix row size: " << row_size << std::endl;
-    std::cout << "Slot nums = " << slot_count << std::endl;
+    std::cout << "  Plaintext matrix row size: " << row_size << std::endl;
+    std::cout << "  Slot nums = " << slot_count << std::endl;
 
     int64_t l = row_size;
     int64_t k = ceil(FTS_COMMONPARAM_TABLE_SIZE_N / row_size);
@@ -246,60 +242,31 @@ static void compute(const std::vector<seal::Ciphertext>& midresults,
         seal::Plaintext ex;
         poly_dec_result.push_back(ex);
     }
-    std::cout << "Reading intermediate result..." << std::flush;
-    //auto start2=chrono::high_resolution_clock::now();
 
-  //string s1(argv[1]);
-  //ifstream mid_result(s1+'c', ios::binary);
-  //Ciphertext temp;
-  //for(int w = 0; w < k ; w++) {
-  //  temp.load(context, mid_result);
-  //  ct_result.push_back(temp);
-  //}
-  //mid_result.close();
-  //cout << "OK" << endl;
-
-  // auto end2=chrono::high_resolution_clock::now();
-  // chrono::duration<double> diff2 = end2 - start2;
-  // cout << "Reading time is: " << diff2.count() << "s" << endl;
-
-    std::cout << "Decrypting..."<< std::flush;
-
-  //auto start1=chrono::high_resolution_clock::now();
+    std::cout << "  Decrypting..."<< std::flush;
 
     //#pragma omp parallel for num_threads(NF)
     //omp_set_num_threads(NF);
     //#pragma omp parallel for
     for (int z=0; z<k; ++z) {
-        //cout<<"i: "<<z<<endl;
         decryptor.decrypt(ct_result[z], poly_dec_result[z]);
         batch_encoder.decode(poly_dec_result[z], dec_result[z]);
     }
-
     //NTL_EXEC_RANGE_END
 
     std::cout << "OK" << std::endl;
 
-    // auto end1=chrono::high_resolution_clock::now();
-    // chrono::duration<double> diff = end1-start1;
-    // cout << "Decryption time is: " << diff.count() << "s" << endl;
-
-    //output_plaintext(dec_result);
-///////////////////////////////////////////////////////////////////
-    //find the position of 0.
-    std::cout << "Making PIR-query..." << std::flush;
-    //auto start3=chrono::high_resolution_clock::now();
+    std::cout << "  Making PIR-query..." << std::flush;
 
     int64_t index;
     std::vector<int64_t> new_query;
-    int64_t flag=0;
+    int64_t flag = 0;
 
     for (int i=0; i<k; ++i) {
         for (size_t j=0; j<row_size; ++j) {
             if (dec_result[i][j] == 0 && flag == 0) {
                 index = i;
                 flag = 1;
-                std::cout << "i: " << i << " j: " << j<< std::endl;
                 for (size_t kk=0; kk<static_cast<size_t>(l); ++kk) {
                     if (kk==j) new_query.push_back(1);
                     else new_query.push_back(0);
@@ -312,19 +279,14 @@ static void compute(const std::vector<seal::Ciphertext>& midresults,
     }
     std::cout << "OK" << std::endl;
 
-    //new_index is new_query left_shift the value of index
     std::vector<int64_t> new_index;
-    //new_query.resize(slot_count);
     new_index = shift_work(new_query, index, row_size);
-    std::cout << "index is " << index << std::endl;
-    // out(new_index);
-    // out(new_query);
+    std::cout << "  index is " << index << std::endl;
     new_query.resize(slot_count);
     new_index.resize(slot_count);
 
     //encrypt new query
-    std::cout << "Encrypting..." << std::flush;
-    //seal::Ciphertext new_PIR_query;
+    std::cout << "  Encrypting..." << std::flush;
     seal::Plaintext plaintext_new_PIR_query;
     batch_encoder.encode(new_query, plaintext_new_PIR_query);
 
@@ -336,13 +298,10 @@ static void compute(const std::vector<seal::Ciphertext>& midresults,
     encryptor.encrypt(plaintext_new_PIR_index, new_PIR_index);
 
     std::cout << "OK" << std::endl;
-    // auto end3=chrono::high_resolution_clock::now();
-    // chrono::duration<double> diff3 = end3-start3;
-    // cout << "Make PIR query time is: " << diff3.count() << "s" << endl;
 
-    //write in a file
+#if defined ENABLE_LOCAL_DEBUG
     {
-        std::cout << "Saving query..." << std::flush;
+        std::cout << "  Saving query..." << std::flush;
         std::ofstream PIRqueryFile;
         PIRqueryFile.open("queryd", std::ios::binary);
         new_PIR_query.save(PIRqueryFile);
@@ -355,17 +314,15 @@ static void compute(const std::vector<seal::Ciphertext>& midresults,
         
         std::cout << "OK" << std::endl;
     }
+#endif
 
-    //auto endWhole=chrono::high_resolution_clock::now();
-    //chrono::duration<double> diffWhole = endWhole-startWhole;
-    //cout << "Whole runtime is: " << diffWhole.count() << "s" << endl;
-    
+    STDSC_LOG_INFO("Finish calculation of PIR queries.");
 }
     
 // CallbackFunction for Query
 DEFUN_UPDOWNLOAD(CallbackFunctionCsMidResult)
 {
-    STDSC_LOG_INFO("Received Cs mid-result. (current state : %s)",
+    STDSC_LOG_INFO("Received intermediate results. (current state : %s)",
                    state.current_state_str().c_str());
 
     DEF_CDATA_ON_ALL(fts_dec::CommonCallbackParam);
@@ -374,15 +331,10 @@ DEFUN_UPDOWNLOAD(CallbackFunctionCsMidResult)
     stdsc::BufferStream rbuffstream(buffer);
     std::iostream rstream(&rbuffstream);
 
-    // load plaindata (param)
     fts_share::PlainData<fts_share::Cs2DecParam> rplaindata;
     rplaindata.load_from_stream(rstream);
     const auto param = rplaindata.data();
-    STDSC_LOG_INFO("query with key_id: %d, query_id: %d", param.key_id, param.query_id);
 
-    // load encryption parameters
-    //seal::EncryptionParameters params(seal::scheme_type::BFV);
-    //params = seal::EncryptionParameters::Load(rstream);
     seal::SecretKey seckey;
     seal::PublicKey pubkey;
     seal::EncryptionParameters params(seal::scheme_type::BFV);
@@ -390,15 +342,14 @@ DEFUN_UPDOWNLOAD(CallbackFunctionCsMidResult)
     keycont.get(param.key_id, KeyKind_t::kKindPubKey, pubkey);
     keycont.get_param(param.key_id, params);
 
-    // load encryption mid-result
     fts_share::EncData enc_midresult(params);
     enc_midresult.load_from_stream(rstream);
     fts_share::seal_utility::write_to_file("queryc.txt", enc_midresult.data());
 
     seal::Ciphertext new_PIR_query;
     seal::Ciphertext new_PIR_index;
-    compute(enc_midresult.vdata(), seckey, pubkey, params,
-            new_PIR_query, new_PIR_index);
+    calc_PIRqueries(enc_midresult.vdata(), seckey, pubkey, params,
+                    new_PIR_query, new_PIR_index);
     
     //Query query(param.key_id, param.func_no, enc_inputs.vdata());
     //int32_t query_id = calc_manager.put(query);
