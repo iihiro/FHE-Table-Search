@@ -53,13 +53,20 @@ struct CallbackParam
     seal::EncryptionParameters* params = nullptr;
 };
 
-void callback_func(const int32_t query_id, const seal::Ciphertext& enc_result, void* args)
+void callback_func(const int32_t query_id,
+                   const bool status,
+                   const seal::Ciphertext* enc_result, void* args)
 {
     STDSC_LOG_INFO("Callback function for query #%d", query_id);
     const auto* callback_param = reinterpret_cast<CallbackParam*>(args);
 
+    if (!status) {
+        STDSC_LOG_WARN("Failed to computation on cs.");
+        return;
+    }
+    
     int64_t result_value;
-    fts_share::EncData encdata(*callback_param->params, enc_result);
+    fts_share::EncData encdata(*callback_param->params, *enc_result);
     encdata.decrypt(*callback_param->seckey, result_value);
     STDSC_LOG_INFO("Result of query #%d: %ld", query_id, result_value);
 }

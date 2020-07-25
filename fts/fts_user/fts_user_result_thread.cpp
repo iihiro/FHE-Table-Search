@@ -53,10 +53,13 @@ struct ResultThread::Impl
         {
             STDSC_LOG_INFO("Launched result thread for query #%d", args.query_id);
 
+            bool status = false;
             fts_share::EncData enc_result(enc_params_);
-            client_.recv_results(args.query_id, enc_result);
-            STDSC_LOG_TRACE("Invoke callback function of query #%d", args.query_id);
-            cbfunc_(args.query_id, enc_result.data(), cbargs_);
+            client_.recv_results(args.query_id, status, enc_result);
+            
+            STDSC_LOG_INFO("Invoke callback function of query #%d", args.query_id);
+            auto* enc_result_data = status ? &enc_result.data() : nullptr;
+            cbfunc_(args.query_id, status, enc_result_data, cbargs_);
         }
         catch (const stdsc::AbstractException& e)
         {

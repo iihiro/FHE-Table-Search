@@ -24,7 +24,7 @@
 namespace fts_user
 {
 
-using cbfunc_t = std::function<void(const int32_t query_id, const seal::Ciphertext&, void*)>;
+using cbfunc_t = std::function<void(const int32_t query_id, const bool status, const seal::Ciphertext*, void*)>;
     
 } /* namespace fts_user */
 

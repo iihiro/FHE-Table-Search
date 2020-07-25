@@ -35,12 +35,14 @@ struct Result
     /**
      * Constructor
      * @param[in] query_id query ID
-     * @param[in] ctxt cipher text
+     * @param[in] status   calcuration status
+     * @param[in] ctxt     cipher text
      */
-    Result(const int32_t query_id, const seal::Ciphertext& ctxt);
+    Result(const int32_t query_id, const bool status, const seal::Ciphertext& ctxt);
     virtual ~Result() = default;
 
     int32_t query_id_;
+    bool status_;
     seal::Ciphertext ctxt_;
 };
 

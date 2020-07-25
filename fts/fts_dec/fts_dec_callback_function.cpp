@@ -27,6 +27,7 @@
 #include <fts_share/fts_plaindata.hpp>
 #include <fts_share/fts_commonparam.hpp>
 #include <fts_share/fts_cs2decparam.hpp>
+#include <fts_share/fts_dec2csparam.hpp>
 #include <fts_share/fts_encdata.hpp>
 #include <fts_share/fts_seal_utility.hpp>
 #include <fts_dec/fts_dec_callback_function.hpp>
@@ -211,12 +212,13 @@ static std::vector<int64_t> shift_work(const std::vector<int64_t>& query,
     return new_index;
 }
 
-static void calc_PIRqueries(const std::vector<seal::Ciphertext>& midresults,
-                            const seal::SecretKey& seckey,
-                            const seal::PublicKey& pubkey,
-                            const seal::EncryptionParameters& params,
-                            seal::Ciphertext& new_PIR_query,
-                            seal::Ciphertext& new_PIR_index)
+static fts_share::DecCalcResult_t
+calc_PIRqueries(const std::vector<seal::Ciphertext>& midresults,
+                const seal::SecretKey& seckey,
+                const seal::PublicKey& pubkey,
+                const seal::EncryptionParameters& params,
+                seal::Ciphertext& new_PIR_query,
+                seal::Ciphertext& new_PIR_index)
 {
     STDSC_LOG_INFO("Start calculation of PIR queries.");
     
@@ -276,6 +278,7 @@ static void calc_PIRqueries(const std::vector<seal::Ciphertext>& midresults,
     }
     if(flag == 0) {
         std::cout << "ERROR: NO FIND INPUT NUMBER!" << std::endl;
+        return fts_share::kDecCalcResultErrNoFoundInputMember;
     }
     std::cout << "OK" << std::endl;
 
@@ -317,6 +320,8 @@ static void calc_PIRqueries(const std::vector<seal::Ciphertext>& midresults,
 #endif
 
     STDSC_LOG_INFO("Finish calculation of PIR queries.");
+
+    return fts_share::kDecCalcResultSuccess;
 }
     
 // CallbackFunction for Query
@@ -348,22 +353,23 @@ DEFUN_UPDOWNLOAD(CallbackFunctionCsMidResult)
 
     seal::Ciphertext new_PIR_query;
     seal::Ciphertext new_PIR_index;
-    calc_PIRqueries(enc_midresult.vdata(), seckey, pubkey, params,
-                    new_PIR_query, new_PIR_index);
-    
-    //Query query(param.key_id, param.func_no, enc_inputs.vdata());
-    //int32_t query_id = calc_manager.put(query);
-    //
-    //fts_share::PlainData<int32_t> splaindata;
-    //splaindata.push(query_id);
-    //
+    auto res = calc_PIRqueries(enc_midresult.vdata(), seckey, pubkey, params,
+                               new_PIR_query, new_PIR_index);
+
+    fts_share::Dec2CsParam dec2csparam = {res};
+    fts_share::PlainData<fts_share::Dec2CsParam> splaindata;
+    splaindata.push(dec2csparam);
+
     fts_share::EncData enc_PIRquery(params, new_PIR_query);
     fts_share::EncData enc_PIRindex(params, new_PIR_index);
     
-    auto sz = enc_PIRquery.stream_size() + enc_PIRindex.stream_size();
+    auto sz = (splaindata.stream_size()
+               + enc_PIRquery.stream_size()
+               + enc_PIRindex.stream_size());
     stdsc::BufferStream sbuffstream(sz);
     std::iostream sstream(&sbuffstream);
-    
+
+    splaindata.save_to_stream(sstream);
     enc_PIRquery.save_to_stream(sstream);
     enc_PIRindex.save_to_stream(sstream);
     

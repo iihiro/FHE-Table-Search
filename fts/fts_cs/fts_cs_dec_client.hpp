@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <fts_share/fts_define.hpp>
+#include <fts_share/fts_dec2csparam.hpp>
 #include <seal/seal.h>
 
 namespace fts_share
@@ -92,11 +93,13 @@ public:
      * @param[in] enc_midresult intermediate results
      * @param[out] enc_PIRquery PIR queries
      * @param[out] enc_PIRindex PIR indecies
+     * @return calcuration result on decryptor
      */
-    void get_PIRquery(const int32_t key_id, const int32_t query_id,
-                      const fts_share::EncData& enc_midresult,
-                      fts_share::EncData& enc_PIRquery,
-                      fts_share::EncData& enc_PIRindex);
+    fts_share::DecCalcResult_t
+    get_PIRquery(const int32_t key_id, const int32_t query_id,
+                 const fts_share::EncData& enc_midresult,
+                 fts_share::EncData& enc_PIRquery,
+                 fts_share::EncData& enc_PIRindex);
     
 private:
     struct Impl;

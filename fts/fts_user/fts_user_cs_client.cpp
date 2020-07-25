@@ -13,6 +13,7 @@
 #include <fts_share/fts_plaindata.hpp>
 #include <fts_share/fts_csparam.hpp>
 #include <fts_share/fts_seal_utility.hpp>
+#include <fts_share/fts_cs2userparam.hpp>
 #include <fts_user/fts_user_result_thread.hpp>
 #include <fts_user/fts_user_cs_client.hpp>
 
@@ -81,7 +82,7 @@ struct CSClient::Impl
         return rplaindata.data();
     }
 
-    void recv_results(const int32_t query_id, fts_share::EncData& enc_result)
+    void recv_results(const int32_t query_id, bool& status, fts_share::EncData& enc_result)
     {
         fts_share::PlainData<int32_t> splaindata;
         splaindata.push(query_id);
@@ -100,10 +101,18 @@ struct CSClient::Impl
 
         stdsc::BufferStream rbuffstream(rbuffer);
         std::iostream rstream(&rbuffstream);
-        enc_result.load_from_stream(rstream);
+
+        fts_share::PlainData<fts_share::Cs2UserParam> rplaindata;
+        rplaindata.load_from_stream(rstream);
+        auto& cs2userparam = rplaindata.data();
+        status = cs2userparam.result == fts_share::kCsCalcResultSuccess;
+
+        if (status) {
+            enc_result.load_from_stream(rstream);
 #if defined ENABLE_LOCAL_DEBUG
-        fts_share::seal_utility::write_to_file("result.txt", enc_result.data());
+            fts_share::seal_utility::write_to_file("result.txt", enc_result.data());
 #endif
+        }
     }
 
     void wait(const int32_t query_id) const
@@ -161,10 +170,10 @@ int32_t CSClient::send_query(const int32_t key_id, const int32_t func_no,
     return query_id;
 }
 
-void CSClient::recv_results(const int32_t query_id, fts_share::EncData& enc_result) const
+void CSClient::recv_results(const int32_t query_id, bool& status, fts_share::EncData& enc_result) const
 {
     STDSC_LOG_INFO("Waiting for query #%d results ...", query_id);
-    pimpl_->recv_results(query_id, enc_result);
+    pimpl_->recv_results(query_id, status, enc_result);
 }
 
 void CSClient::set_callback(const int32_t query_id, cbfunc_t func, void* args) const

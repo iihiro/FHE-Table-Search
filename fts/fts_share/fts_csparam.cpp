@@ -22,7 +22,7 @@ namespace fts_share
 
 std::ostream& operator<<(std::ostream& os, const CSParam& param)
 {
-    int32_t i32_func_no = static_cast<int32_t>(param.func_no);
+    auto i32_func_no = static_cast<int32_t>(param.func_no);
     os << param.key_id  << std::endl;
     os << i32_func_no << std::endl;
     return os;

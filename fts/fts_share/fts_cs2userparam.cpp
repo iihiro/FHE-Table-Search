@@ -15,18 +15,24 @@
  * limitations under the License.
  */
 
-#include <fts_cs/fts_cs_result.hpp>
-#include <seal/seal.h>
+#include <fts_share/fts_cs2userparam.hpp>
 
-namespace fts_cs
+namespace fts_share
 {
 
-// Result
-Result::Result(const int32_t query_id, const bool status, const seal::Ciphertext& ctxt)
-    : query_id_(query_id),
-      status_(status),
-      ctxt_(ctxt)
+std::ostream& operator<<(std::ostream& os, const Cs2UserParam& param)
 {
+    auto i32_result = static_cast<int32_t>(param.result);
+    os << i32_result << std::endl;
+    return os;
 }
 
-} /* namespace fts_cs */
+std::istream& operator>>(std::istream& is, Cs2UserParam& param)
+{
+    int32_t i32_result;
+    is >> i32_result;
+    param.result = static_cast<CsCalcResult_t>(i32_result);
+    return is;
+}
+    
+} /* namespace fts_share */

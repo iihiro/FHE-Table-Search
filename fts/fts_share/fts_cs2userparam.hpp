@@ -15,18 +15,35 @@
  * limitations under the License.
  */
 
-#include <fts_cs/fts_cs_result.hpp>
-#include <seal/seal.h>
+#ifndef FTS_CS2USERPARAM_HPP
+#define FTS_CS2USERPARAM_HPP
 
-namespace fts_cs
+#include <iostream>
+
+namespace fts_share
 {
 
-// Result
-Result::Result(const int32_t query_id, const bool status, const seal::Ciphertext& ctxt)
-    : query_id_(query_id),
-      status_(status),
-      ctxt_(ctxt)
+/**
+ * @brief Enumeration for results of computation on Cs.
+ */
+enum CsCalcResult_t : int32_t
 {
-}
+    kCsCalcResultNil     = -1,
+    kCsCalcResultSuccess = 0,
+    kCsCalcResultFailed  = 1,
+};
 
-} /* namespace fts_cs */
+/**
+ * @brief This class is used to hold the parameters to transfer from cs to user.
+ */
+struct Cs2UserParam
+{
+    CsCalcResult_t result = kCsCalcResultNil;
+};
+
+std::ostream& operator<<(std::ostream& os, const Cs2UserParam& param);
+std::istream& operator>>(std::istream& is, Cs2UserParam& param);
+
+} /* namespace fts_share */
+
+#endif /* FTS_CS2USERPARAM_HPP */

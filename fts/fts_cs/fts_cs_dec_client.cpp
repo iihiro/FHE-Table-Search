@@ -11,6 +11,7 @@
 #include <fts_share/fts_packet.hpp>
 #include <fts_share/fts_plaindata.hpp>
 #include <fts_share/fts_cs2decparam.hpp>
+#include <fts_share/fts_dec2csparam.hpp>
 #include <fts_share/fts_encdata.hpp>
 #include <fts_cs/fts_cs_dec_client.hpp>
 
@@ -66,10 +67,11 @@ public:
         param = seal::EncryptionParameters::Load(stream);
     }
 
-    void get_PIRquery(const int32_t key_id, const int32_t query_id,
-                      const fts_share::EncData& enc_midresult,
-                      fts_share::EncData& enc_PIRquery,
-                      fts_share::EncData& enc_PIRindex)
+    fts_share::DecCalcResult_t
+    get_PIRquery(const int32_t key_id, const int32_t query_id,
+                 const fts_share::EncData& enc_midresult,
+                 fts_share::EncData& enc_PIRquery,
+                 fts_share::EncData& enc_PIRindex)
     {
         fts_share::PlainData<fts_share::Cs2DecParam> splaindata;
         fts_share::Cs2DecParam param = {key_id, query_id};
@@ -90,8 +92,16 @@ public:
         stdsc::BufferStream rbuffstream(rbuffer);
         std::iostream rstream(&rbuffstream);
 
-        enc_PIRquery.load_from_stream(rstream);
-        enc_PIRindex.load_from_stream(rstream);
+        fts_share::PlainData<fts_share::Dec2CsParam> rplaindata;
+        rplaindata.load_from_stream(rstream);
+        const auto& dec2csparam = rplaindata.data();
+
+        if (dec2csparam.result == fts_share::kDecCalcResultSuccess) {
+            enc_PIRquery.load_from_stream(rstream);
+            enc_PIRindex.load_from_stream(rstream);
+        }
+
+        return dec2csparam.result;
     }
     
 
@@ -147,14 +157,14 @@ void DecClient::get_param(const int32_t key_id, seal::EncryptionParameters& para
     STDSC_LOG_INFO("Get encryption parameters: received key of #%d", key_id);
 }
 
-void DecClient::get_PIRquery(const int32_t key_id, const int32_t query_id,
-                             const fts_share::EncData& enc_midresult,
-                             fts_share::EncData& enc_PIRquery,
-                             fts_share::EncData& enc_PIRindex)
+fts_share::DecCalcResult_t DecClient::get_PIRquery(const int32_t key_id, const int32_t query_id,
+                                                   const fts_share::EncData& enc_midresult,
+                                                   fts_share::EncData& enc_PIRquery,
+                                                   fts_share::EncData& enc_PIRindex)
                                
 {
     STDSC_LOG_INFO("Get PIR queries: sending request of query #%d to decryptor.", query_id);
-    pimpl_->get_PIRquery(key_id, query_id, enc_midresult, enc_PIRquery, enc_PIRindex);
+    return pimpl_->get_PIRquery(key_id, query_id, enc_midresult, enc_PIRquery, enc_PIRindex);
     STDSC_LOG_INFO("Get PIR queries:: received PIR queries of query #%d", query_id);
 }
 

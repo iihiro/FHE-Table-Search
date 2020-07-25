@@ -99,35 +99,39 @@ struct CalcThread::Impl
                 usleep(args.retry_interval_msec * 1000);
             }
 
-            STDSC_LOG_INFO("[th:%d] Get query #d.", th_id, query_id);
+            bool status = false;
+            
+            STDSC_LOG_INFO("[th:%d] Get query #%d.", th_id, query_id);
 
             seal::PublicKey pubkey;
             seal::GaloisKeys galoiskey;
             seal::RelinKeys relinkey;
             seal::EncryptionParameters params(seal::scheme_type::BFV);
-            STDSC_LOG_INFO("[th:%d] Start preprocess of query #d.", th_id, query_id);
+            STDSC_LOG_INFO("[th:%d] Start preprocess of query #%d.", th_id, query_id);
             preprocess(query, pubkey, galoiskey, relinkey, params);
-            STDSC_LOG_INFO("[th:%d] Finish preprocess of query #d.", th_id, query_id);
+            STDSC_LOG_INFO("[th:%d] Finish preprocess of query #%d.", th_id, query_id);
             
             seal::Ciphertext new_PIR_query, new_PIR_index;
             std::vector<std::vector<int64_t>> LUT_output;
-            STDSC_LOG_INFO("[th:%d] Start computationA of query #d.", th_id, query_id);
-            computeA(query_id, query,
-                     pubkey, galoiskey, relinkey, params,
-                     LUT_output, new_PIR_query, new_PIR_index);
-            STDSC_LOG_INFO("[th:%d] Finish computationA of query #d.", th_id, query_id);
+            STDSC_LOG_INFO("[th:%d] Start computationA of query #%d.", th_id, query_id);
+            status = computeA(query_id, query,
+                              pubkey, galoiskey, relinkey, params,
+                              LUT_output, new_PIR_query, new_PIR_index);
+            STDSC_LOG_INFO("[th:%d] Finish computationA of query #%d.", th_id, query_id);
 
             seal::Ciphertext sum_result;
-            STDSC_LOG_INFO("[th:%d] Start computationB of query #d.", th_id, query_id);
-            computeB(query_id, query,
-                     pubkey, galoiskey, relinkey, params,
-                     LUT_output, new_PIR_query, new_PIR_index, sum_result);
-            STDSC_LOG_INFO("[th:%d] Finish computationB of query #d.", th_id, query_id);
-
-            Result result(query_id, sum_result);
+            if (status) {
+                STDSC_LOG_INFO("[th:%d] Start computationB of query #%d.", th_id, query_id);
+                status = computeB(query_id, query,
+                                pubkey, galoiskey, relinkey, params,
+                                LUT_output, new_PIR_query, new_PIR_index, sum_result);
+                STDSC_LOG_INFO("[th:%d] Finish computationB of query #%d.", th_id, query_id);
+            }
+                
+            Result result(query_id, status, sum_result);
             out_queue_.push(query_id, result);
 
-            STDSC_LOG_INFO("[th:%d] Set result of query #d.", th_id, query_id);
+            STDSC_LOG_INFO("[th:%d] Set result of query #%d.", th_id, query_id);
         }
     }
 
@@ -155,7 +159,7 @@ struct CalcThread::Impl
 #endif
     }
     
-    void computeA(const int32_t query_id, const Query& query,
+    bool computeA(const int32_t query_id, const Query& query,
                   const seal::PublicKey& pubkey,
                   const seal::GaloisKeys& galoiskey,
                   const seal::RelinKeys& relinkey,
@@ -248,10 +252,17 @@ struct CalcThread::Impl
         std::cout << "  Send intermediate resutls to decryptor" << std::endl;
         fts_share::EncData enc_midresult(params, Result);
         fts_share::EncData enc_PIRquery(params), enc_PIRindex(params);
-        dec_client.get_PIRquery(query.key_id_, query_id, enc_midresult,
-                                enc_PIRquery, enc_PIRindex);
-        std::cout << "  Received PIR queries from decryptor" << std::endl;
+        auto res = dec_client.get_PIRquery(query.key_id_, query_id, enc_midresult,
+                                           enc_PIRquery, enc_PIRindex);
 
+        if (res != fts_share::kDecCalcResultSuccess) {
+            STDSC_LOG_WARN("  Failed to calcurate PIR queries on decryptor. (errno: %d)",
+                           static_cast<int32_t>(res));
+            return false;
+        }
+        
+        std::cout << "  Received PIR queries from decryptor" << std::endl;
+        
 #if defined ENABLE_LOCAL_DEBUG
         {
             auto& queryd = enc_PIRquery.data();
@@ -263,9 +274,11 @@ struct CalcThread::Impl
 
         new_PIR_query = enc_PIRquery.data();
         new_PIR_index = enc_PIRindex.data();
+
+        return true;
     }
 
-    void computeB(const int32_t query_id, const Query& query,
+    bool computeB(const int32_t query_id, const Query& query,
                   const seal::PublicKey& pubkey,
                   const seal::GaloisKeys& galoiskey,
                   const seal::RelinKeys& relinkey,
@@ -332,6 +345,8 @@ struct CalcThread::Impl
             std::cout << "OK" << std::endl;
         }
 #endif
+
+        return true;
     }
     
     QueryQueue& in_queue_;

@@ -84,10 +84,11 @@ public:
     
     /**
      * receive results
-     * @param[in] query_id query ID
+     * @param[in] query_id    query ID
+     * @param[out] status     calcuration status
      * @param[out] enc_result encrypted result
      */
-    void recv_results(const int32_t query_id, fts_share::EncData& enc_result) const;
+    void recv_results(const int32_t query_id, bool& status, fts_share::EncData& enc_result) const;
 
     /**
      * set callback functions

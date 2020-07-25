@@ -27,6 +27,7 @@
 #include <fts_share/fts_encdata.hpp>
 #include <fts_share/fts_csparam.hpp>
 #include <fts_share/fts_seal_utility.hpp>
+#include <fts_share/fts_cs2userparam.hpp>
 #include <fts_cs/fts_cs_callback_function.hpp>
 #include <fts_cs/fts_cs_callback_param.hpp>
 #include <fts_cs/fts_cs_query.hpp>
@@ -108,15 +109,21 @@ DEFUN_UPDOWNLOAD(CallbackFunctionResultRequest)
     Result result;
     calc_manager.pop_result(query_id, result);
 
+    fts_share::PlainData<fts_share::Cs2UserParam> splaindata;
+    fts_share::Cs2UserParam cs2userparam;
+    cs2userparam.result = result.status_ ? fts_share::kCsCalcResultSuccess : fts_share::kCsCalcResultFailed;
+    splaindata.push(cs2userparam);
+    
     fts_share::EncData enc_outputs(params, result.ctxt_);
 #if defined ENABLE_LOCAL_DEBUG
     fts_share::seal_utility::write_to_file("result.txt", enc_outputs.data());
 #endif
     
-    auto sz = enc_outputs.stream_size();
+    auto sz = splaindata.stream_size() + enc_outputs.stream_size();
     stdsc::BufferStream sbuffstream(sz);
     std::iostream sstream(&sbuffstream);
 
+    splaindata.save_to_stream(sstream);
     enc_outputs.save_to_stream(sstream);
 
     STDSC_LOG_INFO("Sending result. (query ID: %d)", query_id);

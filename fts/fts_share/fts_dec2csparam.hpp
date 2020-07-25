@@ -15,8 +15,8 @@
  * limitations under the License.
  */
 
-#ifndef FTS_CS2DECPARAM_HPP
-#define FTS_CS2DECPARAM_HPP
+#ifndef FTS_DEC2CSPARAM_HPP
+#define FTS_DEC2CSPARAM_HPP
 
 #include <iostream>
 
@@ -24,17 +24,26 @@ namespace fts_share
 {
 
 /**
- * @brief This class is used to hold the parameters to transfer from cs to decryptor.
+ * @brief Enumeration for results of calcuration on decryptor.
  */
-struct Cs2DecParam
+enum DecCalcResult_t : int32_t
 {
-    int32_t key_id;
-    int32_t query_id;
+    kDecCalcResultNil                   = -1,
+    kDecCalcResultSuccess               = 0,
+    kDecCalcResultErrNoFoundInputMember = 1,
 };
 
-std::ostream& operator<<(std::ostream& os, const Cs2DecParam& param);
-std::istream& operator>>(std::istream& is, Cs2DecParam& param);
+/**
+ * @brief This class is used to hold the parameters to transfer from decryptor to cs.
+ */
+struct Dec2CsParam
+{
+    DecCalcResult_t result = kDecCalcResultNil;
+};
+
+std::ostream& operator<<(std::ostream& os, const Dec2CsParam& param);
+std::istream& operator>>(std::istream& is, Dec2CsParam& param);
 
 } /* namespace fts_share */
 
-#endif /* FTS_CS2DECPARAM_HPP */
+#endif /* FTS_DEC2CSPARAM_HPP */
