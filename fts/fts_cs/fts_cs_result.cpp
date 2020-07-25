@@ -27,10 +27,4 @@ Result::Result(const int32_t query_id, const seal::Ciphertext& ctxt)
 {
 }
 
-// ResultQueue
-bool ResultQueue::try_get(const int32_t query_id, Result& result)
-{
-    return super::get(query_id, result);
-}
-
 } /* namespace fts_cs */

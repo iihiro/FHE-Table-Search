@@ -94,6 +94,7 @@ struct CalcThread::Impl
             while (!in_queue_.pop(query_id, query)) {
                 usleep(args.retry_interval_msec * 1000);
             }
+            printf("get query. (remain:%lu)", in_queue_.count(query_id));
 
             seal::PublicKey pubkey;
             seal::GaloisKeys galoiskey;

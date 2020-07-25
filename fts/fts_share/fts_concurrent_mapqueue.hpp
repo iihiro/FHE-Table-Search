@@ -39,6 +39,11 @@ public:
         std::lock_guard<std::mutex> lock(mtx_);
         map_.emplace(key, val);
     }
+
+    virtual size_t count(const Tk& key) const
+    {
+        return map_.count(key);
+    }
     
     virtual bool pop(Tk& key, Tv& val)
     {
@@ -55,13 +60,28 @@ public:
         return true;
     }
 
-    virtual bool get(const Tk& key, Tv& val)
+    virtual bool pop(const Tk& key, Tv& val)
     {
+        std::lock_guard<std::mutex> lock(mtx_);
+        
         if (0 == map_.size() || 0 == map_.count(key)) {
             return false;
         }
         
+        val = map_.at(key);
+        map_.erase(key);
+        
+        return true;        
+    }
+
+    virtual bool get(const Tk& key, Tv& val)
+    {
         std::lock_guard<std::mutex> lock(mtx_);
+        
+        if (0 == map_.size() || 0 == map_.count(key)) {
+            return false;
+        }
+        
         val = map_.at(key);
         return true;        
     }

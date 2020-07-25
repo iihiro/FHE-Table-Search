@@ -66,8 +66,9 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
     enc_inputs.load_from_stream(rstream);
     fts_share::seal_utility::write_to_file("query.txt", enc_inputs.data());
 
+    printf("a\n");
     Query query(param.key_id, param.func_no, enc_inputs.vdata());
-    int32_t query_id = calc_manager.put(query);
+    int32_t query_id = calc_manager.push_query(query);
 
     fts_share::PlainData<int32_t> splaindata;
     splaindata.push(query_id);
@@ -108,7 +109,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionResultRequest)
     params = seal::EncryptionParameters::Load(rstream);
 
     Result result;
-    calc_manager.get(query_id, result);
+    calc_manager.pop_result(query_id, result);
 
     fts_share::EncData enc_outputs(params, result.ctxt_);
     fts_share::seal_utility::write_to_file("result.txt", enc_outputs.data());

@@ -42,10 +42,12 @@ public:
                        const std::string& dec_port);
     void stop_threads();
 
-    int32_t put(const Query& query);
-    void get(const int32_t query_id, Result& result,
-             const uint32_t retry_interval_msec=100) const;
-    bool try_get(const int32_t query_id, Result& result) const;
+    int32_t push_query(const Query& query);
+    //void get(const int32_t query_id, Result& result,
+    //         const uint32_t retry_interval_msec=100) const;
+    //bool try_get(const int32_t query_id, Result& result) const;
+    void pop_result(const int32_t query_id, Result& result,
+                    const uint32_t retry_interval_msec=100) const;
 
 private:
     class Impl;

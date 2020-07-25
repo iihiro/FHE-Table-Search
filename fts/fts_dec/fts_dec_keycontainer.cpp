@@ -118,12 +118,12 @@ struct KeyContainer::Impl
         std::ifstream ifs(filename);
         data.unsafe_load(ifs);
 
-        // debug by iiz
-        {
-            std::ofstream skFile("seckey0.txt", std::ios::binary);
-            data.save(skFile);
-            skFile.close();
-        }
+        //// debug by iiz
+        //{
+        //    std::ofstream skFile("seckey0.txt", std::ios::binary);
+        //    data.save(skFile);
+        //    skFile.close();
+        //}
         
         ifs.close();
     }

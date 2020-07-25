@@ -42,8 +42,6 @@ struct ResultQueue : public fts_share::ConcurrentMapQueue<int32_t, Result>
     
     ResultQueue() = default;
     virtual ~ResultQueue() = default;
-
-    virtual bool try_get(const int32_t query_id, Result& result);
 };
 
 } /* namespace fts_cs */
