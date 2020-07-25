@@ -73,19 +73,7 @@ struct QueryQueue : public fts_share::ConcurrentMapQueue<int32_t, fts_cs::Query>
      * Push query in queue
      * @param[in] data query
      */
-    virtual int32_t push(const Query& data)
-    {
-        auto id = generate_id();
-        super::push(id, data);
-        return id;
-    }
-
-private:
-    int32_t generate_id() const
-    {
-        return 123334;
-    }
-       
+    virtual int32_t push(const Query& data);
 };
 
 } /* namespace fts_cs */

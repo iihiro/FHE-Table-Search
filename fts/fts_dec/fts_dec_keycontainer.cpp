@@ -94,7 +94,7 @@ struct KeyContainer::Impl
 
     int32_t new_keys(const fts_share::DecParam& param)
     {
-        int32_t key_id = generate_key_id();
+        int32_t key_id = fts_share::utility::gen_uuid();
         map_.emplace(key_id, KeyFilenames(key_id));
         generate_keyfiles(param.poly_mod_degree, param.coef_mod_192, param.plain_mod, map_.at(key_id));
         return key_id;
@@ -153,11 +153,7 @@ struct KeyContainer::Impl
     }
     
 private:
-    int32_t generate_key_id()
-    {
-        return 123;
-    }
-
+    
     void generate_keyfiles(const std::size_t poly_mod_degree,
                            const std::size_t coef_mod_192,
                            const std::size_t plain_mod,

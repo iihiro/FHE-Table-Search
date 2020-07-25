@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <fts_share/fts_utility.hpp>
 #include <fts_cs/fts_cs_query.hpp>
 #include <seal/seal.h>
 
@@ -27,6 +28,13 @@ Query::Query(const int32_t key_id, const int32_t func_no,
 {
     ctxts_.resize(ctxts.size());
     std::copy(ctxts.begin(), ctxts.end(), ctxts_.begin());
+}
+
+int32_t QueryQueue::push(const Query& data)
+{
+    auto id = fts_share::utility::gen_uuid();
+    super::push(id, data);
+    return id;
 }
 
 } /* namespace fts_cs */

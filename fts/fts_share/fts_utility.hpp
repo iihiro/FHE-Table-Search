@@ -36,6 +36,7 @@ bool isdigit(const std::string& str);
 std::string getenv(const char* env_var);
 void split(const std::string& str, const std::string& delims,
            std::vector<std::string>& vec_str);
+int32_t gen_uuid(void);
 
 } /* namespace utility */
 

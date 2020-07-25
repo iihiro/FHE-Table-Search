@@ -16,7 +16,9 @@
  */
 
 #include <sys/stat.h> // stat
+#include <cstdlib>    // std::env, std::rand
 #include <cstdlib>    // std::env
+#include <ctime>      // std::time
 #include <cctype>     // isdigit
 #include <fstream>
 #include <sstream>
@@ -118,6 +120,12 @@ void split(const std::string& str, const std::string& delims,
     }
 }
 
+int32_t gen_uuid(void)
+{
+    std::srand(std::time(nullptr));
+    return std::rand();
+}
+    
 } /* namespace utility */
 
 } /* namespace fts_share */
