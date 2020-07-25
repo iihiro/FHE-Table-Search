@@ -18,7 +18,7 @@
 #ifndef FTS_CONCURRENT_MAPQUEUE_HPP
 #define FTS_CONCURRENT_MAPQUEUE_HPP
 
-#include <map>
+#include <unordered_map>
 #include <mutex>
 #include <cstdbool>
 #include <stdsc/stdsc_exception.hpp>
@@ -87,7 +87,7 @@ public:
     }
 
 private:
-    std::map<Tk, Tv> map_;
+    std::unordered_map<Tk, Tv> map_;
     std::mutex mtx_;
 };
 
