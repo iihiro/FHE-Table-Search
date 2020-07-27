@@ -68,7 +68,7 @@ void EncData::encrypt(const int64_t input_value,
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::mt19937 generator(seed);
 
-    //encrypt the LUT query
+    // encrypt the LUT query
     std::cout << "  Encrypting ..." << std::flush;
     std::vector<int64_t> query;
     for(size_t i=0 ; i<row_size ; i++){
@@ -76,9 +76,7 @@ void EncData::encrypt(const int64_t input_value,
     }
     query.resize(slot_count);
 
-    /*
-      Printing the matrix is a bit of a pain.
-    */
+    // Printing the matrix is a bit of a pain.
     auto print_matrix = [row_size](auto &matrix) {
         std::cout << std::endl;
         size_t print_size = 5;
@@ -133,9 +131,7 @@ void EncData::encrypt(const std::vector<int64_t>& input_values,
     size_t slot_count = batch_encoder.slot_count();
     size_t row_size = slot_count / 2;
 
-    /*
-      Printing the matrix is a bit of a pain.
-    */
+    // Printing the matrix is a bit of a pain.
     auto print_matrix = [row_size](auto &matrix) {
         std::cout << std::endl;
         size_t print_size = 5;
