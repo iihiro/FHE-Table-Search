@@ -18,6 +18,7 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <omp.h>
 #include <stdsc/stdsc_buffer.hpp>
 #include <stdsc/stdsc_state.hpp>
 #include <stdsc/stdsc_socket.hpp>
@@ -247,9 +248,8 @@ calc_PIRqueries(const std::vector<seal::Ciphertext>& midresults,
 
     std::cout << "  Decrypting..."<< std::flush;
 
-    //#pragma omp parallel for num_threads(NF)
-    //omp_set_num_threads(NF);
-    //#pragma omp parallel for
+    omp_set_num_threads(FTS_COMMONPARAM_NTHREADS);
+    #pragma omp parallel for
     for (int z=0; z<k; ++z) {
         decryptor.decrypt(ct_result[z], poly_dec_result[z]);
         batch_encoder.decode(poly_dec_result[z], dec_result[z]);

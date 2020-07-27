@@ -121,21 +121,27 @@ void EncData::encrypt(const int64_t input_value,
 }
 
 void EncData::decrypt(const seal::SecretKey& secret_key,
-                      int64_t& output_value) const
+                      std::vector<int64_t>& output_values) const
 {
+    auto& ctxt   = vec_[0];
     auto context = seal::SEALContext::Create(pimpl_->params_);
     
     seal::Decryptor decryptor(context, secret_key);
     seal::BatchEncoder batch_encoder(context);
 
-    std::vector<int64_t> query;
+    //std::vector<int64_t> query;
     seal::Plaintext plaintext_query;
-    decryptor.decrypt(vec_[0], plaintext_query);
+    decryptor.decrypt(ctxt, plaintext_query);
 
-    std::vector<int64_t> outputs;
-    batch_encoder.decode(plaintext_query, outputs);
-    if (0 < outputs.size()) {
-        output_value = outputs[0];
+    std::vector<int64_t> tmp_outputs;
+    batch_encoder.decode(plaintext_query, tmp_outputs);
+
+    STDSC_LOG_INFO("Decrypt: Noise budget: %ld bits", decryptor.invariant_noise_budget(ctxt));
+    
+    for(size_t i=0; i<tmp_outputs.size(); ++i) {
+        if (tmp_outputs[i] != 0) {
+            output_values.push_back(tmp_outputs[i]);
+        }
     }
 }
 

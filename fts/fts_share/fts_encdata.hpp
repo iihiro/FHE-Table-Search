@@ -39,7 +39,7 @@ struct EncData : public fts_share::BasicData<seal::Ciphertext>
     void encrypt(const int64_t input_value,
                  const seal::PublicKey& pubkey,
                  const seal::GaloisKeys& galoiskey);
-    void decrypt(const seal::SecretKey& seckey, int64_t& output_value) const;
+    void decrypt(const seal::SecretKey& seckey, std::vector<int64_t>& output_values) const;
 
     virtual void save_to_stream(std::ostream& os) const override;
     virtual void load_from_stream(std::istream& is) override;

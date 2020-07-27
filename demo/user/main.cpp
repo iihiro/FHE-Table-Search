@@ -33,7 +33,7 @@
 #include <fts_user/fts_user_cs_client.hpp>
 #include <fts_user/fts_user_result_thread.hpp>
 
-#define ENABLE_DEBUG
+//#define ENABLE_LOCAL_DEBUG
 
 #define PRINT_USAGE_AND_EXIT() do {                         \
         printf("Usage: %s value_x [value_y]\n", argv[0]);   \
@@ -65,10 +65,16 @@ void callback_func(const int32_t query_id,
         return;
     }
     
-    int64_t result_value;
+    std::vector<int64_t> result_values;
     fts_share::EncData encdata(*callback_param->params, *enc_result);
-    encdata.decrypt(*callback_param->seckey, result_value);
-    STDSC_LOG_INFO("Result of query #%d: %ld", query_id, result_value);
+    encdata.decrypt(*callback_param->seckey, result_values);
+
+    std::cout << "Result of query #" << query_id << ":" << std::flush;
+    for (const auto& v : result_values) {
+        std::cout << " " << "\033[1;33m " << v << "\033[0m";
+        //std::cout << " " << v;
+    }
+    std::cout << std::endl;
 }
 
 void init(Option& option, int argc, char* argv[])
@@ -114,7 +120,7 @@ int32_t init_keys(const std::string& dec_host,
     dec_client.get_galoiskey(key_id, galoiskey);
     dec_client.get_param(key_id, params);
 
-#if define ENABLE_DEBUG
+#if defined ENABLE_LOCAL_DEBUG
     {
         std::string dbg_seckey_filename    = "dbg_seckey";
         std::string dbg_pukey_filename     = "dbg_pukey";
@@ -163,7 +169,7 @@ void compute_one(const int32_t key_id,
     fts_share::EncData enc_inputs(params);
     enc_inputs.encrypt(val, pubkey, galoiskey);
 
-#if defined ENABLE_DEBUG
+#if defined ENABLE_LOCAL_DEBUG
     {
         // save to file
         fts_share::seal_utility::write_to_file("query.txt", enc_inputs.data());
@@ -179,9 +185,13 @@ void compute_one(const int32_t key_id,
         enc_inputs2.load_from_stream(stream);
 
         // decrypt
-        int64_t output_value;
-        enc_inputs2.decrypt(*callback_param.seckey, output_value);
-        STDSC_LOG_DEBUG("Debug: decrypt query: %ld", output_value);
+        std::vector<int64_t> output_values;
+        enc_inputs2.decrypt(*callback_param.seckey, output_values);
+        std::cout << "Debug: decrypt query: " << std::flush;
+        for (const auto& v : output_values) {
+            std::cout << " " << v;
+        }
+        std::cout << std::endl;
     }
 #endif
         
