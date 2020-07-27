@@ -101,8 +101,8 @@ createLUTforTwoInput(const std::vector<int64_t>& table_x,
     //long x_not=0, y_not=0;
     for (int i=0; i<k; ++i) {
         for (int j=0; j<l; ++j) {
-            sub_per_x.push_back(per_x[i*l+j]);
-            sub_per_y.push_back(per_y[i*l+j]);
+            sub_per_x.push_back(per_x[i * l + j]);
+            sub_per_y.push_back(per_y[i * l + j]);
         }
         permute_table_x.push_back(sub_per_x);
         // out_vector(sub_per_x);
@@ -125,6 +125,7 @@ createLUTforTwoInput(const std::vector<int64_t>& table_x,
             //   if(per_out[h*NUM+t]==2) cout<<"\033[1;32m Here\033[0m"<<endl;
         }
     }
+
     STDSC_LOG_INFO("Made permuted output vector.");
     //cout<<"Made permuted output vector is:"<<endl;
     //out_vector(per_out);
@@ -430,7 +431,7 @@ struct CalcThread::Impl
         std::cout << "  Slot nums = " << slot_count << std::endl;
 
         int64_t l = row_size;
-        int64_t k = ceil(possible_input_num_one_ / row_size);
+        int64_t k = ceil(possible_input_num_two_ / row_size);
         int64_t ks = ceil(possible_combination_num_two_ / row_size);
 
         std::vector<int64_t> table_x, table_y, table_output;
@@ -469,6 +470,7 @@ struct CalcThread::Impl
         }
 #endif
 
+        printf("** h1\n");
         std::vector<seal::Ciphertext> result_x, result_y;
         for (int i=0; i<k; ++i) {
             seal::Ciphertext tep;
@@ -476,6 +478,7 @@ struct CalcThread::Impl
             result_y.push_back(tep);
         }
 
+        printf("** h2\n");
         //thread work
         omp_set_num_threads(FTS_COMMONPARAM_NTHREADS);
         #pragma omp parallel for
@@ -535,6 +538,7 @@ struct CalcThread::Impl
                       << relinkey.decomposition_bit_count() << std::endl;
             result_y[i]=res_y;
         }
+        printf("** h3\n");
         
 #if defined ENABLE_LOCAL_DEBUG
         {

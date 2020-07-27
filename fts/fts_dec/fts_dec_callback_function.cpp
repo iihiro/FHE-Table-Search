@@ -219,8 +219,6 @@ calcPIRqueriesForOneInput(const std::vector<seal::Ciphertext>& midresults,
                           const seal::PublicKey& pubkey,
                           const seal::EncryptionParameters& params,
                           const int64_t possible_input_num_one,
-                          const int64_t possible_input_num_two,
-                          const int64_t possible_combination_num_two,
                           seal::Ciphertext& new_PIR_query,
                           seal::Ciphertext& new_PIR_index)
 {
@@ -333,7 +331,6 @@ calcPIRqueriesForTwoInput(const std::vector<seal::Ciphertext>& midresults_x,
                           const seal::SecretKey& seckey,
                           const seal::PublicKey& pubkey,
                           const seal::EncryptionParameters& params,
-                          const int64_t possible_input_num_one,
                           const int64_t possible_input_num_two,
                           const int64_t possible_combination_num_two,
                           seal::Ciphertext& new_PIR_query0,
@@ -355,7 +352,7 @@ calcPIRqueriesForTwoInput(const std::vector<seal::Ciphertext>& midresults_x,
     std::cout << "  Slot nums = " << slot_count << std::endl;
 
     int64_t l = row_size;
-    int64_t k = ceil(possible_input_num_one / row_size);
+    int64_t k = ceil(possible_input_num_two / row_size);
 
     const auto& ct_result_x = midresults_x;
     std::vector<std::vector<int64_t>> dec_result_x(k);
@@ -381,6 +378,7 @@ calcPIRqueriesForTwoInput(const std::vector<seal::Ciphertext>& midresults_x,
         decryptor.decrypt(ct_result_x[z], poly_dec_result_x[z]);
         batch_encoder.decode(poly_dec_result_x[z], dec_result_x[z]);
     }
+    printf("caca\n");
 
     omp_set_num_threads(FTS_COMMONPARAM_NTHREADS);
     #pragma omp parallel for
@@ -576,7 +574,6 @@ DEFUN_UPDOWNLOAD(CallbackFunctionCsMidResult)
         res = calcPIRqueriesForTwoInput(enc_midresult_x.vdata(),
                                         enc_midresult_y.vdata(),
                                         seckey, pubkey, params,
-                                        cs2decparam.possible_input_num_one,
                                         cs2decparam.possible_input_num_two,
                                         cs2decparam.possible_combination_num_two,
                                         new_PIR_query[0],
@@ -586,8 +583,6 @@ DEFUN_UPDOWNLOAD(CallbackFunctionCsMidResult)
         res = calcPIRqueriesForOneInput(enc_midresult_x.vdata(),
                                         seckey, pubkey, params,
                                         cs2decparam.possible_input_num_one,
-                                        cs2decparam.possible_input_num_two,
-                                        cs2decparam.possible_combination_num_two,
                                         new_PIR_query[0], new_PIR_query[1]);
     }
 
