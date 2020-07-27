@@ -354,6 +354,29 @@ DEFUN_UPDOWNLOAD(CallbackFunctionCsMidResult)
     enc_midresult.load_from_stream(rstream);
     fts_share::seal_utility::write_to_file("queryc.txt", enc_midresult.data());
 
+#if 1
+    std::vector<seal::Ciphertext> new_PIR_query(2); // [0] query, [1] index
+    auto res = calc_PIRqueries(enc_midresult.vdata(), seckey, pubkey, params,
+                               cs2decparam.possible_input_num_one,
+                               cs2decparam.possible_input_num_two,
+                               cs2decparam.possible_combination_num_two,
+                               new_PIR_query[0], new_PIR_query[1]);
+
+    fts_share::Dec2CsParam dec2csparam = {res};
+    fts_share::PlainData<fts_share::Dec2CsParam> splaindata;
+    splaindata.push(dec2csparam);
+    
+    //fts_share::EncData enc_PIRquery(params, new_PIR_query[0]);
+    //fts_share::EncData enc_PIRindex(params, new_PIR_query[1]);
+    fts_share::EncData enc_PIRquery(params, new_PIR_query);
+    
+    auto sz = splaindata.stream_size() + enc_PIRquery.stream_size();
+    stdsc::BufferStream sbuffstream(sz);
+    std::iostream sstream(&sbuffstream);
+
+    splaindata.save_to_stream(sstream);
+    enc_PIRquery.save_to_stream(sstream);
+#else
     seal::Ciphertext new_PIR_query;
     seal::Ciphertext new_PIR_index;
     auto res = calc_PIRqueries(enc_midresult.vdata(), seckey, pubkey, params,
@@ -365,7 +388,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionCsMidResult)
     fts_share::Dec2CsParam dec2csparam = {res};
     fts_share::PlainData<fts_share::Dec2CsParam> splaindata;
     splaindata.push(dec2csparam);
-
+    
     fts_share::EncData enc_PIRquery(params, new_PIR_query);
     fts_share::EncData enc_PIRindex(params, new_PIR_index);
     
@@ -378,6 +401,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionCsMidResult)
     splaindata.save_to_stream(sstream);
     enc_PIRquery.save_to_stream(sstream);
     enc_PIRindex.save_to_stream(sstream);
+#endif
     
     STDSC_LOG_INFO("Sending PIR queries.");
     stdsc::Buffer* bsbuff = &sbuffstream;

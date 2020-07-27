@@ -95,7 +95,6 @@ public:
      * @param[in] possible_combination_num_two num of combination for one input
      * @param[in] enc_midresult intermediate results
      * @param[out] enc_PIRquery PIR queries
-     * @param[out] enc_PIRindex PIR indecies
      * @return calcuration result on decryptor
      */
     fts_share::DecCalcResult_t
@@ -104,8 +103,7 @@ public:
                  const int64_t possible_input_num_two,
                  const int64_t possible_combination_num_two,
                  const fts_share::EncData& enc_midresult,
-                 fts_share::EncData& enc_PIRquery,
-                 fts_share::EncData& enc_PIRindex);
+                 fts_share::EncData& enc_PIRquery);
     
 private:
     struct Impl;

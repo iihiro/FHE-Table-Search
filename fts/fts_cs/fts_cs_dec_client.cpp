@@ -73,8 +73,7 @@ public:
                  const int64_t possible_input_num_two,
                  const int64_t possible_combination_num_two,
                  const fts_share::EncData& enc_midresult,
-                 fts_share::EncData& enc_PIRquery,
-                 fts_share::EncData& enc_PIRindex)
+                 fts_share::EncData& enc_PIRquery)
     {
         fts_share::PlainData<fts_share::Cs2DecParam> splaindata;
         fts_share::Cs2DecParam param
@@ -106,7 +105,6 @@ public:
 
         if (dec2csparam.result == fts_share::kDecCalcResultSuccess) {
             enc_PIRquery.load_from_stream(rstream);
-            enc_PIRindex.load_from_stream(rstream);
         }
 
         return dec2csparam.result;
@@ -170,17 +168,14 @@ fts_share::DecCalcResult_t DecClient::get_PIRquery(const int32_t key_id, const i
                                                    const int64_t possible_input_num_two,
                                                    const int64_t possible_combination_num_two,
                                                    const fts_share::EncData& enc_midresult,
-                                                   fts_share::EncData& enc_PIRquery,
-                                                   fts_share::EncData& enc_PIRindex)
-                               
+                                                   fts_share::EncData& enc_PIRquery)
 {
     STDSC_LOG_INFO("Get PIR queries: sending request of query #%d to decryptor.", query_id);
     return pimpl_->get_PIRquery(key_id, query_id,
                                 possible_input_num_one,
                                 possible_input_num_two,
                                 possible_combination_num_two,
-                                enc_midresult, enc_PIRquery, enc_PIRindex);
-    STDSC_LOG_INFO("Get PIR queries:: received PIR queries of query #%d", query_id);
+                                enc_midresult, enc_PIRquery);
 }
 
 

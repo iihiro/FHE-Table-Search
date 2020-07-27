@@ -21,6 +21,8 @@
 #include <cstdint>
 #include <vector>
 #include <fts_share/fts_concurrent_mapqueue.hpp>
+#include <fts_share/fts_funcno.hpp>
+
 #include <seal/seal.h>
 
 namespace fts_cs
@@ -38,7 +40,7 @@ struct Query
      * @param[in] func_no function NO
      * @param[in] ctxts cipher texts
      */
-    Query(const int32_t key_id, const int32_t func_no,
+    Query(const int32_t key_id, const fts_share::FuncNo_t func_no,
           const std::vector<seal::Ciphertext>& ctxts);
     virtual ~Query() = default;
 
@@ -55,7 +57,7 @@ struct Query
     }
 
     int32_t key_id_;
-    int32_t func_no_;
+    fts_share::FuncNo_t func_no_;
     std::vector<seal::Ciphertext> ctxts_;
 };
 
