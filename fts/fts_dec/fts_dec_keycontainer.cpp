@@ -3,7 +3,7 @@
 #include <stdsc/stdsc_exception.hpp>
 #include <stdsc/stdsc_log.hpp>
 #include <fts_share/fts_utility.hpp>
-#include <fts_share/fts_decparam.hpp>
+#include <fts_share/fts_user2decparam.hpp>
 #include <fts_dec/fts_dec_keycontainer.hpp>
 
 #include <seal/seal.h>
@@ -27,9 +27,7 @@ void print_parameters(std::shared_ptr<seal::SEALContext> context)
     STDSC_THROW_INVPARAM_IF_CHECK(context, "context is not set");
     auto &context_data = *context->context_data();
 
-    /*
-    Which scheme are we using?
-    */
+    //Which scheme are we using?
     std::string scheme_name;
     switch (context_data.parms().scheme())
     {
@@ -48,15 +46,11 @@ void print_parameters(std::shared_ptr<seal::SEALContext> context)
     std::cout << "| poly_modulus_degree: " <<
         context_data.parms().poly_modulus_degree() << std::endl;
 
-    /*
-    Print the size of the true (product) coefficient modulus.
-    */
+    //Print the size of the true (product) coefficient modulus.
     std::cout << "| coeff_modulus size: " << context_data.
         total_coeff_modulus_bit_count() << " bits" << std::endl;
 
-    /*
-    For the BFV scheme print the plain_modulus parameter.
-    */
+    //For the BFV scheme print the plain_modulus parameter.
     if (context_data.parms().scheme() == seal::scheme_type::BFV)  {
         std::cout << "| plain_modulus: " << context_data.
             parms().plain_modulus().value() << std::endl;
@@ -92,7 +86,7 @@ struct KeyContainer::Impl
     Impl()
     {}
 
-    int32_t new_keys(const fts_share::DecParam& param)
+    int32_t new_keys(const fts_share::User2DecParam& param)
     {
         int32_t key_id = fts_share::utility::gen_uuid();
         map_.emplace(key_id, KeyFilenames(key_id));
@@ -222,7 +216,7 @@ KeyContainer::KeyContainer()
     : pimpl_(new Impl())
 {}
 
-int32_t KeyContainer::new_keys(const fts_share::DecParam& param)
+int32_t KeyContainer::new_keys(const fts_share::User2DecParam& param)
 {
     auto key_id = pimpl_->new_keys(param);
     STDSC_LOG_INFO("Generate new keys. (key ID: %d)", key_id);

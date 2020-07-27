@@ -20,7 +20,7 @@
 
 #include <memory>
 #include <vector>
-#include <fts_share/fts_decparam.hpp>
+#include <fts_share/fts_user2decparam.hpp>
 #include <fts_dec/fts_dec_keycontainer.hpp>
 
 namespace fts_dec
@@ -33,7 +33,7 @@ struct CallbackParam
 {
     CallbackParam(void);
     ~CallbackParam(void) = default;
-    fts_share::DecParam param;
+    fts_share::User2DecParam param;
 };
 
 /**

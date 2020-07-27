@@ -23,7 +23,7 @@
 
 namespace fts_share
 {
-    class DecParam;
+    class User2DecParam;
 }
 
 namespace fts_dec
@@ -53,7 +53,7 @@ struct KeyContainer
      * @param[in] param parameters
      * @return key ID
      */
-    int32_t new_keys(const fts_share::DecParam& param);
+    int32_t new_keys(const fts_share::User2DecParam& param);
 
     /**
      * Delete keys.

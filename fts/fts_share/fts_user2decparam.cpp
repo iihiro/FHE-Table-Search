@@ -15,31 +15,25 @@
  * limitations under the License.
  */
 
-#ifndef FTS_DECPARAM_HPP
-#define FTS_DECPARAM_HPP
-
-#include <iostream>
+#include <fts_share/fts_user2decparam.hpp>
 
 namespace fts_share
 {
 
-/**
- * @brief This class is used to hold the parameters to compute on encryptor.
- */
-struct DecParam
+std::ostream& operator<<(std::ostream& os, const User2DecParam& param)
 {
-    std::size_t poly_mod_degree = DefaultPolyModDegree;
-    std::size_t coef_mod_192    = DefaultCoefMod192;
-    std::size_t plain_mod       = DefaultPlainMod;
+    os << param.poly_mod_degree  << std::endl;
+    os << param.coef_mod_192     << std::endl;
+    os << param.plain_mod        << std::endl;
+    return os;
+}
 
-    static constexpr std::size_t DefaultPolyModDegree = 8192;
-    static constexpr std::size_t DefaultCoefMod192    = 8192;
-    static constexpr std::size_t DefaultPlainMod      = 786433;
-};
-
-std::ostream& operator<<(std::ostream& os, const DecParam& param);
-std::istream& operator>>(std::istream& is, DecParam& param);
-
+std::istream& operator>>(std::istream& is, User2DecParam& param)
+{
+    is >> param.poly_mod_degree;
+    is >> param.coef_mod_192;
+    is >> param.plain_mod;
+    return is;
+}
+    
 } /* namespace fts_share */
-
-#endif /* FTS_DECPARAM_HPP */

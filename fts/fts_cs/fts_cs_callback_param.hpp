@@ -38,7 +38,6 @@ struct CallbackParam
  * @brief This class is used to hold the callback parameters for Decryptor
  * This parameter to shared on all connections.
  */
-#if 1    
 struct CommonCallbackParam
 {
     CommonCallbackParam(CalcManager& calc_manager)
@@ -47,15 +46,6 @@ struct CommonCallbackParam
     virtual ~CommonCallbackParam(void) = default;
     CalcManager& calc_manager_;
 };
-#else
-struct CommonCallbackParam
-{
-    CommonCallbackParam(void);
-    virtual ~CommonCallbackParam(void) = default;
-    
-    std::shared_ptr<CalcManager> calc_manager;
-};
-#endif
     
 } /* namespace fts_cs */
 
