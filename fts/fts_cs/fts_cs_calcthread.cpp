@@ -6,6 +6,7 @@
 #include <sys/types.h>   // for thread id
 #include <sys/syscall.h> // for thread id
 #include <stdsc/stdsc_log.hpp>
+#include <omp.h>
 #include <fts_share/fts_seal_utility.hpp>
 #include <fts_share/fts_commonparam.hpp>
 #include <fts_share/fts_encdata.hpp>
@@ -213,8 +214,8 @@ struct CalcThread::Impl
             Result.push_back(tep);
         }
 
-        //omp_set_num_threads(NF);
-        //#pragma omp parallel for
+        omp_set_num_threads(FTS_COMMONPARAM_NTHREADS);
+        #pragma omp parallel for
         for(int64_t i=0; i<k; ++i) {
             seal::Ciphertext res = ciphertext_query;
             seal::Plaintext poly_row;
@@ -313,8 +314,8 @@ struct CalcThread::Impl
         std::vector<std::vector<int64_t>> tmpLUT(LUT.size());
         std::copy(LUT.begin(), LUT.end(), tmpLUT.begin());
         
-        //omp_set_num_threads(NF);
-        //#pragma omp parallel for
+        omp_set_num_threads(FTS_COMMONPARAM_NTHREADS);
+        #pragma omp parallel for
         for (int64_t i=0; i<k; ++i) {
             tmpLUT[i].resize(slot_count);
             seal::Plaintext poly_table_row;
