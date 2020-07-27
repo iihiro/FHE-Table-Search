@@ -68,28 +68,37 @@ public:
     }
 
     fts_share::DecCalcResult_t
-    get_PIRquery(const int32_t key_id, const int32_t query_id,
+    get_PIRquery(const fts_share::FuncNo_t func_no,
+                 const int32_t key_id,
+                 const int32_t query_id,
                  const int64_t possible_input_num_one,
                  const int64_t possible_input_num_two,
                  const int64_t possible_combination_num_two,
-                 const fts_share::EncData& enc_midresult,
+                 const fts_share::EncData& enc_midresult_x,
+                 const fts_share::EncData& enc_midresult_y,
                  fts_share::EncData& enc_PIRquery)
     {
         fts_share::PlainData<fts_share::Cs2DecParam> splaindata;
         fts_share::Cs2DecParam param
-            = {key_id,
+            = {func_no,
+               key_id,
                query_id,
                possible_input_num_one,
                possible_input_num_two,
                possible_combination_num_two};
         splaindata.push(param);
 
-        auto sz = splaindata.stream_size() + enc_midresult.stream_size();
+        auto sz = (splaindata.stream_size()
+                   + enc_midresult_x.stream_size()
+                   + ((func_no == fts_share::kFuncTwo) ? enc_midresult_y.stream_size() : 0));
         stdsc::BufferStream sbuffstream(sz);
         std::iostream stream(&sbuffstream);
 
         splaindata.save_to_stream(stream);
-        enc_midresult.save_to_stream(stream);
+        enc_midresult_x.save_to_stream(stream);
+        if (func_no == fts_share::kFuncTwo) {
+            enc_midresult_y.save_to_stream(stream);
+        }
 
         stdsc::Buffer* sbuffer = &sbuffstream;
         stdsc::Buffer rbuffer;
@@ -163,19 +172,26 @@ void DecClient::get_param(const int32_t key_id, seal::EncryptionParameters& para
     STDSC_LOG_INFO("Get encryption parameters: received key of #%d", key_id);
 }
 
-fts_share::DecCalcResult_t DecClient::get_PIRquery(const int32_t key_id, const int32_t query_id,
+fts_share::DecCalcResult_t DecClient::get_PIRquery(const fts_share::FuncNo_t func_no,
+                                                   const int32_t key_id,
+                                                   const int32_t query_id,
                                                    const int64_t possible_input_num_one,
                                                    const int64_t possible_input_num_two,
                                                    const int64_t possible_combination_num_two,
-                                                   const fts_share::EncData& enc_midresult,
+                                                   const fts_share::EncData& enc_midresult_x,
+                                                   const fts_share::EncData& enc_midresult_y,
                                                    fts_share::EncData& enc_PIRquery)
 {
     STDSC_LOG_INFO("Get PIR queries: sending request of query #%d to decryptor.", query_id);
-    return pimpl_->get_PIRquery(key_id, query_id,
+    return pimpl_->get_PIRquery(func_no,
+                                key_id,
+                                query_id,
                                 possible_input_num_one,
                                 possible_input_num_two,
                                 possible_combination_num_two,
-                                enc_midresult, enc_PIRquery);
+                                enc_midresult_x,
+                                enc_midresult_y,
+                                enc_PIRquery);
 }
 
 

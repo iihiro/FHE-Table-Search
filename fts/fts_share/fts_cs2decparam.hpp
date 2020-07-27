@@ -19,6 +19,7 @@
 #define FTS_CS2DECPARAM_HPP
 
 #include <iostream>
+#include <fts_share/fts_funcno.hpp>
 
 namespace fts_share
 {
@@ -28,6 +29,7 @@ namespace fts_share
  */
 struct Cs2DecParam
 {
+    fts_share::FuncNo_t func_no;
     int32_t key_id;
     int32_t query_id;
     int64_t possible_input_num_one;

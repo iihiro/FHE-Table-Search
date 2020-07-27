@@ -18,6 +18,6 @@
 #ifndef FTS_COMMONPARAM_HPP
 #define FTS_COMMONPARAM_HPP
 
-#define FTS_COMMONPARAM_NTHREADS     (12)      // The number of threads to calcurate on decryptor/cs
+#define FTS_COMMONPARAM_NTHREADS (12)  // The number of threads to calcurate on decryptor/cs
 
 #endif /* FTS_COMMONPARAM_HPP */

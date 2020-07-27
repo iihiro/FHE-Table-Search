@@ -88,21 +88,26 @@ public:
 
     /**
      * Get PIR queries
+     * @param[in] func_no function No
      * @param[in] key_id key ID
      * @parma[in] query_id query ID
      * @param[in] possible_input_num_one num of possible inputs for one input
      * @param[in] possible_input_num_two num of possible inputs for two input
      * @param[in] possible_combination_num_two num of combination for one input
-     * @param[in] enc_midresult intermediate results
+     * @param[in] enc_midresult_x intermediate results
+     * @param[in] enc_midresult_y intermediate results (this param is not used when one input.)
      * @param[out] enc_PIRquery PIR queries
      * @return calcuration result on decryptor
      */
     fts_share::DecCalcResult_t
-    get_PIRquery(const int32_t key_id, const int32_t query_id,
+    get_PIRquery(const fts_share::FuncNo_t func_no,
+                 const int32_t key_id,
+                 const int32_t query_id,
                  const int64_t possible_input_num_one,
                  const int64_t possible_input_num_two,
                  const int64_t possible_combination_num_two,
-                 const fts_share::EncData& enc_midresult,
+                 const fts_share::EncData& enc_midresult_x,
+                 const fts_share::EncData& enc_midresult_y,
                  fts_share::EncData& enc_PIRquery);
     
 private:

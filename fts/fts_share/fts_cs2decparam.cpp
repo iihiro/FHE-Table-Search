@@ -22,6 +22,8 @@ namespace fts_share
 
 std::ostream& operator<<(std::ostream& os, const Cs2DecParam& param)
 {
+    const auto i32_func_no = static_cast<int32_t>(param.func_no);
+    os << param.func_no  << std::endl;
     os << param.key_id   << std::endl;
     os << param.query_id << std::endl;
     os << param.possible_input_num_one << std::endl;
@@ -32,11 +34,14 @@ std::ostream& operator<<(std::ostream& os, const Cs2DecParam& param)
 
 std::istream& operator>>(std::istream& is, Cs2DecParam& param)
 {
+    int32_t i32_func_no;
+    is >> i32_func_no;
     is >> param.key_id;
     is >> param.query_id;
     is >> param.possible_input_num_one;
     is >> param.possible_input_num_two;
     is >> param.possible_combination_num_two;
+    param.func_no = static_cast<fts_share::FuncNo_t>(i32_func_no);
     return is;
 }
     
