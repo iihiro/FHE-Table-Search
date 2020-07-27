@@ -98,40 +98,30 @@ createLUTforTwoInput(const std::vector<int64_t>& table_x,
     }
 
     std::vector<int64_t> sub_per_x, sub_per_y;
-    //long x_not=0, y_not=0;
     for (int i=0; i<k; ++i) {
         for (int j=0; j<l; ++j) {
             sub_per_x.push_back(per_x[i * l + j]);
             sub_per_y.push_back(per_y[i * l + j]);
         }
         permute_table_x.push_back(sub_per_x);
-        // out_vector(sub_per_x);
         sub_per_x.clear();
         permute_table_y.push_back(sub_per_y);
-        // out_vector(sub_per_y);
         sub_per_y.clear();
     }
 
     std::vector<int64_t> per_out, sub_per_out;
 
-    //long ooo=0;
     for (int64_t h=0; h<possible_input_num_two; ++h) {
         for(int64_t t=0; t<possible_input_num_two; ++t) {
             int64_t tepx=vi_x[h];
             int64_t tepy=vi_y[t];
 
             per_out.push_back(table_out[tepx * possible_input_num_two + tepy]);
-            //   if(table_out[tepx*NUM+tepy]!=1000) ooo++;
-            //   if(per_out[h*NUM+t]==2) cout<<"\033[1;32m Here\033[0m"<<endl;
         }
     }
 
     STDSC_LOG_INFO("Made permuted output vector.");
-    //cout<<"Made permuted output vector is:"<<endl;
-    //out_vector(per_out);
-    //cout<<"not 1000 has:"<<ooo<<endl;
 
-    //cout<<"Permuted out vector"<<endl;
     for (int i=0; i<ks; ++i) {
         for(int j=0; j<l; ++j) {
             sub_per_out.push_back(per_out[i * l + j]);
@@ -484,14 +474,9 @@ struct CalcThread::Impl
             seal::Ciphertext res_x = ciphertext_x;
             seal::Plaintext poly_row_x;
             permute_table_x[i].resize(slot_count);
-            //out_vector(permute_table_x[i]);
             batch_encoder.encode(permute_table_x[i], poly_row_x);
             evaluator.sub_plain_inplace(res_x, poly_row_x);
             evaluator.relinearize_inplace(res_x, relinkey);
-
-            // vector<int64_t> random_value_vec1 = createrandomvector(slot_count);
-            // Plaintext poly_num_x;
-            // batch_encoder.encode(random_value_vec1, poly_num_x);
 
             std::vector<int64_t> random_value_vec1;
             for (size_t sk=0; sk<row_size; ++sk) {
@@ -512,14 +497,10 @@ struct CalcThread::Impl
             seal::Ciphertext res_y = ciphertext_y;
             seal::Plaintext poly_row_y;
             permute_table_y[i].resize(slot_count);
-            //out_vector(permute_table_y[i]);
             batch_encoder.encode(permute_table_y[i], poly_row_y);
             evaluator.sub_plain_inplace(res_y, poly_row_y);
             evaluator.relinearize_inplace(res_y, relinkey);
 
-            // vector<int64_t> random_value_vec2 = createrandomvector(slot_count);
-            // Plaintext poly_num_y;
-            // batch_encoder.encode(random_value_vec2, poly_num_y);
             std::vector<int64_t> random_value_vec2;
             for (size_t sk=0; sk<row_size; ++sk) {
                 int64_t random_value=(g_generator()%5+1);
@@ -577,8 +558,6 @@ struct CalcThread::Impl
         
 #if defined ENABLE_LOCAL_DEBUG
         {
-            //auto& queryd = enc_PIRquery.data();
-            //auto& queryi = enc_PIRindex.data();
             fts_share::seal_utility::write_to_file("query_qds2", enc_PIRquery.vdata());
         }
 #endif
@@ -685,16 +664,12 @@ struct CalcThread::Impl
         std::cout << "  Plaintext matrix row size: " << row_size << std::endl;
         std::cout << "  Slot nums = " << slot_count << std::endl;
 
-        //int64_t k = ceil(possible_input_num_one_ / row_size);
         int64_t ks= ceil(possible_combination_num_two_ / row_size);
 
         const seal::Ciphertext& new_query0 = new_PIR_query0;
         const seal::Ciphertext& new_query1 = new_PIR_query1;
         const seal::Ciphertext& new_query2 = new_PIR_query2;
 
-        //read output table
-        //koko//std::vector<std::vector<int64_t>> permute_out = read_table(s1+"_table_out");
-        
         std::vector<seal::Ciphertext> query_rec, query_sub;
         for (int i=0; i<ks; ++i) {
             seal::Ciphertext temp_rec;
@@ -740,7 +715,6 @@ struct CalcThread::Impl
             query_rec[i]=temp1;
         }
 
-//        seal::Ciphertext sum_result;
         sum_result = query_rec[0];
         for (int i=1; i<ks; ++i) {
             evaluator.add_inplace(sum_result, query_rec[i]);
@@ -749,40 +723,6 @@ struct CalcThread::Impl
         std::cout << "  Size after relinearization: " << sum_result.size() << std::endl;
         std::cout << "  Noise budget after relinearizing (dbc = "
                   << relinkey.decomposition_bit_count() << std::endl;
-
-//        
-//
-//        
-//
-//        std::vector<seal::Ciphertext> res;
-//        for (int i=0; i<k; ++i) {
-//            seal::Ciphertext tep;
-//            res.push_back(tep);
-//        }
-//
-//        std::vector<std::vector<int64_t>> tmpLUT(LUT.size());
-//        std::copy(LUT.begin(), LUT.end(), tmpLUT.begin());
-//        
-//        omp_set_num_threads(FTS_COMMONPARAM_NTHREADS);
-//        #pragma omp parallel for
-//        for (int64_t i=0; i<k; ++i) {
-//            tmpLUT[i].resize(slot_count);
-//            seal::Plaintext poly_table_row;
-//            batch_encoder.encode(tmpLUT[i], poly_table_row);
-//            seal::Ciphertext temp = new_index;
-//            evaluator.rotate_rows_inplace(temp, -i, galoiskey);
-//            evaluator.multiply_inplace(temp, new_query);
-//            evaluator.relinearize_inplace(temp, relinkey);
-//            evaluator.multiply_plain_inplace(temp, poly_table_row);
-//            evaluator.relinearize_inplace(temp, relinkey);
-//            res[i]=temp;
-//        }
-//
-//        sum_result = res[0];
-//        for(int i=1; i<k; ++i) {
-//            evaluator.add_inplace(sum_result, res[i]);
-//            evaluator.relinearize_inplace(sum_result, relinkey);
-//        }
 
 #if defined ENABLE_LOCAL_DEBUG
         //write Final_result in a file

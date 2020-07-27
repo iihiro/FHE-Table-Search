@@ -255,7 +255,6 @@ calcPIRqueriesForOneInput(const std::vector<seal::Ciphertext>& midresults,
         decryptor.decrypt(ct_result[z], poly_dec_result[z]);
         batch_encoder.decode(poly_dec_result[z], dec_result[z]);
     }
-    //NTL_EXEC_RANGE_END
 
     std::cout << "OK" << std::endl;
 
@@ -392,32 +391,16 @@ calcPIRqueriesForTwoInput(const std::vector<seal::Ciphertext>& midresults_x,
 
     std::cout << "OK" << std::endl;
     
-//
-//    omp_set_num_threads(FTS_COMMONPARAM_NTHREADS);
-//    #pragma omp parallel for
-//    for (int z=0; z<k; ++z) {
-//        decryptor.decrypt(ct_result[z], poly_dec_result[z]);
-//        batch_encoder.decode(poly_dec_result[z], dec_result[z]);
-//    }
-//    //NTL_EXEC_RANGE_END
-//
-//    std::cout << "OK" << std::endl;
-//
-    
     std::cout << "  Making PIR-query..." << std::flush;
 
     int64_t flag = 0;
-    int64_t index_row_x, index_col_x;
+    int64_t index_row_x = -1, index_col_x = -1;
     for (int64_t i=0; i<k; ++i) {
         for(size_t j=0; j<row_size; ++j) {
-            //cout<<"xi:"<<i<<", xj:"<<j<<", res:"<<dec_result_x[i][j]<<endl;
-            //cout<<"xi:"<<i<<"xj:"<<j<<endl;
-            //if (dec_result_x[i][j] == 0) {
             if (dec_result_x[i][j] == 0 && flag == 0) {
                 index_row_x = i;
                 index_col_x = j;
                 flag = 1;
-                //cout<<"\033[1;31mxi:\033[0m"<<i<<"\033[1;31mxj:\033[0m"<<j<<endl;
             }
         }
     }
@@ -427,19 +410,15 @@ calcPIRqueriesForTwoInput(const std::vector<seal::Ciphertext>& midresults_x,
         return fts_share::kDecCalcResultErrNoFoundInputMember;
     }
 
-#if 1
     flag = 0;
-    //cout<<"oooo"<<endl;
     std::vector<int64_t> new_query0, new_query1, new_query2;
-    int64_t index_row_y, index_col_y;
+    int64_t index_row_y = -1, index_col_y = -1;
     for (int64_t i=0; i<k; ++i) {
         for(size_t j=0; j<row_size; ++j) {
-            //cout<<"yi:"<<i<<"yj:"<<j<<endl;
             if (dec_result_y[i][j] == 0 && flag == 0) {
                 index_row_y = i;
                 index_col_y = j;
                 flag = 1;
-                //cout<<"yi:"<<i<<"yj:"<<j<<endl;
                 for (size_t kk=0; kk<static_cast<size_t>(l); ++kk) {
                     if(kk == j) {
                         new_query0.push_back(1);
@@ -455,53 +434,10 @@ calcPIRqueriesForTwoInput(const std::vector<seal::Ciphertext>& midresults_x,
         std::cout << "ERROR: NO FIND INPUT NUMBER!" << std::endl;
         return fts_share::kDecCalcResultErrNoFoundInputMember;
     }
-#else
-    //cout<<"oooo"<<endl;
-    std::vector<int64_t> new_query0, new_query1, new_query2;
-    int64_t index_row_y, index_col_y;
-    for (int64_t i=0; i<k; ++i) {
-        for(size_t j=0; j<row_size; ++j) {
-            //cout<<"yi:"<<i<<"yj:"<<j<<endl;
-            if (dec_result_y[i][j] == 0) {
-                index_row_y = i;
-                index_col_y = j;
-                //cout<<"yi:"<<i<<"yj:"<<j<<endl;
-                for (size_t kk=0; kk<static_cast<size_t>(l); ++kk) {
-                    if(kk == j) {
-                        new_query0.push_back(1);
-                    } else {
-                        new_query0.push_back(0);
-                    }
-                }
-            }
-        }
-    }
-#endif
 
     std:: cout << "index_row_x:" << index_row_x << ", index_col_x:" << index_col_x
                << ", index_row_y:" << index_row_y << ", index_col_y:" << index_col_y << std::endl;
     
-//
-//    int64_t index;
-//    std::vector<int64_t> new_query;
-//    int64_t flag = 0;
-//
-//    for (int i=0; i<k; ++i) {
-//        for (size_t j=0; j<row_size; ++j) {
-//            if (dec_result[i][j] == 0 && flag == 0) {
-//                index = i;
-//                flag = 1;
-//                for (size_t kk=0; kk<static_cast<size_t>(l); ++kk) {
-//                    if (kk==j) new_query.push_back(1);
-//                    else new_query.push_back(0);
-//                }
-//            }
-//        }
-//    }
-//    if(flag == 0) {
-//        std::cout << "ERROR: NO FIND INPUT NUMBER!" << std::endl;
-//        return fts_share::kDecCalcResultErrNoFoundInputMember;
-//    }
     std::cout << "OK" << std::endl;
 
     //new_index is new_query left_shift the value of index
@@ -514,27 +450,12 @@ calcPIRqueriesForTwoInput(const std::vector<seal::Ciphertext>& midresults_x,
     new_query2 = shift_work(new_query1, index2, row_size);
     std::cout << "  index1 is " << index1 << std::endl;
     std::cout << "  index2 is " << index2 << std::endl;
-    //out_vector(new_query1);
-    //out_vector(new_query2);
     new_query0.resize(slot_count);
     new_query1.resize(slot_count);
     new_query2.resize(slot_count);
-    //out_vector(new_query1);
-    //out_vector(new_query2);
-    // out(new_index);
-    // out(new_query);
-    
-//
-//    std::vector<int64_t> new_index;
-//    new_index = shift_work(new_query, index, row_size);
-//    std::cout << "  index is " << index << std::endl;
-//    new_query.resize(slot_count);
-//    new_index.resize(slot_count);
-//
-//    //encrypt new query
+
     std::cout << "  Encrypting..." << std::flush;
 
-//    seal::Ciphertext new_PIR_query0, new_PIR_query1, new_PIR_query2;
     seal::Plaintext plaintext_new_PIR_query0, plaintext_new_PIR_query1, plaintext_new_PIR_query2;
     batch_encoder.encode(new_query0, plaintext_new_PIR_query0);
     encryptor.encrypt(plaintext_new_PIR_query0, new_PIR_query0);
@@ -543,18 +464,8 @@ calcPIRqueriesForTwoInput(const std::vector<seal::Ciphertext>& midresults_x,
     batch_encoder.encode(new_query2, plaintext_new_PIR_query2);
     encryptor.encrypt(plaintext_new_PIR_query2, new_PIR_query2);
     
-//    seal::Plaintext plaintext_new_PIR_query;
-//    batch_encoder.encode(new_query, plaintext_new_PIR_query);
-//
-//    //seal::Ciphertext new_PIR_index;
-//    seal::Plaintext plaintext_new_PIR_index;
-//    batch_encoder.encode(new_index, plaintext_new_PIR_index);
-//
-//    encryptor.encrypt(plaintext_new_PIR_query, new_PIR_query);
-//    encryptor.encrypt(plaintext_new_PIR_index, new_PIR_index);
-//
     std::cout << "OK" << std::endl;
-//
+
 #if defined ENABLE_LOCAL_DEBUG
     {
         std::cout << "  Saving query..." << std::flush;

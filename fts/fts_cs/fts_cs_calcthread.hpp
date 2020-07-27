@@ -69,7 +69,6 @@ public:
     
     /**
      * Stop thread
-t thread
      */
     void stop();
     
