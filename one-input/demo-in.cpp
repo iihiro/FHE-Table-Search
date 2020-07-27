@@ -13,6 +13,14 @@ void out(vector<int64_t> ss){
 }
 
 int main(int argc, char *argv[]){
+
+    if (argc < 2) {
+        printf("usage: %s <input_value>\n", argv[0]);
+        exit(1);
+    }
+    int64_t input_value = atol(argv[1]);
+    printf("input value: %ld\n", input_value);
+    
   //resetting FHE
   cout << "Setting FHE..." << flush;
   ifstream parmsFile("Params");
@@ -52,7 +60,11 @@ int main(int argc, char *argv[]){
   // string LUT_query_temp;
   // cin >> LUT_query_temp;
   // int64_t LUT_query=std::atoi(LUT_query_temp);
+#if 1
+  int64_t LUT_query=input_value;
+#else
   int64_t LUT_query=2;
+#endif
 
   //encrypt the LUT query
   cout << "Encrypt and save your query..." << flush;

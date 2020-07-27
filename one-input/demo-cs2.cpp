@@ -139,5 +139,27 @@ int main(int argc, char *argv[]){
   chrono::duration<double> diffWhole = endWhole-startWhole;
   cout << "Whole runtime is: " << diffWhole.count() << "s" << endl;
 
+  {
+      ifstream skFile("SecretKey");
+      SecretKey secret_key;
+      secret_key.unsafe_load(skFile);
+      skFile.close();
+
+      Decryptor decryptor(context, secret_key);
+      BatchEncoder batch_encoder(context);
+
+      vector<int64_t> query;
+      Plaintext plaintext_query;
+      decryptor.decrypt(sum_result, plaintext_query);
+
+      int64_t output_value;
+      std::vector<int64_t> outputs;
+      batch_encoder.decode(plaintext_query, outputs);
+      if (0 < outputs.size()) {
+          output_value = outputs[0];
+          printf("hoge: outputs.size:%lu, result:%ld\n", outputs.size(), output_value);
+      }
+  }
+  
   return 0;
 }
