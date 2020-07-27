@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+#include <unistd.h>
 #include <memory>
 #include <string>
 #include <iostream>
@@ -31,15 +32,30 @@
 #include <fts_cs/fts_cs_callback_param.hpp>
 #include <fts_cs/fts_cs_callback_function.hpp>
 
-static constexpr const char* DEFAULT_LUT_DIR  = "../../../data";
+static constexpr const char* DEFAULT_LUT_DIR  = "../../../test/sample_LUT";
 
 struct Option
 {
-    uint64_t dummy;
+    std::string lut_dir = DEFAULT_LUT_DIR;
 };
 
 void init(Option& option, int argc, char* argv[])
 {
+    int opt;
+    opterr = 0;
+    while ((opt = getopt(argc, argv, "d:h")) != -1)
+    {
+        switch (opt)
+        {
+            case 'd':
+                option.lut_dir = optarg;
+                break;
+            case 'h':
+            default:
+                printf("Usage: %s [-d lut_dir]\n", argv[0]);
+                exit(1);
+        }
+    }
 }
 
 void exec(Option& option)
@@ -57,7 +73,7 @@ void exec(Option& option)
         callback.set(fts_share::kControlCodeUpDownloadResult, cb_result);
     }
 
-    const std::string LUT_dirpath = DEFAULT_LUT_DIR;
+    const std::string LUT_dirpath = option.lut_dir;
     const char* dec_host = "localhost";
 
     std::shared_ptr<fts_cs::CSServer> cs_server
@@ -65,11 +81,11 @@ void exec(Option& option)
 
     cs_server->start();
     
-    std::string key;
-    std::cout << "hit any key to exit server: " << std::endl;
-    std::cin >> key;
-
-    cs_server->stop();
+    //std::string key;
+    //std::cout << "hit any key to exit server: " << std::endl;
+    //std::cin >> key;
+    //
+    //cs_server->stop();
     cs_server->wait();
 }
 

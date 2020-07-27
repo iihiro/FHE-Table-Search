@@ -76,11 +76,11 @@ void exec(Option& option)
 
     dec_server->start();
     
-    std::string key;
-    std::cout << "hit any key to exit server: " << std::endl;
-    std::cin >> key;
-
-    dec_server->stop();
+    //std::string key;
+    //std::cout << "hit any key to exit server: " << std::endl;
+    //std::cin >> key;
+    //
+    //dec_server->stop();
     dec_server->wait();
 }
 

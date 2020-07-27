@@ -72,9 +72,13 @@ void callback_func(const int32_t query_id,
     std::cout << "Result of query #" << query_id << ":" << std::flush;
     for (const auto& v : result_values) {
         std::cout << " " << "\033[1;33m " << v << "\033[0m";
-        //std::cout << " " << v;
     }
     std::cout << std::endl;
+
+    // for test script
+    for (const auto& v : result_values) {
+        std::cerr << v << std::endl;
+    }
 }
 
 void init(Option& option, int argc, char* argv[])

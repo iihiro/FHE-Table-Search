@@ -271,8 +271,11 @@ calcPIRqueriesForOneInput(const std::vector<seal::Ciphertext>& midresults,
                 index = i;
                 flag = 1;
                 for (size_t kk=0; kk<static_cast<size_t>(l); ++kk) {
-                    if (kk==j) new_query.push_back(1);
-                    else new_query.push_back(0);
+                    if (kk == j) {
+                        new_query.push_back(1);
+                    } else {
+                        new_query.push_back(0);
+                    }
                 }
             }
         }
@@ -403,18 +406,56 @@ calcPIRqueriesForTwoInput(const std::vector<seal::Ciphertext>& midresults_x,
     
     std::cout << "  Making PIR-query..." << std::flush;
 
+    int64_t flag = 0;
     int64_t index_row_x, index_col_x;
     for (int64_t i=0; i<k; ++i) {
         for(size_t j=0; j<row_size; ++j) {
             //cout<<"xi:"<<i<<", xj:"<<j<<", res:"<<dec_result_x[i][j]<<endl;
             //cout<<"xi:"<<i<<"xj:"<<j<<endl;
-            if (dec_result_x[i][j] == 0) {
+            //if (dec_result_x[i][j] == 0) {
+            if (dec_result_x[i][j] == 0 && flag == 0) {
                 index_row_x = i;
                 index_col_x = j;
+                flag = 1;
                 //cout<<"\033[1;31mxi:\033[0m"<<i<<"\033[1;31mxj:\033[0m"<<j<<endl;
             }
         }
     }
+
+    if(flag == 0) {
+        std::cout << "ERROR: NO FIND INPUT NUMBER!" << std::endl;
+        return fts_share::kDecCalcResultErrNoFoundInputMember;
+    }
+
+#if 1
+    flag = 0;
+    //cout<<"oooo"<<endl;
+    std::vector<int64_t> new_query0, new_query1, new_query2;
+    int64_t index_row_y, index_col_y;
+    for (int64_t i=0; i<k; ++i) {
+        for(size_t j=0; j<row_size; ++j) {
+            //cout<<"yi:"<<i<<"yj:"<<j<<endl;
+            if (dec_result_y[i][j] == 0 && flag == 0) {
+                index_row_y = i;
+                index_col_y = j;
+                flag = 1;
+                //cout<<"yi:"<<i<<"yj:"<<j<<endl;
+                for (size_t kk=0; kk<static_cast<size_t>(l); ++kk) {
+                    if(kk == j) {
+                        new_query0.push_back(1);
+                    } else {
+                        new_query0.push_back(0);
+                    }
+                }
+            }
+        }
+    }
+
+    if(flag == 0) {
+        std::cout << "ERROR: NO FIND INPUT NUMBER!" << std::endl;
+        return fts_share::kDecCalcResultErrNoFoundInputMember;
+    }
+#else
     //cout<<"oooo"<<endl;
     std::vector<int64_t> new_query0, new_query1, new_query2;
     int64_t index_row_y, index_col_y;
@@ -435,6 +476,7 @@ calcPIRqueriesForTwoInput(const std::vector<seal::Ciphertext>& midresults_x,
             }
         }
     }
+#endif
 
     std:: cout << "index_row_x:" << index_row_x << ", index_col_x:" << index_col_x
                << ", index_row_y:" << index_row_y << ", index_col_y:" << index_col_y << std::endl;

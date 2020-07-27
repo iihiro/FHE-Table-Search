@@ -470,7 +470,6 @@ struct CalcThread::Impl
         }
 #endif
 
-        printf("** h1\n");
         std::vector<seal::Ciphertext> result_x, result_y;
         for (int i=0; i<k; ++i) {
             seal::Ciphertext tep;
@@ -478,7 +477,6 @@ struct CalcThread::Impl
             result_y.push_back(tep);
         }
 
-        printf("** h2\n");
         //thread work
         omp_set_num_threads(FTS_COMMONPARAM_NTHREADS);
         #pragma omp parallel for
@@ -538,7 +536,6 @@ struct CalcThread::Impl
                       << relinkey.decomposition_bit_count() << std::endl;
             result_y[i]=res_y;
         }
-        printf("** h3\n");
         
 #if defined ENABLE_LOCAL_DEBUG
         {
