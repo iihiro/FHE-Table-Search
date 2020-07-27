@@ -34,7 +34,7 @@ namespace fts_cs
         int64_t temp;
         std::string lineStr;
 
-        STDSC_LOG_INFO("Read LUT file. (filepath:%s)", filepath);
+        STDSC_LOG_INFO("Read LUT file. (filepath:%s)", filepath.c_str());
 
         if (!fts_share::utility::file_exist(filepath)) {
             std::ostringstream oss;
