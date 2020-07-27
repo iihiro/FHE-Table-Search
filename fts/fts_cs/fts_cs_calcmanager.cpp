@@ -35,12 +35,12 @@ namespace fts_cs
     static constexpr const char* DEFAULT_LUT_OUT_FOR_TWO_INPUT = "LUTout_for-two-input";
 
     static void
-    read_table(const std::string& filepath, std::vector<std::vector<int64_t>>& table)
+    read_table(const std::string& filepath, std::vector<std::vector<int64_t>>& table, int64_t& n)
     {
         int64_t temp;
-        std::string lineStr;
+        std::string numStr, lineStr;
 
-        STDSC_LOG_INFO("Read LUT file. (filepath:%s)", filepath.c_str());
+        STDSC_LOG_INFO("Read LUTin file. (filepath:%s)", filepath.c_str());
 
         if (!fts_share::utility::file_exist(filepath)) {
             std::ostringstream oss;
@@ -49,6 +49,16 @@ namespace fts_cs
         }
 
         std::ifstream ifs(filepath, std::ios::in);
+        
+        getline(ifs, numStr);
+        if (!fts_share::utility::isdigit(numStr)) {
+            std::ostringstream oss;
+            oss << "Invalid format. (filepath:" << filepath << ")";
+            STDSC_THROW_FILE(oss.str().c_str());
+        }
+        n = std::stoi(numStr);
+        STDSC_LOG_INFO("  possible inputs: %ld", n);
+            
         while (getline(ifs, lineStr)){
             std::vector<int64_t> table_col;
             std::stringstream ss(lineStr);
@@ -62,13 +72,25 @@ namespace fts_cs
     }
 
     static void
-    read_vector(const std::string& filename, std::vector<int64_t>& vec)
+    read_vector(const std::string& filepath, std::vector<int64_t>& vec, int64_t& n)
     {
         int64_t temp;
-        std::string lineStr;
-        std::ifstream inFile(filename, std::ios::in);
+        std::string numStr, lineStr;
 
-        while(getline(inFile, lineStr)){
+        STDSC_LOG_INFO("Read LUTout file. (filepath:%s)", filepath.c_str());
+        
+        std::ifstream ifs(filepath, std::ios::in);
+
+        getline(ifs, numStr);
+        if (!fts_share::utility::isdigit(numStr)) {
+            std::ostringstream oss;
+            oss << "Invalid format. (filepath:" << filepath << ")";
+            STDSC_THROW_FILE(oss.str().c_str());
+        }
+        n = std::stoi(numStr);
+        STDSC_LOG_INFO("  possible combination: %ld", n);
+        
+        while(getline(ifs, lineStr)){
             std::stringstream ss(lineStr);
             std::string str;
             while (getline(ss, str, ' ')){
@@ -92,13 +114,13 @@ namespace fts_cs
             auto lutin_two  = LUT_dir + std::string("/") + std::string(DEFAULT_LUT_IN_FOR_TWO_INPUT);
             auto lutout_two = LUT_dir + std::string("/") + std::string(DEFAULT_LUT_OUT_FOR_TWO_INPUT);
 
-            STDSC_THROW_FILE_IF_CHECK(fts_share::utility::file_exist(lutin_one), "Err: LUT file for one input does not exist.");
-            STDSC_THROW_FILE_IF_CHECK(fts_share::utility::file_exist(lutin_two), "Err: LUTin file for two input does not exist.");
+            STDSC_THROW_FILE_IF_CHECK(fts_share::utility::file_exist(lutin_one),  "Err: LUT file for one input does not exist.");
+            STDSC_THROW_FILE_IF_CHECK(fts_share::utility::file_exist(lutin_two),  "Err: LUTin file for two input does not exist.");
             STDSC_THROW_FILE_IF_CHECK(fts_share::utility::file_exist(lutout_two), "Err: LUTout file for two input does not exist.");
             
-            read_table(lutin_one, LUTin_one_);
-            read_table(lutin_two, LUTin_two_);
-            read_vector(lutout_two, LUTout_two_);
+            read_table(lutin_one, LUTin_one_, possible_input_num_one_);
+            read_table(lutin_two, LUTin_two_, possible_input_num_two_);
+            read_vector(lutout_two, LUTout_two_, possible_combination_num_two_);
         }
 
         const uint32_t max_concurrent_queries_;
@@ -109,6 +131,9 @@ namespace fts_cs
         std::vector<std::vector<int64_t>> LUTin_one_;
         std::vector<std::vector<int64_t>> LUTin_two_;
         std::vector<int64_t> LUTout_two_;
+        int64_t possible_input_num_one_;
+        int64_t possible_input_num_two_;
+        int64_t possible_combination_num_two_;
         std::vector<std::shared_ptr<CalcThread>> threads_;
     };
 
@@ -133,6 +158,11 @@ namespace fts_cs
                 std::make_shared<CalcThread>(pimpl_->qque_,
                                              pimpl_->rque_,
                                              pimpl_->LUTin_one_,
+                                             pimpl_->LUTin_two_,
+                                             pimpl_->LUTout_two_,
+                                             pimpl_->possible_input_num_one_,
+                                             pimpl_->possible_input_num_two_,
+                                             pimpl_->possible_combination_num_two_,
                                              dec_host,
                                              dec_port));
         }

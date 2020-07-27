@@ -30,6 +30,9 @@ struct Cs2DecParam
 {
     int32_t key_id;
     int32_t query_id;
+    int64_t possible_input_num_one;
+    int64_t possible_input_num_two;
+    int64_t possible_combination_num_two;
 };
 
 std::ostream& operator<<(std::ostream& os, const Cs2DecParam& param);

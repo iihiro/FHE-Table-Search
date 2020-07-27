@@ -15,36 +15,26 @@
  * limitations under the License.
  */
 
-#ifndef FTS_CSPARAM_HPP
-#define FTS_CSPARAM_HPP
-
-#include <iostream>
+#include <fts_share/fts_user2csparam.hpp>
 
 namespace fts_share
 {
 
-/**
- * @brief Enumeration for functions.
- */
-enum FuncNo_t : int32_t
+std::ostream& operator<<(std::ostream& os, const User2CsParam& param)
 {
-    kFuncNil    = 0,
-    kFuncOne    = 1,
-    kFuncTwo    = 2,
-};
+    auto i32_func_no = static_cast<int32_t>(param.func_no);
+    os << param.key_id  << std::endl;
+    os << i32_func_no << std::endl;
+    return os;
+}
+
+std::istream& operator>>(std::istream& is, User2CsParam& param)
+{
+    int32_t i32_func_no;
+    is >> param.key_id;
+    is >> i32_func_no;
+    param.func_no = static_cast<FuncNo_t>(i32_func_no);
+    return is;
+}
     
-/**
- * @brief This class is used to hold the parameters to compute on encryptor.
- */
-struct CSParam
-{
-    int32_t  key_id;
-    FuncNo_t func_no;
-};
-
-std::ostream& operator<<(std::ostream& os, const CSParam& param);
-std::istream& operator>>(std::istream& is, CSParam& param);
-
 } /* namespace fts_share */
-
-#endif /* FTS_CSPARAM_HPP */

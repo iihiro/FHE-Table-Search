@@ -36,6 +36,7 @@ int main(void)
     
     std::ofstream InputTable;
     InputTable.open("LUTin_for-one-input", std::ios::out);
+    InputTable << TABLE_SIZE_COL << std::endl;
     for(size_t i=0; i<inputTable.size(); ++i){
         for(size_t j=0; j<inputTable[0].size(); ++j){
             InputTable << inputTable[i][j] << ' ';

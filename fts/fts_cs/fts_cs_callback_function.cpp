@@ -25,7 +25,7 @@
 #include <fts_share/fts_packet.hpp>
 #include <fts_share/fts_plaindata.hpp>
 #include <fts_share/fts_encdata.hpp>
-#include <fts_share/fts_csparam.hpp>
+#include <fts_share/fts_user2csparam.hpp>
 #include <fts_share/fts_seal_utility.hpp>
 #include <fts_share/fts_cs2userparam.hpp>
 #include <fts_cs/fts_cs_callback_function.hpp>
@@ -53,9 +53,9 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
     std::iostream rstream(&rbuffstream);
 
     // load plaindata (param)
-    fts_share::PlainData<fts_share::CSParam> rplaindata;
+    fts_share::PlainData<fts_share::User2CsParam> rplaindata;
     rplaindata.load_from_stream(rstream);
-    const auto& param = rplaindata.data();
+    const auto& user2csparam = rplaindata.data();
 
     // load encryption parameters
     seal::EncryptionParameters params(seal::scheme_type::BFV);
@@ -68,7 +68,7 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
     fts_share::seal_utility::write_to_file("query.txt", enc_inputs.data());
 #endif
 
-    Query query(param.key_id, param.func_no, enc_inputs.vdata());
+    Query query(user2csparam.key_id, user2csparam.func_no, enc_inputs.vdata());
     int32_t query_id = calc_manager.push_query(query);
 
     fts_share::PlainData<int32_t> splaindata;

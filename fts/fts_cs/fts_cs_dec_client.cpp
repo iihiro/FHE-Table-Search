@@ -69,12 +69,20 @@ public:
 
     fts_share::DecCalcResult_t
     get_PIRquery(const int32_t key_id, const int32_t query_id,
+                 const int64_t possible_input_num_one,
+                 const int64_t possible_input_num_two,
+                 const int64_t possible_combination_num_two,
                  const fts_share::EncData& enc_midresult,
                  fts_share::EncData& enc_PIRquery,
                  fts_share::EncData& enc_PIRindex)
     {
         fts_share::PlainData<fts_share::Cs2DecParam> splaindata;
-        fts_share::Cs2DecParam param = {key_id, query_id};
+        fts_share::Cs2DecParam param
+            = {key_id,
+               query_id,
+               possible_input_num_one,
+               possible_input_num_two,
+               possible_combination_num_two};
         splaindata.push(param);
 
         auto sz = splaindata.stream_size() + enc_midresult.stream_size();
@@ -158,13 +166,20 @@ void DecClient::get_param(const int32_t key_id, seal::EncryptionParameters& para
 }
 
 fts_share::DecCalcResult_t DecClient::get_PIRquery(const int32_t key_id, const int32_t query_id,
+                                                   const int64_t possible_input_num_one,
+                                                   const int64_t possible_input_num_two,
+                                                   const int64_t possible_combination_num_two,
                                                    const fts_share::EncData& enc_midresult,
                                                    fts_share::EncData& enc_PIRquery,
                                                    fts_share::EncData& enc_PIRindex)
                                
 {
     STDSC_LOG_INFO("Get PIR queries: sending request of query #%d to decryptor.", query_id);
-    return pimpl_->get_PIRquery(key_id, query_id, enc_midresult, enc_PIRquery, enc_PIRindex);
+    return pimpl_->get_PIRquery(key_id, query_id,
+                                possible_input_num_one,
+                                possible_input_num_two,
+                                possible_combination_num_two,
+                                enc_midresult, enc_PIRquery, enc_PIRindex);
     STDSC_LOG_INFO("Get PIR queries:: received PIR queries of query #%d", query_id);
 }
 

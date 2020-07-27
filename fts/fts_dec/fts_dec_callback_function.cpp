@@ -218,6 +218,9 @@ calc_PIRqueries(const std::vector<seal::Ciphertext>& midresults,
                 const seal::SecretKey& seckey,
                 const seal::PublicKey& pubkey,
                 const seal::EncryptionParameters& params,
+                const int64_t possible_input_num_one,
+                const int64_t possible_input_num_two,
+                const int64_t possible_combination_num_two,
                 seal::Ciphertext& new_PIR_query,
                 seal::Ciphertext& new_PIR_index)
 {
@@ -236,7 +239,7 @@ calc_PIRqueries(const std::vector<seal::Ciphertext>& midresults,
     std::cout << "  Slot nums = " << slot_count << std::endl;
 
     int64_t l = row_size;
-    int64_t k = ceil(FTS_COMMONPARAM_TABLE_SIZE_N / row_size);
+    int64_t k = ceil(possible_input_num_one / row_size);
 
     const auto& ct_result = midresults;
     std::vector<std::vector<int64_t>> dec_result(k);
@@ -338,14 +341,14 @@ DEFUN_UPDOWNLOAD(CallbackFunctionCsMidResult)
 
     fts_share::PlainData<fts_share::Cs2DecParam> rplaindata;
     rplaindata.load_from_stream(rstream);
-    const auto param = rplaindata.data();
+    const auto cs2decparam = rplaindata.data();
 
     seal::SecretKey seckey;
     seal::PublicKey pubkey;
     seal::EncryptionParameters params(seal::scheme_type::BFV);
-    keycont.get(param.key_id, KeyKind_t::kKindSecKey, seckey);
-    keycont.get(param.key_id, KeyKind_t::kKindPubKey, pubkey);
-    keycont.get_param(param.key_id, params);
+    keycont.get(cs2decparam.key_id, KeyKind_t::kKindSecKey, seckey);
+    keycont.get(cs2decparam.key_id, KeyKind_t::kKindPubKey, pubkey);
+    keycont.get_param(cs2decparam.key_id, params);
 
     fts_share::EncData enc_midresult(params);
     enc_midresult.load_from_stream(rstream);
@@ -354,6 +357,9 @@ DEFUN_UPDOWNLOAD(CallbackFunctionCsMidResult)
     seal::Ciphertext new_PIR_query;
     seal::Ciphertext new_PIR_index;
     auto res = calc_PIRqueries(enc_midresult.vdata(), seckey, pubkey, params,
+                               cs2decparam.possible_input_num_one,
+                               cs2decparam.possible_input_num_two,
+                               cs2decparam.possible_combination_num_two,
                                new_PIR_query, new_PIR_index);
 
     fts_share::Dec2CsParam dec2csparam = {res};

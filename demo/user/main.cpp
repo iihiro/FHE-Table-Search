@@ -27,7 +27,7 @@
 #include <stdsc/stdsc_buffer.hpp>
 #include <fts_share/fts_utility.hpp>
 #include <fts_share/fts_seal_utility.hpp>
-#include <fts_share/fts_csparam.hpp>
+#include <fts_share/fts_user2csparam.hpp>
 #include <fts_share/fts_encdata.hpp>
 #include <fts_user/fts_user_dec_client.hpp>
 #include <fts_user/fts_user_cs_client.hpp>

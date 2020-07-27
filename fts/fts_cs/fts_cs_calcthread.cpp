@@ -77,11 +77,26 @@ static void create_LUT(const std::vector<std::vector<int64_t>>& LUT,
     
 struct CalcThread::Impl
 {
-    Impl(QueryQueue& in_queue, ResultQueue& out_queue,
-         std::vector<std::vector<int64_t>>& oriLUT,
-         const std::string& dec_host, const std::string& dec_port)
-        : in_queue_(in_queue), out_queue_(out_queue),
-          oriLUT_(oriLUT), dec_host_(dec_host), dec_port_(dec_port)
+    Impl(QueryQueue& in_queue,
+         ResultQueue& out_queue,
+         std::vector<std::vector<int64_t>>& LUTin_one,
+         std::vector<std::vector<int64_t>>& LUTin_two,
+         std::vector<int64_t>& LUTout_two,
+         const int64_t possible_input_num_one,
+         const int64_t possible_input_num_two,
+         const int64_t possible_combination_num_two,
+         const std::string& dec_host,
+         const std::string& dec_port)
+        : in_queue_(in_queue),
+          out_queue_(out_queue),
+          LUTin_one_(LUTin_one),
+          LUTin_two_(LUTin_two),
+          LUTout_two_(LUTout_two),
+          possible_input_num_one_(possible_input_num_one),
+          possible_input_num_two_(possible_input_num_two),
+          possible_combination_num_two_(possible_combination_num_two),
+          dec_host_(dec_host),
+          dec_port_(dec_port)
     {
     }
 
@@ -117,6 +132,9 @@ struct CalcThread::Impl
             STDSC_LOG_INFO("[th:%d] Start computationA of query #%d.", th_id, query_id);
             status = computeA(query_id, query,
                               pubkey, galoiskey, relinkey, params,
+                              possible_input_num_one_,
+                              possible_input_num_two_,
+                              possible_combination_num_two_,
                               LUT_output, new_PIR_query, new_PIR_index);
             STDSC_LOG_INFO("[th:%d] Finish computationA of query #%d.", th_id, query_id);
 
@@ -124,8 +142,11 @@ struct CalcThread::Impl
             if (status) {
                 STDSC_LOG_INFO("[th:%d] Start computationB of query #%d.", th_id, query_id);
                 status = computeB(query_id, query,
-                                pubkey, galoiskey, relinkey, params,
-                                LUT_output, new_PIR_query, new_PIR_index, sum_result);
+                                  pubkey, galoiskey, relinkey, params,
+                                  possible_input_num_one_,
+                                  possible_input_num_two_,
+                                  possible_combination_num_two_,
+                                  LUT_output, new_PIR_query, new_PIR_index, sum_result);
                 STDSC_LOG_INFO("[th:%d] Finish computationB of query #%d.", th_id, query_id);
             }
                 
@@ -165,6 +186,9 @@ struct CalcThread::Impl
                   const seal::GaloisKeys& galoiskey,
                   const seal::RelinKeys& relinkey,
                   const seal::EncryptionParameters& params,
+                  const int64_t possible_input_num_one,
+                  const int64_t possible_input_num_two,
+                  const int64_t possible_combination_num_two,
                   std::vector<std::vector<int64_t>>& LUT_output,
                   seal::Ciphertext& new_PIR_query,
                   seal::Ciphertext& new_PIR_index)
@@ -184,12 +208,12 @@ struct CalcThread::Impl
         std::cout << "  Slot nums = " << slot_count << std::endl;
 
         int64_t l = row_size;
-        int64_t k = ceil(FTS_COMMONPARAM_TABLE_SIZE_N / row_size);
+        int64_t k = ceil(possible_input_num_one / row_size);
 
-        std::vector<int64_t> vi = get_randomvector(FTS_COMMONPARAM_TABLE_SIZE_N);
+        std::vector<int64_t> vi = get_randomvector(possible_input_num_one);
         
         std::vector<std::vector<int64_t>> LUT_input;
-        create_LUT(oriLUT_, vi, LUT_input, LUT_output, l, k);
+        create_LUT(LUTin_one_, vi, LUT_input, LUT_output, l, k);
 
 #if defined ENABLE_LOCAL_DEBUG
         //write shifted_output_table in a file
@@ -253,8 +277,14 @@ struct CalcThread::Impl
         std::cout << "  Send intermediate resutls to decryptor" << std::endl;
         fts_share::EncData enc_midresult(params, Result);
         fts_share::EncData enc_PIRquery(params), enc_PIRindex(params);
-        auto res = dec_client.get_PIRquery(query.key_id_, query_id, enc_midresult,
-                                           enc_PIRquery, enc_PIRindex);
+        auto res = dec_client.get_PIRquery(query.key_id_,
+                                           query_id, 
+                                           possible_input_num_one,
+                                           possible_input_num_two,
+                                           possible_combination_num_two,
+                                           enc_midresult,
+                                           enc_PIRquery,
+                                           enc_PIRindex);
 
         if (res != fts_share::kDecCalcResultSuccess) {
             STDSC_LOG_WARN("  Failed to calcurate PIR queries on decryptor. (errno: %d)",
@@ -284,6 +314,9 @@ struct CalcThread::Impl
                   const seal::GaloisKeys& galoiskey,
                   const seal::RelinKeys& relinkey,
                   const seal::EncryptionParameters& params,
+                  const int64_t possible_input_num_one,
+                  const int64_t possible_input_num_two,
+                  const int64_t possible_combination_num_two,
                   const std::vector<std::vector<int64_t>>& LUT,
                   const seal::Ciphertext& new_PIR_query,
                   const seal::Ciphertext& new_PIR_index,
@@ -300,7 +333,7 @@ struct CalcThread::Impl
         std::cout << "  Plaintext matrix row size: " << row_size << std::endl;
         std::cout << "  Slot nums = " << slot_count << std::endl;
 
-        int64_t k = ceil(FTS_COMMONPARAM_TABLE_SIZE_N / row_size);
+        int64_t k = ceil(possible_input_num_one / row_size);
 
         const seal::Ciphertext& new_query = new_PIR_query;
         const seal::Ciphertext& new_index = new_PIR_index;
@@ -352,17 +385,33 @@ struct CalcThread::Impl
     
     QueryQueue& in_queue_;
     ResultQueue& out_queue_;
-    const std::vector<std::vector<int64_t>>& oriLUT_;
+    const std::vector<std::vector<int64_t>>& LUTin_one_;
+    const std::vector<std::vector<int64_t>>& LUTin_two_;
+    const std::vector<int64_t>& LUTout_two_;
+    const int64_t possible_input_num_one_;
+    const int64_t possible_input_num_two_;
+    const int64_t possible_combination_num_two_;
     const std::string& dec_host_;
     const std::string& dec_port_;
     CalcThreadParam param_;
     std::shared_ptr<stdsc::ThreadException> te_;
 };
 
-CalcThread::CalcThread(QueryQueue& in_queue, ResultQueue& out_queue,
-                       std::vector<std::vector<int64_t>>& oriLUT,
-                       const std::string& dec_host, const std::string& dec_port)
-    : pimpl_(new Impl(in_queue, out_queue, oriLUT, dec_host, dec_port))
+CalcThread::CalcThread(QueryQueue& in_queue,
+                       ResultQueue& out_queue,
+                       std::vector<std::vector<int64_t>>& LUTin_one,
+                       std::vector<std::vector<int64_t>>& LUTin_two,
+                       std::vector<int64_t>& LUTout_two,
+                       const int64_t possible_input_num_one,
+                       const int64_t possible_input_num_two,
+                       const int64_t possible_combination_num_two,
+                       const std::string& dec_host,
+                       const std::string& dec_port)
+    : pimpl_(new Impl(in_queue, out_queue, LUTin_one, LUTin_two, LUTout_two, 
+                      possible_input_num_one,
+                      possible_input_num_two,
+                      possible_combination_num_two,
+                      dec_host, dec_port))
 {}
 
 void CalcThread::start()

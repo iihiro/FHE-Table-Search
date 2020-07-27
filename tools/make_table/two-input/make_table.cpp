@@ -48,6 +48,7 @@ int main(void)
   
   std::ofstream InputTable;
   InputTable.open("LUTin_for-two-input", std::ios::out);
+  InputTable << NUM << std::endl;
   for (size_t i=0; i<inputT.size(); ++i) {
       for(size_t j=0; j<inputT[0].size(); ++j) {
           InputTable << inputT[i][j] << ' ';
@@ -58,6 +59,7 @@ int main(void)
 
   std::ofstream OutputTable;
   OutputTable.open("LUTout_for-two-input", std::ios::out);
+  OutputTable << (NUM * NUM) << std::endl;
   for (size_t i=0; i<outputT.size(); ++i){
       OutputTable << outputT[i] << ' ';
   }

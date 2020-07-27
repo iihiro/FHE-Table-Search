@@ -11,7 +11,7 @@
 #include <fts_share/fts_encdata.hpp>
 #include <fts_share/fts_packet.hpp>
 #include <fts_share/fts_plaindata.hpp>
-#include <fts_share/fts_csparam.hpp>
+#include <fts_share/fts_user2csparam.hpp>
 #include <fts_share/fts_seal_utility.hpp>
 #include <fts_share/fts_cs2userparam.hpp>
 #include <fts_user/fts_user_result_thread.hpp>
@@ -56,9 +56,9 @@ struct CSClient::Impl
     int32_t send_query(const int32_t key_id, const int32_t func_no,
                        const fts_share::EncData& enc_inputs)
     {
-        fts_share::PlainData<fts_share::CSParam> splaindata;
-        fts_share::CSParam csparam {key_id, static_cast<fts_share::FuncNo_t>(func_no)};
-        splaindata.push(csparam);
+        fts_share::PlainData<fts_share::User2CsParam> splaindata;
+        fts_share::User2CsParam user2csparam {key_id, static_cast<fts_share::FuncNo_t>(func_no)};
+        splaindata.push(user2csparam);
 
         auto sz = (splaindata.stream_size()
                    + fts_share::seal_utility::stream_size(enc_params_)

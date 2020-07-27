@@ -90,6 +90,9 @@ public:
      * Get PIR queries
      * @param[in] key_id key ID
      * @parma[in] query_id query ID
+     * @param[in] possible_input_num_one num of possible inputs for one input
+     * @param[in] possible_input_num_two num of possible inputs for two input
+     * @param[in] possible_combination_num_two num of combination for one input
      * @param[in] enc_midresult intermediate results
      * @param[out] enc_PIRquery PIR queries
      * @param[out] enc_PIRindex PIR indecies
@@ -97,6 +100,9 @@ public:
      */
     fts_share::DecCalcResult_t
     get_PIRquery(const int32_t key_id, const int32_t query_id,
+                 const int64_t possible_input_num_one,
+                 const int64_t possible_input_num_two,
+                 const int64_t possible_combination_num_two,
                  const fts_share::EncData& enc_midresult,
                  fts_share::EncData& enc_PIRquery,
                  fts_share::EncData& enc_PIRindex);

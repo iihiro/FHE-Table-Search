@@ -15,29 +15,27 @@
  * limitations under the License.
  */
 
-#include <fts_share/fts_cs2decparam.hpp>
+#ifndef FTS_USER2CSPARAM_HPP
+#define FTS_USER2CSPARAM_HPP
+
+#include <iostream>
+#include <fts_share/fts_funcno.hpp>
 
 namespace fts_share
 {
-
-std::ostream& operator<<(std::ostream& os, const Cs2DecParam& param)
-{
-    os << param.key_id   << std::endl;
-    os << param.query_id << std::endl;
-    os << param.possible_input_num_one << std::endl;
-    os << param.possible_input_num_two << std::endl;
-    os << param.possible_combination_num_two << std::endl;
-    return os;
-}
-
-std::istream& operator>>(std::istream& is, Cs2DecParam& param)
-{
-    is >> param.key_id;
-    is >> param.query_id;
-    is >> param.possible_input_num_one;
-    is >> param.possible_input_num_two;
-    is >> param.possible_combination_num_two;
-    return is;
-}
     
+/**
+ * @brief This class is used to hold the parameters to compute on encryptor.
+ */
+struct User2CsParam
+{
+    int32_t  key_id;
+    FuncNo_t func_no;
+};
+
+std::ostream& operator<<(std::ostream& os, const User2CsParam& param);
+std::istream& operator>>(std::istream& is, User2CsParam& param);
+
 } /* namespace fts_share */
+
+#endif /* FTS_USER2CSPARAM_HPP */

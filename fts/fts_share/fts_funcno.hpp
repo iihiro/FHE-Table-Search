@@ -15,26 +15,22 @@
  * limitations under the License.
  */
 
-#include <fts_share/fts_csparam.hpp>
+#ifndef FTS_FUNCNO_HPP
+#define FTS_FUNCNO_HPP
 
 namespace fts_share
 {
 
-std::ostream& operator<<(std::ostream& os, const CSParam& param)
+/**
+ * @brief Enumeration for function No.
+ */
+enum FuncNo_t : int32_t
 {
-    auto i32_func_no = static_cast<int32_t>(param.func_no);
-    os << param.key_id  << std::endl;
-    os << i32_func_no << std::endl;
-    return os;
-}
-
-std::istream& operator>>(std::istream& is, CSParam& param)
-{
-    int32_t i32_func_no;
-    is >> param.key_id;
-    is >> i32_func_no;
-    param.func_no = static_cast<FuncNo_t>(i32_func_no);
-    return is;
-}
+    kFuncNil    = 0,
+    kFuncOne    = 1,
+    kFuncTwo    = 2,
+};
     
 } /* namespace fts_share */
+
+#endif /* FTS_FUNCNO_HPP */
