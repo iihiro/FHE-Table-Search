@@ -17,7 +17,7 @@ public:
     Impl(const char* port,
          const char* dec_host,
          const char* dec_port,
-         const std::string& LUT_filepath,
+         const std::string& LUT_dir,
          stdsc::CallbackFunctionContainer& callback,
          stdsc::StateContext& state,
          const uint32_t max_concurrent_queries,
@@ -25,7 +25,7 @@ public:
          const uint32_t result_lifetime_sec)
         : dec_host_(dec_host),
           dec_port_(dec_port),
-          calc_manager_(new CalcManager(LUT_filepath, max_concurrent_queries, max_results, result_lifetime_sec)),
+          calc_manager_(new CalcManager(LUT_dir, max_concurrent_queries, max_results, result_lifetime_sec)),
           param_(new CallbackParam()),
           cparam_(new CommonCallbackParam(*calc_manager_))
     {
@@ -71,14 +71,14 @@ private:
 CSServer::CSServer(const char* port,
                    const char* dec_host,
                    const char* dec_port,
-                   const std::string &LUT_filepath,
+                   const std::string &LUT_dir,
                    stdsc::CallbackFunctionContainer &callback,
                    stdsc::StateContext &state,
                    const uint32_t max_concurrent_queries,
                    const uint32_t max_results,
                    const uint32_t result_lifetime_sec)
     : pimpl_(new Impl(port, dec_host, dec_port,
-                      LUT_filepath, callback, state,
+                      LUT_dir, callback, state,
                       max_concurrent_queries,
                       max_results,
                       result_lifetime_sec))

@@ -109,7 +109,7 @@ struct CalcThread::Impl
             seal::RelinKeys relinkey;
             seal::EncryptionParameters params(seal::scheme_type::BFV);
             STDSC_LOG_INFO("[th:%d] Start preprocess of query #%d.", th_id, query_id);
-            preprocess(query, pubkey, galoiskey, relinkey, params);
+            preprocess(query.key_id_, pubkey, galoiskey, relinkey, params);
             STDSC_LOG_INFO("[th:%d] Finish preprocess of query #%d.", th_id, query_id);
             
             seal::Ciphertext new_PIR_query, new_PIR_index;
@@ -136,7 +136,7 @@ struct CalcThread::Impl
         }
     }
 
-    void preprocess(const Query& query,
+    void preprocess(const int32_t key_id,
                     seal::PublicKey& pubkey,
                     seal::GaloisKeys& galoiskey,
                     seal::RelinKeys& relinkey,
@@ -145,10 +145,10 @@ struct CalcThread::Impl
         DecClient dec_client(dec_host_.c_str(), dec_port_.c_str());
         dec_client.connect();
         
-        dec_client.get_pubkey(query.key_id_, pubkey);
-        dec_client.get_galoiskey(query.key_id_, galoiskey);
-        dec_client.get_relinkey(query.key_id_, relinkey);
-        dec_client.get_param(query.key_id_, params);
+        dec_client.get_pubkey(key_id,    pubkey);
+        dec_client.get_galoiskey(key_id, galoiskey);
+        dec_client.get_relinkey(key_id,  relinkey);
+        dec_client.get_param(key_id,     params);
 
 #if defined ENABLE_LOCAL_DEBUG
         {

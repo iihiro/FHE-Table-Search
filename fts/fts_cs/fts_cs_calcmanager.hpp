@@ -33,12 +33,12 @@ class CalcManager
 public:
     /**
      * Constructor
-     * @param[in] LUT_filepath LUT filepath
+     * @param[in] LUT_dir                LUT directory
      * @param[in] max_concurrent_queries max number of concurrent queries
-     * @param[in] max_results max result number to hold
-     * @param[in] result_lifetime_sec lifetime to hold (sec)
+     * @param[in] max_results max        result number to hold
+     * @param[in] result_lifetime_sec    lifetime to hold (sec)
      */
-    CalcManager(const std::string& LUT_filepath,
+    CalcManager(const std::string& LUT_dir,
                 const uint32_t max_concurrent_queries,
                 const uint32_t max_results,
                 const uint32_t result_lifetime_sec);

@@ -33,7 +33,7 @@
 #include <fts_user/fts_user_cs_client.hpp>
 #include <fts_user/fts_user_result_thread.hpp>
 
-//#define ENABLE_LOCAL_DEBUG
+#define ENABLE_LOCAL_DEBUG
 
 #define PRINT_USAGE_AND_EXIT() do {                         \
         printf("Usage: %s value_x [value_y]\n", argv[0]);   \
@@ -123,7 +123,7 @@ int32_t init_keys(const std::string& dec_host,
 #if defined ENABLE_LOCAL_DEBUG
     {
         std::string dbg_seckey_filename    = "dbg_seckey";
-        std::string dbg_pukey_filename     = "dbg_pukey";
+        std::string dbg_pubkey_filename     = "dbg_pukey";
         std::string dbg_galoiskey_filename = "dbg_galoiskey";
         std::string dbg_relinkey_filename  = "dbg_relinkey";
         std::string dbg_params_filename    = "dbg_params";
@@ -141,15 +141,15 @@ int32_t init_keys(const std::string& dec_host,
     
         STDSC_LOG_DEBUG("Write the galois keys to file. (key_id:%d, file:%s)",
                         key_id, dbg_galoiskey_filename.c_str());
-        fts_share::seal_utility::write_to_file("galoiskey.txt", galoiskey);
+        fts_share::seal_utility::write_to_file(dbg_galoiskey_filename, galoiskey);
     
         STDSC_LOG_DEBUG("Write the relin keys to file. (key_id:%d, file:%s)",
                         key_id, dbg_relinkey_filename.c_str());
         fts_share::seal_utility::write_to_file(dbg_relinkey_filename, relinkey);
             
         STDSC_LOG_DEBUG("Write the params to file. (key_id:%d, file:%s)",
-                        key_id, dbg_param_filename.c_str());
-        fts_share::seal_utility::write_to_file(dbg_param_filename, params);
+                        key_id, dbg_params_filename.c_str());
+        fts_share::seal_utility::write_to_file(dbg_params_filename, params);
     }
 #endif
     
@@ -165,7 +165,7 @@ void compute_one(const int32_t key_id,
                  const seal::EncryptionParameters& params,
                  CallbackParam& callback_param)
 {
-    STDSC_LOG_INFO("Encrypt input values.");
+    STDSC_LOG_INFO("Encrypt input values. (x: %ld)", val);
     fts_share::EncData enc_inputs(params);
     enc_inputs.encrypt(val, pubkey, galoiskey);
 
@@ -187,11 +187,12 @@ void compute_one(const int32_t key_id,
         // decrypt
         std::vector<int64_t> output_values;
         enc_inputs2.decrypt(*callback_param.seckey, output_values);
-        std::cout << "Debug: decrypt query: " << std::flush;
-        for (const auto& v : output_values) {
-            std::cout << " " << v;
-        }
-        std::cout << std::endl;
+        std::cout << "Debug: decrypt query: " << output_values[0] << std::endl;
+        //std::cout << "Debug: decrypt query: " << std::flush;
+        //for (const auto& v : output_values) {
+        //    std::cout << " " << v;
+        //}
+        //std::cout << std::endl;
     }
 #endif
         
@@ -204,6 +205,38 @@ void compute_one(const int32_t key_id,
     // wait for finish
     usleep(5*1000*1000);
 }
+
+void compute_two(const int32_t key_id,
+                 const int64_t val_x,
+                 const int64_t val_y,
+                 const std::string& cs_host,
+                 const std::string& cs_port,
+                 const seal::PublicKey& pubkey,
+                 const seal::GaloisKeys& galoiskey,
+                 const seal::EncryptionParameters& params,
+                 CallbackParam& callback_param)
+{
+    STDSC_LOG_INFO("Encrypt input values. (x: %ld, y: %ld)", val_x, val_y);
+    std::vector<int64_t> values{val_x, val_y};
+    fts_share::EncData enc_inputs(params);
+    enc_inputs.encrypt(values, pubkey, galoiskey);
+
+#if defined ENABLE_LOCAL_DEBUG
+    {
+        fts_share::seal_utility::write_to_file("two-query.txt", enc_inputs.vdata());
+    }
+#endif
+        
+    fts_user::CSClient cs_client(cs_host.c_str(), cs_port.c_str(), params);
+    cs_client.connect();
+
+    cs_client.send_query(key_id, fts_share::kFuncTwo, enc_inputs,
+                         callback_func, &callback_param);
+
+    // wait for finish
+    usleep(5*1000*1000);
+}
+
 
 void exec(Option& option)
 {
@@ -223,8 +256,14 @@ void exec(Option& option)
     CallbackParam callback_param = {&seckey, &params};
 
     if (option.input_num == 1) {
-        compute_one(key_id, option.input_value_x, host, PORT_CS_SRV,
+        compute_one(key_id, option.input_value_x,
+                    host, PORT_CS_SRV,
                     pubkey, galoiskey, params, callback_param);
+    } else if (option.input_num == 2) {
+        compute_two(key_id, option.input_value_x, option.input_value_y,
+                    host, PORT_CS_SRV,
+                    pubkey, galoiskey, params, callback_param);
+        
     }
 
 }

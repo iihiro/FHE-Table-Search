@@ -29,7 +29,13 @@
 
 namespace fts_cs
 {
-    void read_table(const std::string& filepath, std::vector<std::vector<int64_t>>& table)
+
+    static constexpr const char* DEFAULT_LUT_IN_FOR_ONE_INPUT  = "LUTin_for-one-input";
+    static constexpr const char* DEFAULT_LUT_IN_FOR_TWO_INPUT  = "LUTin_for-two-input";
+    static constexpr const char* DEFAULT_LUT_OUT_FOR_TWO_INPUT = "LUTout_for-two-input";
+
+    static void
+    read_table(const std::string& filepath, std::vector<std::vector<int64_t>>& table)
     {
         int64_t temp;
         std::string lineStr;
@@ -54,10 +60,27 @@ namespace fts_cs
             table.push_back(table_col);
         }
     }
+
+    static void
+    read_vector(const std::string& filename, std::vector<int64_t>& vec)
+    {
+        int64_t temp;
+        std::string lineStr;
+        std::ifstream inFile(filename, std::ios::in);
+
+        while(getline(inFile, lineStr)){
+            std::stringstream ss(lineStr);
+            std::string str;
+            while (getline(ss, str, ' ')){
+                temp = std::stoi(str);
+                vec.push_back(temp);
+            }
+        }
+    }
     
     struct CalcManager::Impl
     {
-        Impl(const std::string& LUT_filepath,
+        Impl(const std::string& LUT_dir,
              const uint32_t max_concurrent_queries,
              const uint32_t max_results,
              const uint32_t result_lifetime_sec)
@@ -65,7 +88,17 @@ namespace fts_cs
               max_results_(max_results),
               result_lifetime_sec_(result_lifetime_sec)
         {
-            read_table(LUT_filepath, oriLUT_);
+            auto lutin_one  = LUT_dir + std::string("/") + std::string(DEFAULT_LUT_IN_FOR_ONE_INPUT);
+            auto lutin_two  = LUT_dir + std::string("/") + std::string(DEFAULT_LUT_IN_FOR_TWO_INPUT);
+            auto lutout_two = LUT_dir + std::string("/") + std::string(DEFAULT_LUT_OUT_FOR_TWO_INPUT);
+
+            STDSC_THROW_FILE_IF_CHECK(fts_share::utility::file_exist(lutin_one), "Err: LUT file for one input does not exist.");
+            STDSC_THROW_FILE_IF_CHECK(fts_share::utility::file_exist(lutin_two), "Err: LUTin file for two input does not exist.");
+            STDSC_THROW_FILE_IF_CHECK(fts_share::utility::file_exist(lutout_two), "Err: LUTout file for two input does not exist.");
+            
+            read_table(lutin_one, LUTin_one_);
+            read_table(lutin_two, LUTin_two_);
+            read_vector(lutout_two, LUTout_two_);
         }
 
         const uint32_t max_concurrent_queries_;
@@ -73,15 +106,17 @@ namespace fts_cs
         const uint32_t result_lifetime_sec_;
         QueryQueue qque_;
         ResultQueue rque_;
-        std::vector<std::vector<int64_t>> oriLUT_;
+        std::vector<std::vector<int64_t>> LUTin_one_;
+        std::vector<std::vector<int64_t>> LUTin_two_;
+        std::vector<int64_t> LUTout_two_;
         std::vector<std::shared_ptr<CalcThread>> threads_;
     };
 
-    CalcManager::CalcManager(const std::string& LUT_filepath,
+    CalcManager::CalcManager(const std::string& LUT_dir,
                              const uint32_t max_concurrent_queries,
                              const uint32_t max_results,
                              const uint32_t result_lifetime_sec)
-        :pimpl_(new Impl(LUT_filepath,
+        :pimpl_(new Impl(LUT_dir,
                          max_concurrent_queries,
                          max_results,
                          result_lifetime_sec))
@@ -97,7 +132,7 @@ namespace fts_cs
             pimpl_->threads_.emplace_back(
                 std::make_shared<CalcThread>(pimpl_->qque_,
                                              pimpl_->rque_,
-                                             pimpl_->oriLUT_,
+                                             pimpl_->LUTin_one_,
                                              dec_host,
                                              dec_port));
         }

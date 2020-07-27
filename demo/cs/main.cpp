@@ -31,10 +31,7 @@
 #include <fts_cs/fts_cs_callback_param.hpp>
 #include <fts_cs/fts_cs_callback_function.hpp>
 
-// static constexpr const char* CONTEXT_FILENAME = "context.txt";
-// static constexpr const char* PUBKEY_FILENAME  = "pubkey.txt";
-// static constexpr const char* SECKEY_FILENAME  = "seckey.txt";
-
+static constexpr const char* DEFAULT_LUT_DIR  = "../../../data";
 
 struct Option
 {
@@ -60,7 +57,7 @@ void exec(Option& option)
         callback.set(fts_share::kControlCodeUpDownloadResult, cb_result);
     }
 
-    const std::string LUT_dirpath = "../../../test/ori_LUT";
+    const std::string LUT_dirpath = DEFAULT_LUT_DIR;
     const char* dec_host = "localhost";
 
     std::shared_ptr<fts_cs::CSServer> cs_server

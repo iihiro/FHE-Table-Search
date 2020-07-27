@@ -43,6 +43,26 @@ namespace seal_utility
     
 #undef TEMPLATE_INSTANTIATE
 
+    template <class T>
+    void write_to_file(const std::string& filepath, const std::vector<T>& vdata)
+    {
+        std::ofstream ofs(filepath, std::ios::binary);
+        for (const auto& data : vdata) {
+            data.save(ofs);
+        }
+        ofs.close();
+    }
+#define TEMPLATE_INSTANTIATE(type) \
+    template void write_to_file(const std::string& filepath, const std::vector<type>& vdata)
+
+    TEMPLATE_INSTANTIATE(seal::SecretKey);
+    TEMPLATE_INSTANTIATE(seal::PublicKey);
+    TEMPLATE_INSTANTIATE(seal::GaloisKeys);
+    TEMPLATE_INSTANTIATE(seal::RelinKeys);
+    TEMPLATE_INSTANTIATE(seal::Ciphertext);
+    
+#undef TEMPLATE_INSTANTIATE
+    
     template <>
     void write_to_file<seal::EncryptionParameters>(const std::string& filepath,
                                                    const seal::EncryptionParameters& params)

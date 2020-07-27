@@ -19,6 +19,7 @@
 #define FTS_SEAL_UTILITY_HPP
 
 #include <string>
+#include <vector>
 
 namespace seal
 {
@@ -33,6 +34,9 @@ namespace seal_utility
     template <class T>
     void write_to_file(const std::string& filepath, const T& data);
 
+    template <class T>
+    void write_to_file(const std::string& filepath, const std::vector<T>& vdata);
+    
     template <>
     void write_to_file<seal::EncryptionParameters>(const std::string& filepath,
                                                    const seal::EncryptionParameters& params);

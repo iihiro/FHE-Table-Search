@@ -47,7 +47,7 @@ int main(void)
   std::cout<<"all output number(not100):"<<k<<",sum num:"<<d<<std::endl;
   
   std::ofstream InputTable;
-  InputTable.open("sample-LUT-in_for-two-input", std::ios::out);
+  InputTable.open("LUTin_for-two-input", std::ios::out);
   for (size_t i=0; i<inputT.size(); ++i) {
       for(size_t j=0; j<inputT[0].size(); ++j) {
           InputTable << inputT[i][j] << ' ';
@@ -57,7 +57,7 @@ int main(void)
   InputTable.close();
 
   std::ofstream OutputTable;
-  OutputTable.open("sample-LUT-out_for-two-input", std::ios::out);
+  OutputTable.open("LUTout_for-two-input", std::ios::out);
   for (size_t i=0; i<outputT.size(); ++i){
       OutputTable << outputT[i] << ' ';
   }

@@ -120,6 +120,80 @@ void EncData::encrypt(const int64_t input_value,
     vec_.push_back(ciphertext_query);
 }
 
+void EncData::encrypt(const std::vector<int64_t>& input_values,
+                      const seal::PublicKey& pubkey,
+                      const seal::GaloisKeys& galoiskey)
+{    
+    auto context = seal::SEALContext::Create(pimpl_->params_);
+
+    seal::Encryptor encryptor(context, pubkey);
+    seal::Evaluator evaluator(context);
+    seal::BatchEncoder batch_encoder(context);
+
+    size_t slot_count = batch_encoder.slot_count();
+    size_t row_size = slot_count / 2;
+
+    /*
+      Printing the matrix is a bit of a pain.
+    */
+    auto print_matrix = [row_size](auto &matrix) {
+        std::cout << std::endl;
+        size_t print_size = 5;
+            
+        std::cout << "    [";
+        for (size_t i = 0; i < print_size; i++) {
+            std::cout << std::setw(3) << matrix[i] << ",";
+        }
+        std::cout << std::setw(3) << " ...,";
+        for (size_t i = row_size - print_size; i < row_size; i++) {
+            std::cout << std::setw(3) << matrix[i] << ((i != row_size - 1) ? "," : " ]\n");
+        }
+        std::cout << "    [";
+        for (size_t i = row_size; i < row_size + print_size; i++) {
+            std::cout << std::setw(3) << matrix[i] << ",";
+        }
+        std::cout << std::setw(3) << " ...,";
+        for (size_t i = 2 * row_size - print_size; i < 2 * row_size; i++) {
+            std::cout << std::setw(3) << matrix[i] << ((i != 2 * row_size - 1) ? "," : " ]\n");
+        }
+        std::cout << std::endl;
+    };
+    
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::mt19937 generator(seed);
+
+    for (const auto& input_value : input_values) {
+    
+        //encrypt the LUT query
+        std::cout << "  Encrypting ..." << std::flush;
+        std::vector<int64_t> query;
+        for(size_t i=0 ; i<row_size ; i++){
+            query.push_back(input_value);
+        }
+        query.resize(slot_count);
+
+        seal::Plaintext plaintext_query;
+        batch_encoder.encode(query, plaintext_query);
+        print_matrix(query);
+
+        seal::Ciphertext ciphertext_query;
+        encryptor.encrypt(plaintext_query, ciphertext_query);
+        std::cout << "  Done" << std::endl;
+
+        vec_.push_back(ciphertext_query);
+    }
+
+    //save in a file
+#if defined ENABLE_LOCAL_DEBUG
+    std::ofstream queryFile;
+    queryFile.open("query", std::ios::binary);
+    ciphertext_query.save(queryFile);
+    queryFile.close();
+#endif
+
+}
+    
+
 void EncData::decrypt(const seal::SecretKey& secret_key,
                       std::vector<int64_t>& output_values) const
 {

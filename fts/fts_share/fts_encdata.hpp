@@ -50,6 +50,7 @@ struct EncData : public fts_share::BasicData<seal::Ciphertext>
      * @param[in] ctxts ciphertexts
      */
     EncData(const seal::EncryptionParameters& params, const std::vector<seal::Ciphertext>& ctxts);
+    
     virtual ~EncData(void) = default;
 
     /**
@@ -62,6 +63,16 @@ struct EncData : public fts_share::BasicData<seal::Ciphertext>
                  const seal::PublicKey& pubkey,
                  const seal::GaloisKeys& galoiskey);
 
+    /**
+     * Encrypt values
+     * @param[in] input_values input values
+     * @param[in] pubkey public key
+     * @param[in] galoiskey galois keys
+     */
+    void encrypt(const std::vector<int64_t>& input_value,
+                 const seal::PublicKey& pubkey,
+                 const seal::GaloisKeys& galoiskey);
+    
     /**
      * Decrypt value
      * @param[in] seckey security key

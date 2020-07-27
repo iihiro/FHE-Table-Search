@@ -64,7 +64,9 @@ DEFUN_UPDOWNLOAD(CallbackFunctionQuery)
     // load encryption inputs
     fts_share::EncData enc_inputs(params);
     enc_inputs.load_from_stream(rstream);
+#if defined ENABLE_LOCAL_DEBUG
     fts_share::seal_utility::write_to_file("query.txt", enc_inputs.data());
+#endif
 
     Query query(param.key_id, param.func_no, enc_inputs.vdata());
     int32_t query_id = calc_manager.push_query(query);
