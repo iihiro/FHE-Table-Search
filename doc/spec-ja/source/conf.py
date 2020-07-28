@@ -32,7 +32,7 @@ release = '1.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 import sphinx_fontawesome
-extensions = ['sphinx_fontawesome', 'sphinx.ext.todo']
+extensions = ['sphinx_fontawesome', 'sphinx.ext.todo', 'recommonmark']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
