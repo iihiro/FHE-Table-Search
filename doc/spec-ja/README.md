@@ -7,7 +7,7 @@
 # How to build
 1. Install sphinx and some modules
 ```
-$ pip install sphinx commonmark recommonmark sphinx_rtd_theme
+$ pip install sphinx commonmark recommonmark sphinx_rtd_theme sphinx_fontawesome
 ```
 2. Install tex environment (to generate pdf)
   * for Linux (install TeX Live)
