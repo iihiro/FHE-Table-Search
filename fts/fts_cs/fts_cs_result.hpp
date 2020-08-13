@@ -20,6 +20,7 @@
 
 #include <cstdint>
 #include <cstdbool>
+#include <chrono>
 #include <fts_share/fts_concurrent_mapqueue.hpp>
 #include <seal/seal.h>
 
@@ -41,9 +42,12 @@ struct Result
     Result(const int32_t query_id, const bool status, const seal::Ciphertext& ctxt);
     virtual ~Result() = default;
 
+    double elapsed_time() const;
+
     int32_t query_id_;
     bool status_;
     seal::Ciphertext ctxt_;
+    std::chrono::system_clock::time_point created_time_;
 };
 
 /**

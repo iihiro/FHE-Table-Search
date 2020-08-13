@@ -75,6 +75,11 @@ public:
     void pop_result(const int32_t query_id, Result& result,
                     const uint32_t retry_interval_msec=100) const;
 
+    /**
+     * Delete results if number of results grater than max number and expired lifetime
+     */
+    void cleanup_results();
+
 private:
     class Impl;
     std::shared_ptr<Impl> pimpl_;

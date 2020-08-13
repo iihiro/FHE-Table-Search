@@ -27,6 +27,13 @@ Result::Result(const int32_t query_id, const bool status, const seal::Ciphertext
       status_(status),
       ctxt_(ctxt)
 {
+    created_time_ = std::chrono::system_clock::now();
 }
 
+double Result::elapsed_time() const
+{
+    auto now = std::chrono::system_clock::now();
+    return std::chrono::duration_cast<std::chrono::seconds>(now - created_time_).count();
+}
+    
 } /* namespace fts_cs */

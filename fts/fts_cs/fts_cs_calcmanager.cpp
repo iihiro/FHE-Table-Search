@@ -181,10 +181,14 @@ namespace fts_cs
     {
         STDSC_LOG_INFO("Set queries.");
         int32_t query_id = -1;
-        try {
-            query_id = pimpl_->qque_.push(query);
-        } catch (stdsc::AbstractException& ex) {
-            STDSC_LOG_WARN(ex.what());
+        
+        if (pimpl_->qque_.size() < pimpl_->max_concurrent_queries_ &&
+            pimpl_->rque_.size() < pimpl_->max_results_) {
+            try {
+                query_id = pimpl_->qque_.push(query);
+            } catch (stdsc::AbstractException& ex) {
+                STDSC_LOG_WARN(ex.what());
+            }
         }
             
         return query_id;
@@ -196,6 +200,25 @@ namespace fts_cs
         STDSC_LOG_INFO("Getting results of query. (retry_interval_msec: %u ms)", retry_interval_msec);
         while (!pimpl_->rque_.pop(query_id, result)) {
             usleep(retry_interval_msec * 1000);
+        }
+    }
+
+    void CalcManager::cleanup_results()
+    {
+        if (pimpl_->rque_.size() >= pimpl_->max_results_) {
+            std::vector<int32_t> query_ids;
+            for (const auto& pair : pimpl_->rque_) {
+                const auto& query_id = pair.first;
+                const auto& result   = pair.second;
+                if (result.elapsed_time() >= pimpl_->result_lifetime_sec_) {
+                    STDSC_LOG_INFO("Deleted the results of query%d because it has expired.", query_id);
+                    query_ids.push_back(query_id);
+                }
+            }
+            Result tmp;
+            for (const auto& id : query_ids) {
+                pimpl_->rque_.pop(id, tmp);
+            }
         }
     }
 
