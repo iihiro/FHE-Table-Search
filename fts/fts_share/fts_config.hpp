@@ -15,54 +15,35 @@
  * limitations under the License.
  */
 
-#ifndef FTS_DEC_SRV_HPP
-#define FTS_DEC_SRV_HPP
+#ifndef FTS_CONFIG_HPP
+#define FTS_CONFIG_HPP
 
+#include <string>
 #include <memory>
 
 namespace fts_share
 {
-    class fts_config;
-}
-
-namespace fts_dec
-{
 
 /**
- * @brief Provides Decryptor Server.
+ * @brief This class is used to hold the configuration data.
  */
-class DecServer
+struct Config
 {
-public:
-    /**
-     * Constructor
-     * @param[in] port port number
-     * @param[in] callback callback functions
-     * @param[in] state state machine
-     */
-    DecServer(const char* port,
-              stdsc::CallbackFunctionContainer& callback,
-              stdsc::StateContext& state);
-    ~DecServer(void) = default;
+    Config(void);
+    ~Config(void) = default;
 
-    /**
-     * Start server
-     */
-    void start(void);
-    /**
-     * Stop server
-     */
-    void stop(void);
-    /**
-     * Wait for stopping
-     */
-    void wait(void);
-
+    std::string get_value(const std::string& key) const;
+    bool is_exist_key(const std::string& key) const;
+    void load_from_file(const std::string& filename);
+    
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
 };
 
-} /* namespace fts_dec */
+template <class T>
+T config_get_value(const Config& config, const std::string& key);
 
-#endif /* FTS_DEC_SRV_HPP */
+} /* namespace fts_share */
+
+#endif /* FTS_CONFIG_HPP */

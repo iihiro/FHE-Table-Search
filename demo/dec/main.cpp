@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <iostream>
+#include <unistd.h>
 #include <share/define.hpp>
 #include <stdsc/stdsc_state.hpp>
 #include <stdsc/stdsc_callback_function.hpp>
@@ -26,6 +27,7 @@
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_utility.hpp>
 #include <fts_share/fts_packet.hpp>
+#include <fts_share/fts_config.hpp>
 #include <fts_dec/fts_dec_srv.hpp>
 #include <fts_dec/fts_dec_state.hpp>
 #include <fts_dec/fts_dec_callback_param.hpp>
@@ -33,20 +35,36 @@
 
 struct Option
 {
-    uint64_t dummy;
+    std::string port = PORT_DEC_SRV;
+    std::string config_filename; // set empty if file is specified
 };
 
 void init(Option& option, int argc, char* argv[])
 {
+    int opt;
+    while ((opt = getopt(argc, argv, "p:c:h")) != -1)
+    {
+        switch (opt)
+        {
+            case 'p':
+                option.port = optarg;
+                break;
+            case 'c':
+                option.config_filename = optarg;
+                break;
+            case 'h':
+            default:
+                printf("Usage: %s [-p port] [-c config_filename]\n", argv[0]);
+                exit(1);
+        }
+    }
 }
 
 void exec(Option& option)
 {
     stdsc::StateContext state(std::make_shared<fts_dec::StateReady>());
-    
+
     stdsc::CallbackFunctionContainer callback;
-    fts_dec::CallbackParam param;
-    fts_dec::CommonCallbackParam cparam;
     {
         std::shared_ptr<stdsc::CallbackFunction> cb_new_keys(
             new fts_dec::CallbackFunctionNewKeyRequest());
@@ -67,12 +85,31 @@ void exec(Option& option)
             new fts_dec::CallbackFunctionCsMidResult());
         callback.set(fts_share::kControlCodeUpDownloadCsMidResult, cb_midresult);
     }
+    fts_dec::CallbackParam param;
+    if (fts_share::utility::file_exist(option.config_filename)) {
+        fts_share::Config conf;
+        conf.load_from_file(option.config_filename);
+#define READ(key, val, type, vfmt) do {                               \
+            if (conf.is_exist_key(#key))                              \
+                val = fts_share::config_get_value<type>(conf, #key); \
+            STDSC_LOG_INFO("read fhe parameter. (%s: " vfmt ")",      \
+                           #key, val);                                \
+        } while(0)
+
+        READ(poly_mod_degree, param.param.poly_mod_degree, size_t, "%lu");
+        READ(coef_mod_192,    param.param.coef_mod_192,    size_t, "%lu");
+        READ(plain_mod,       param.param.plain_mod,       size_t, "%lu");
+
+#undef READ
+    }
+            
+    fts_dec::CommonCallbackParam cparam;
     callback.set_commondata(static_cast<void*>(&param), sizeof(param));
     callback.set_commondata(static_cast<void*>(&cparam), sizeof(cparam),
                             stdsc::CommonDataKind_t::kCommonDataOnAllConnection);
 
     std::shared_ptr<fts_dec::DecServer> dec_server
-        (new fts_dec::DecServer(PORT_DEC_SRV, callback, state));
+        (new fts_dec::DecServer(option.port.c_str(), callback, state));
 
     dec_server->start();
     
