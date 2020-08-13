@@ -23,6 +23,7 @@
 #include <fts_share/fts_utility.hpp>
 #include <fts_cs/fts_cs_query.hpp>
 #include <fts_cs/fts_cs_result.hpp>
+#include <fts_cs/fts_cs_lut.hpp>
 #include <fts_cs/fts_cs_calcthread.hpp>
 #include <fts_cs/fts_cs_calcmanager.hpp>
 
