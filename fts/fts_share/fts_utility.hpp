@@ -37,6 +37,7 @@ std::string getenv(const char* env_var);
 void split(const std::string& str, const std::string& delims,
            std::vector<std::string>& vec_str);
 int32_t gen_uuid(void);
+std::string trim_string(const std::string& str, const std::string& whitespace = " \t");
 
 } /* namespace utility */
 

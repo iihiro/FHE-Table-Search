@@ -125,6 +125,20 @@ int32_t gen_uuid(void)
     std::srand(std::time(nullptr));
     return std::rand();
 }
+
+std::string trim_string(const std::string& str, const std::string& whitespace)
+{
+    const auto bgn = str.find_first_not_of(whitespace);
+    if (bgn == std::string::npos) {
+        return "";
+    }
+
+    const auto end = str.find_last_not_of(whitespace);
+    const auto len = end - bgn + 1;
+
+    return str.substr(bgn, len);
+}
+
     
 } /* namespace utility */
 
