@@ -26,6 +26,39 @@ namespace fts_cs
 {
 
 /**
+ * @brief Enumeration for state.
+ */
+enum LUTFunc_t : int32_t
+{
+    kLUTFuncNil       = 0,
+    kLUTFuncLinear    = 1,
+    kLUTFuncQuadratic = 2,
+};
+    
+/**
+ * Get function number from file
+ * @param[in] filepath
+ * @return function number
+ */
+LUTFunc_t fts_cs_lut_get_funcnumber(const std::string& filepath);
+    
+/**
+ * Read header
+ * @param[in/out] ifs input file stream
+ * @param[out] func function number
+ * @param[out] size table size
+ * @memo
+ *   Header format
+ *   -------------
+ *   func, size
+ *   -------------
+ *
+ *   - func : LUTFunc_t
+ *   - size : table col size (without header)
+ */
+void fts_cs_lut_read_header(std::ifstream& ifs, LUTFunc_t& func, size_t& size);
+    
+/**
  * @brief This class is used to hold the LUT.
  */
 template <class Tk, class Tv>
@@ -34,6 +67,10 @@ struct LUTBase
     LUTBase() = default;
     virtual ~LUTBase() = default;
 
+    /**
+     * Load from file
+     * @param[in] filepath filepath
+     */
     virtual void load_from_file(const std::string& filepath)
     {
         STDSC_THROW_INVPARAM("not implemented.");
@@ -78,7 +115,7 @@ struct LUTBase
     {
         return map_.at(key);
     }
-
+    
     /**
      * Dump map_
      */
@@ -90,6 +127,14 @@ struct LUTBase
         }
     }
 
+public:
+    /**
+     * Get function number from file
+     * @param[in] filepath
+     * @return function number
+     */
+    static int32_t get_function_number(const std::string& filepath);
+    
 protected:
     /**
      * Read header
@@ -206,6 +251,7 @@ private:
      */
     std::string generate_key(const int64_t x0, const int64_t x1) const;
 };
+    
 
 } /* namespace fts_cs */
 

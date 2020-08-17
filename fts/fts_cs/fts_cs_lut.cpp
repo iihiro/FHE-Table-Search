@@ -9,12 +9,9 @@
 
 namespace fts_cs
 {
-    /// LUTBase
-
-    template <class Tk, class Tv>
-    void LUTBase<Tk, Tv>::read_header(std::ifstream& ifs, int32_t& func, size_t& size) const
+    void fts_cs_lut_read_header(std::ifstream& ifs, LUTFunc_t& func, size_t& size)
     {
-        func = -1;
+        func = kLUTFuncNil;
         size = -1;
         
         std::string line;
@@ -30,7 +27,7 @@ namespace fts_cs
                 oss << "Invalid format. (function type:" << str << ")";
                 STDSC_THROW_FILE(oss.str().c_str());
             }
-            func = std::stoi(str);
+            func = static_cast<LUTFunc_t>(std::stoi(str));
 
             getline(ss, str, ',');
             str = fts_share::utility::trim_string(str);
@@ -43,6 +40,24 @@ namespace fts_cs
         }
     }
 
+    LUTFunc_t fts_cs_lut_get_funcnumber(const std::string& filepath)
+    {
+        if (!fts_share::utility::file_exist(filepath)) {
+            std::ostringstream oss;
+            oss << "File not found. (" << filepath << ")";
+            STDSC_THROW_FILE(oss.str());
+        }
+
+        std::ifstream ifs(filepath, std::ios::in);
+
+        LUTFunc_t func = kLUTFuncNil;
+        size_t    size = -1;
+
+        fts_cs_lut_read_header(ifs, func, size);
+        return func;
+    }
+    
+    
     /// LUTLFunc
     
     LUTLFunc::LUTLFunc(const std::string& filepath)
@@ -62,11 +77,11 @@ namespace fts_cs
 
         std::ifstream ifs(filepath, std::ios::in);
         
-        int32_t func = -1;
-        size_t  size = -1;
-        super::read_header(ifs, func, size);
+        LUTFunc_t func = kLUTFuncNil;
+        size_t    size = -1;
+        fts_cs_lut_read_header(ifs, func, size);
 
-        if ((func != 1 && func != 2) || size <= 0) {
+        if ((func != kLUTFuncLinear && func != kLUTFuncQuadratic) || size <= 0) {
             std::ostringstream oss;
             oss << "Invalid format. (filepath:" << filepath;
             oss << ", function type:" << func ;
@@ -137,11 +152,11 @@ namespace fts_cs
 
         std::ifstream ifs(filepath, std::ios::in);
         
-        int32_t func = -1;
-        size_t  size = -1;
-        super::read_header(ifs, func, size);
+        LUTFunc_t func = kLUTFuncNil;
+        size_t    size = -1;
+        fts_cs_lut_read_header(ifs, func, size);
 
-        if ((func != 1 && func != 2) || size <= 0) {
+        if ((func != kLUTFuncLinear && func != kLUTFuncQuadratic) || size <= 0) {
             std::ostringstream oss;
             oss << "Invalid format. (filepath:" << filepath;
             oss << ", function type:" << func ;
@@ -218,7 +233,7 @@ void test_lfunc(const std::string& filepath)
 
 int main()
 {
-    //test_qfunc("../../test/sample_LUT/sample_lut_two_input.csv");
+    test_qfunc("../../test/sample_LUT/sample_lut_two_input.csv");
     test_lfunc("../../test/sample_LUT/sample_lut_one_input.csv");
     return 1;
 }

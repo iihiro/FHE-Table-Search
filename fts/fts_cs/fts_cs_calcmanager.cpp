@@ -21,6 +21,7 @@
 #include <stdsc/stdsc_log.hpp>
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_utility.hpp>
+#include <fts_share/fts_define.hpp>
 #include <fts_cs/fts_cs_query.hpp>
 #include <fts_cs/fts_cs_result.hpp>
 #include <fts_cs/fts_cs_lut.hpp>
@@ -111,6 +112,7 @@ namespace fts_cs
               max_results_(max_results),
               result_lifetime_sec_(result_lifetime_sec)
         {
+            // iiz: デバッグが終わったら、ここから
             auto lutin_one  = LUT_dir + std::string("/") + std::string(DEFAULT_LUT_IN_FOR_ONE_INPUT);
             auto lutin_two  = LUT_dir + std::string("/") + std::string(DEFAULT_LUT_IN_FOR_TWO_INPUT);
             auto lutout_two = LUT_dir + std::string("/") + std::string(DEFAULT_LUT_OUT_FOR_TWO_INPUT);
@@ -122,6 +124,22 @@ namespace fts_cs
             read_table(lutin_one, LUTin_one_, possible_input_num_one_);
             read_table(lutin_two, LUTin_two_, possible_input_num_two_);
             read_vector(lutout_two, LUTout_two_, possible_combination_num_two_);
+            // iiz: デバッグが終わったら、ここまで消す
+
+            auto files = fts_share::utility::get_filelist(LUT_dir, FTS_LUTFILE_EXT);
+            for (const auto& f : files) {
+                auto func = fts_cs_lut_get_funcnumber(f);
+                switch (func) {
+                case kLUTFuncLinear:
+                    LUTlfunc_.load_from_file(f);
+                    break;
+                case kLUTFuncQuadratic:
+                    LUTqfunc_.load_from_file(f);
+                    break;
+                default:
+                    STDSC_THROW_FILE("The LUT file has an invalid format.");
+                }
+            }
         }
 
         const uint32_t max_concurrent_queries_;
@@ -132,6 +150,8 @@ namespace fts_cs
         std::vector<std::vector<int64_t>> LUTin_one_;
         std::vector<std::vector<int64_t>> LUTin_two_;
         std::vector<int64_t> LUTout_two_;
+        LUTLFunc LUTlfunc_;
+        LUTQFunc LUTqfunc_;
         int64_t possible_input_num_one_;
         int64_t possible_input_num_two_;
         int64_t possible_combination_num_two_;
