@@ -1,8 +1,16 @@
-2020-04-21  Hiromichi Iizuka  <iizuka@eduam.co.jp>
+2020-07-28  Hiromichi Iizuka  <iizuka@eduam.co.jp>
 
 	[r1.2]
 	
-	* 誤字修正
+	* 2.システム概要
+	  - システム概要図と説明を更新
+	* 3.1.1.インターフェイス
+	  - DECClient::new_key()の引数からPubkeyを削除
+	  - DECClientにget_pubkey(), get_galoiskey(), get_relinkey(), get_param()を追加
+	  - CSClient::send_query()としてコールバック対応版を追加
+	  - CSClient::set_callback()を追加
+	* 3.3.1.インターフェイス
+	  - CSServer::CSServer()の引数にdec_host, dec_portを追加
 
 2020-03-18  Hiromichi Iizuka  <iizuka@eduam.co.jp>
 

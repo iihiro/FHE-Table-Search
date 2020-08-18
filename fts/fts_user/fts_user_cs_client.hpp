@@ -37,7 +37,7 @@ class CSClient
 {
 public:
     /**
-     * constructor
+     * Constructor
      * @param[in] host hostname
      * @param[in] port port number
      * @param[in] enc_params parameters for seal
@@ -47,19 +47,19 @@ public:
     virtual ~CSClient(void) = default;
 
     /**
-     * connect
+     * Connect
      * @param[in] retry_interval_usec retry interval (usec)
      * @param[in] timeout_sec timeout (sec)
      */
     void connect(const uint32_t retry_interval_usec = FTS_RETRY_INTERVAL_USEC,
                  const uint32_t timeout_sec = FTS_TIMEOUT_SEC);
     /**
-     * disconnect
+     * Disconnect
      */
     void disconnect();
     
     /**
-     * send query
+     * Send query
      * @param[in] key_id key ID
      * @param[in] func_no function number
      * @param[in] enc_input encrypted input values (1 or 2)
@@ -69,7 +69,7 @@ public:
                        const fts_share::EncData& enc_inputs) const;
 
     /**
-     * send query
+     * Send query
      * @param[in] key_id key ID
      * @param[in] func_no function number
      * @param[in] enc_input encrypted input values (1 or 2)
@@ -83,7 +83,7 @@ public:
                        void* cbfunc_args) const;
     
     /**
-     * receive results
+     * Receive results
      * @param[in] query_id    query ID
      * @param[out] status     calcuration status
      * @param[out] enc_result encrypted result
@@ -91,7 +91,7 @@ public:
     void recv_results(const int32_t query_id, bool& status, fts_share::EncData& enc_result) const;
 
     /**
-     * set callback functions
+     * Set callback functions
      * @param[in] query_id queryID
      * @param[in] func callback function
      * @param[in] args arguments for callback function
@@ -99,11 +99,10 @@ public:
     void set_callback(const int32_t query_id, cbfunc_t funvc, void* args) const;
 
     /**
-     * wait for finish of query
+     * Wait for finish of query
      * @param[in] query_id query ID
      */
     void wait(const int32_t query_id) const;
-
 
 private:
     struct Impl;

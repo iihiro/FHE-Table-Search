@@ -15,40 +15,68 @@ class DECClient
 {
 public:
     /**
-     * コンストラクタ
-     * @param[in] host Decryptorのホスト名
-     * @param[in] port Decryptorのポート番号
+     * Constructor
+     * @param[in] host hostname of decryptor
+     * @param[in] port port number of decryptor
      */
-    DECClient(const char* host, const char* port);
-    virtual ~DECClient(void) = default;
+    DecClient(const char* host, const char* port);
+    virtual ~DecClient(void) = default;
 
     /**
-     * 接続
-     * @param[in] retry_interval_usec リトライ間隔(usec)
-     * @param[in] timeout_sec タイムアウト時間(sec)
+     * Connect
+     * @param[in] retry_interval_usec retry interval for connect to server (usec)
+     * @param[in] timeout_sec timeout for connection to server (sec)
      */
     void connect(const uint32_t retry_interval_usec = FTS_RETRY_INTERVAL_USEC,
                  const uint32_t timeout_sec = FTS_TIMEOUT_SEC);
     /**
-     * 切断
+     * Disconnect
      */
     void disconnect();
 
     /**
-     * 新規鍵ペア生成
-     * @param[out] pubkey Public key
-     * @param[out] pseckey Secret key
-     * @return keyID
+     * Generate new keys
+     * @param[out] seckey secret key
+     * @return key ID
      */
-    int32_t new_keys(fts_share::PubKey& pubkey, fts_share::SecKey& seckey);
+    int32_t new_keys(seal::SecretKey& seckey);
 
+    
     /**
-     * 鍵ペア削除
-     * @param[in] key_id keyID
-     * @return 処理に成功したか否か
+     * Delete keys
+     * @param[in] key_id key ID
+     * @return success or failed
      */
     bool delete_keys(const int32_t key_id) const;
 
+    /**
+     * Get public key from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] pubkey public key
+     */
+    void get_pubkey(const int32_t key_id, seal::PublicKey& pubkey);
+
+    /**
+     * Get galois keys from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] galiskey galois keys
+     */
+    void get_galoiskey(const int32_t key_id, seal::GaloisKeys& galoiskey);
+    
+    /**
+     * Get relin keys from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] relinkey relin keys
+     */
+    void get_relinkey(const int32_t key_id, seal::RelinKeys& relinkey);
+    
+    /**
+     * Get encryption parameters from decryptor
+     * @param[in]  key_id key ID
+     * @param[out] params encryption parameters
+     */
+    void get_param(const int32_t key_id, seal::EncryptionParameters& params);
+    
 private:
     struct Impl;
     std::shared_ptr<Impl> pimpl_;
@@ -64,41 +92,72 @@ class CSClient
 {
 public:
     /**
-     * コンストラクタ
-     * @param[in] host ComputationServerのホスト名
-     * @param[in] port ComputationServerのポート番号
+     * Constructor
+     * @param[in] host hostname
+     * @param[in] port port number
+     * @param[in] enc_params parameters for seal
      */
-    CSClient(const char* host, const char* port);
+    CSClient(const char* host, const char* port,
+             const seal::EncryptionParameters& enc_params);
     virtual ~CSClient(void) = default;
 
     /**
-     * 接続
-     * @param[in] retry_interval_usec リトライ間隔(usec)
-     * @param[in] timeout_sec タイムアウト時間(sec)
+     * Connect
+     * @param[in] retry_interval_usec retry interval (usec)
+     * @param[in] timeout_sec timeout (sec)
      */
     void connect(const uint32_t retry_interval_usec = FTS_RETRY_INTERVAL_USEC,
                  const uint32_t timeout_sec = FTS_TIMEOUT_SEC);
     /**
-     * 切断
+     * Disconnect
      */
     void disconnect();
     
     /**
-     * クエリ送信
-     * @param[in] key_id keyID
-     * @param[in] func_no 関数番号
-     * @param[in] enc_input 暗号化された入力値(1つ or 2つ)
+     * Send query
+     * @param[in] key_id key ID
+     * @param[in] func_no function number
+     * @param[in] enc_input encrypted input values (1 or 2)
      * @return queryID
      */
-    int32_t send_query(const int32_t key_id, const int32_t func_no, const std::vector<fts_share::EncData>& enc_input) const;
+    int32_t send_query(const int32_t key_id, const int32_t func_no,
+                       const fts_share::EncData& enc_inputs) const;
+
+    /**
+     * Send query
+     * @param[in] key_id key ID
+     * @param[in] func_no function number
+     * @param[in] enc_input encrypted input values (1 or 2)
+     * @param[in] cbfunc callback function
+     * @param[in] cbfunc_args arguments for callback function
+     * @return queryID
+     */
+    int32_t send_query(const int32_t key_id, const int32_t func_no,
+                       const fts_share::EncData& enc_inputs,
+                       cbfunc_t cbfunc,
+                       void* cbfunc_args) const;
     
     /**
-     * 結果受信
-     * @param[in] query_id queryID
-     * @param[out] enc_result 暗号化された結果
-     * @return 結果が受信できたか否か
+     * Receive results
+     * @param[in] query_id    query ID
+     * @param[out] status     calcuration status
+     * @param[out] enc_result encrypted result
      */
-    bool recv_result(const int32_t query_id, fts_share::EncData& enc_result) const;
+    void recv_results(const int32_t query_id, bool& status, fts_share::EncData& enc_result) const;
+
+    /**
+     * Set callback functions
+     * @param[in] query_id queryID
+     * @param[in] func callback function
+     * @param[in] args arguments for callback function
+     */
+    void set_callback(const int32_t query_id, cbfunc_t funvc, void* args) const;
+
+    /**
+     * Wait for finish of query
+     * @param[in] query_id query ID
+     */
+    void wait(const int32_t query_id) const;
 
 private:
     struct Impl;
@@ -124,10 +183,10 @@ class DecServer
 {
 public:
     /**
-     * コンストラクタ
-     * @param[in] port ポート番号
-     * @param[in] callback コールバック関数定義
-     * @param[in] state 状態遷移定義
+     * Constructor
+     * @param[in] port port number
+     * @param[in] callback callback functions
+     * @param[in] state state machine
      */
     DecServer(const char* port,
               stdsc::CallbackFunctionContainer& callback,
@@ -135,15 +194,15 @@ public:
     ~DecServer(void) = default;
 
     /**
-     * サーバ始動
+     * Start server
      */
     void start(void);
     /**
-     * サーバ停止指示
+     * Stop server
      */
     void stop(void);
     /**
-     * サーバ停止待ち
+     * Wait for stopping
      */
     void wait(void);
 
@@ -221,17 +280,21 @@ class CSServer
 {
 public:
     /**
-     * コンストラクタ
-     * @param[in] port ポート番号
-     * @param[in] LUT_dirpath LUTファイルのディレクトリパス
-     * @param[in] callback コールバック関数定義
-     * @param[in] state 状態遷移定義
-     * @param[in] max_concurrent_queries 最大同時クエリー数
-     * @param[in] max_results 最大結果保持数
-     * @param[in] result_lifetime_sec 結果を保持する時間(秒)
+     * constructor
+     * @param[in] port port              number
+     * @param[in] dec_host               hostname of Decryptor
+     * @param[in] dec_port               port number of Decryptor
+     * @param[in] LUT_dir                LUT directory
+     * @param[in] callback               callback functions
+     * @param[in] state                  state machine
+     * @param[in] max_concurrent_queries max concurrent query number
+     * @param[in] max_results            max result number
+     * @param[in] result_lifetime_sec    result linefile (sec)
      */
     CSServer(const char* port,
-             const std::string& LUT_dirpath,
+             const char* dec_host,
+             const char* dec_port,
+             const std::string& LUT_dir,
              stdsc::CallbackFunctionContainer& callback,
              stdsc::StateContext& state,
              const uint32_t max_concurrent_queries = DEFAULT_MAX_CONCURRENT_QUERIES,
@@ -240,15 +303,15 @@ public:
     ~CSServer(void) = default;
 
     /**
-     * サーバ始動
+     * start server
      */
-    void start(void);
+    void start();
     /**
-     * サーバ停止指示
+     * stop server
      */
     void stop(void);
     /**
-     * サーバ停止待ち
+     * wait for stopping
      */
     void wait(void);
 

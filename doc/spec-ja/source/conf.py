@@ -23,7 +23,7 @@ copyright = 'Copyright 2018 Yamana Laboratory, Waseda University'
 author = '株式会社エデュアム'
 
 # The full version, including alpha/beta/rc tags
-release = '1.1'
+release = '1.2'
 
 
 # -- General configuration ---------------------------------------------------
