@@ -115,7 +115,34 @@ struct LUTBase
     {
         return map_.at(key);
     }
-    
+
+    /**
+     * Get LUT size
+     * @return LUT size
+     */
+    size_t size() const
+    {
+        return map_.size();
+    }
+
+    /**
+     * Get begin of iterator
+     * @return begin of iterator
+     */
+    typename std::unordered_map<Tk, Tv>::iterator begin()
+    {
+        return map_.begin();
+    }
+
+    /**
+     * Get end of iterator
+     * @return end of iterator
+     */
+    typename std::unordered_map<Tk, Tv>::iterator end()
+    {
+        return map_.end();
+    }
+
     /**
      * Dump map_
      */
@@ -126,31 +153,6 @@ struct LUTBase
             std::cout << "  " << pair.first << ", " << pair.second << std::endl;
         }
     }
-
-public:
-    /**
-     * Get function number from file
-     * @param[in] filepath
-     * @return function number
-     */
-    static int32_t get_function_number(const std::string& filepath);
-    
-protected:
-    /**
-     * Read header
-     * @param[in/out] ifs input file stream
-     * @param[out] func function number
-     * @param[out] size table size
-     * @memo
-     *   Header format
-     *   -------------
-     *   func, size
-     *   -------------
-     *
-     *   - func : 1: linear function, 2: quadratic finction
-     *   - size : table col size (without header)
-     */
-    void read_header(std::ifstream& ifs, int32_t& func, size_t& size) const;
 
 protected:
     std::unordered_map<Tk, Tv> map_;
@@ -240,6 +242,13 @@ struct LUTQFunc : public LUTBase<std::string, int64_t>
      * @return y
      */
     int64_t get(const int64_t x0, const int64_t x1);
+
+    /**
+     * Decode x0, x1 from key string
+     * @param[in] key key string
+     * @return pair of (x0, x1)
+     */
+    const std::pair<int64_t, int64_t> decode_key(const std::string& key) const;
 
 private:
     

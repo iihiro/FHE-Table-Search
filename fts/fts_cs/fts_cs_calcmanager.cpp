@@ -31,76 +31,6 @@
 
 namespace fts_cs
 {
-
-    static constexpr const char* DEFAULT_LUT_IN_FOR_ONE_INPUT  = "LUTin_for-one-input";
-    static constexpr const char* DEFAULT_LUT_IN_FOR_TWO_INPUT  = "LUTin_for-two-input";
-    static constexpr const char* DEFAULT_LUT_OUT_FOR_TWO_INPUT = "LUTout_for-two-input";
-
-    static void
-    read_table(const std::string& filepath, std::vector<std::vector<int64_t>>& table, int64_t& n)
-    {
-        int64_t temp;
-        std::string numStr, lineStr;
-
-        STDSC_LOG_INFO("Read LUTin file. (filepath:%s)", filepath.c_str());
-
-        if (!fts_share::utility::file_exist(filepath)) {
-            std::ostringstream oss;
-            oss << "File not found. (" << filepath << ")";
-            STDSC_THROW_FILE(oss.str());
-        }
-
-        std::ifstream ifs(filepath, std::ios::in);
-        
-        getline(ifs, numStr);
-        if (!fts_share::utility::isdigit(numStr)) {
-            std::ostringstream oss;
-            oss << "Invalid format. (filepath:" << filepath << ")";
-            STDSC_THROW_FILE(oss.str().c_str());
-        }
-        n = std::stoi(numStr);
-        STDSC_LOG_INFO("  possible inputs: %ld", n);
-            
-        while (getline(ifs, lineStr)){
-            std::vector<int64_t> table_col;
-            std::stringstream ss(lineStr);
-            std::string str;
-            while (getline(ss, str, ' ')){
-                temp = std::stoi(str);
-                table_col.push_back(temp);
-            }
-            table.push_back(table_col);
-        }
-    }
-
-    static void
-    read_vector(const std::string& filepath, std::vector<int64_t>& vec, int64_t& n)
-    {
-        int64_t temp;
-        std::string numStr, lineStr;
-
-        STDSC_LOG_INFO("Read LUTout file. (filepath:%s)", filepath.c_str());
-        
-        std::ifstream ifs(filepath, std::ios::in);
-
-        getline(ifs, numStr);
-        if (!fts_share::utility::isdigit(numStr)) {
-            std::ostringstream oss;
-            oss << "Invalid format. (filepath:" << filepath << ")";
-            STDSC_THROW_FILE(oss.str().c_str());
-        }
-        n = std::stoi(numStr);
-        STDSC_LOG_INFO("  possible combination: %ld", n);
-        
-        while(getline(ifs, lineStr)){
-            std::stringstream ss(lineStr);
-            std::string str;
-            while (getline(ss, str, ' ')){
-                temp = std::stoi(str);
-                vec.push_back(temp);
-            }
-        }
-    }
     
     struct CalcManager::Impl
     {
@@ -112,34 +42,91 @@ namespace fts_cs
               max_results_(max_results),
               result_lifetime_sec_(result_lifetime_sec)
         {
-            // iiz: デバッグが終わったら、ここから
-            auto lutin_one  = LUT_dir + std::string("/") + std::string(DEFAULT_LUT_IN_FOR_ONE_INPUT);
-            auto lutin_two  = LUT_dir + std::string("/") + std::string(DEFAULT_LUT_IN_FOR_TWO_INPUT);
-            auto lutout_two = LUT_dir + std::string("/") + std::string(DEFAULT_LUT_OUT_FOR_TWO_INPUT);
-
-            STDSC_THROW_FILE_IF_CHECK(fts_share::utility::file_exist(lutin_one),  "Err: LUT file for one input does not exist.");
-            STDSC_THROW_FILE_IF_CHECK(fts_share::utility::file_exist(lutin_two),  "Err: LUTin file for two input does not exist.");
-            STDSC_THROW_FILE_IF_CHECK(fts_share::utility::file_exist(lutout_two), "Err: LUTout file for two input does not exist.");
-            
-            read_table(lutin_one, LUTin_one_, possible_input_num_one_);
-            read_table(lutin_two, LUTin_two_, possible_input_num_two_);
-            read_vector(lutout_two, LUTout_two_, possible_combination_num_two_);
-            // iiz: デバッグが終わったら、ここまで消す
-
+            LUTLFunc LUTlfunc;
+            LUTQFunc LUTqfunc;
             auto files = fts_share::utility::get_filelist(LUT_dir, FTS_LUTFILE_EXT);
             for (const auto& f : files) {
                 auto func = fts_cs_lut_get_funcnumber(f);
-                switch (func) {
-                case kLUTFuncLinear:
-                    LUTlfunc_.load_from_file(f);
-                    break;
-                case kLUTFuncQuadratic:
-                    LUTqfunc_.load_from_file(f);
-                    break;
-                default:
+                if (func == kLUTFuncLinear) {
+                    LUTlfunc.load_from_file(f);
+                    convertLUT_to_vecfmt_one(LUTlfunc, LUTin_one_, possible_input_num_one_);
+                } else if (func == kLUTFuncQuadratic) {
+                    LUTqfunc.load_from_file(f);
+                    convertLUT_to_vecfmt_two(LUTqfunc, LUTin_two_, LUTout_two_,
+                                             possible_input_num_two_, possible_combination_num_two_);
+                } else {
                     STDSC_THROW_FILE("The LUT file has an invalid format.");
                 }
             }
+        }
+
+        void convertLUT_to_vecfmt_one(LUTLFunc& lut,
+                                      std::vector<std::vector<int64_t>>& lutvec_io,
+                                      int64_t& possible_input_num) const
+        {
+            lutvec_io.clear();
+            lutvec_io.resize(2); // [0]: input cols (x), [1]: output cols (y)
+            for (const auto& pair : lut) {
+                auto& key = pair.first;
+                auto& val = pair.second;
+                lutvec_io[0].push_back(stol(key));
+                lutvec_io[1].push_back(val);
+            }
+            lutvec_io[0].resize(FTS_LUT_POSSIBLE_INPUT_NUM_ONE, 100);
+            lutvec_io[1].resize(FTS_LUT_POSSIBLE_INPUT_NUM_ONE, 100);            
+            possible_input_num = FTS_LUT_POSSIBLE_INPUT_NUM_ONE;
+        }
+
+        void convertLUT_to_vecfmt_two(LUTQFunc& lut,
+                                      std::vector<std::vector<int64_t>>& lutvec_i,
+                                      std::vector<int64_t>& lutvec_o,
+                                      int64_t& possible_input_num,
+                                      int64_t& possible_combination_num) const
+        {
+            lutvec_i.clear();
+            lutvec_o.clear();
+            lutvec_i.resize(2); // [0]: input cols (x0), [1]: input cols (x1)
+            for (const auto& pair : lut) {
+                auto& x0x1 = lut.decode_key(pair.first);
+                lutvec_i[0].push_back(x0x1.first);  // x0
+                lutvec_i[1].push_back(x0x1.second); // x1
+            }
+
+            std::sort(lutvec_i[0].begin(), lutvec_i[0].end());
+            std::sort(lutvec_i[1].begin(), lutvec_i[1].end());
+            lutvec_i[0].erase(std::unique(lutvec_i[0].begin(), lutvec_i[0].end()), lutvec_i[0].end());
+            lutvec_i[1].erase(std::unique(lutvec_i[1].begin(), lutvec_i[1].end()), lutvec_i[1].end());
+
+            size_t x0sz = lutvec_i[0].size();
+            size_t x1sz = lutvec_i[1].size();
+            
+            STDSC_THROW_INVPARAM_IF_CHECK(x0sz < FTS_LUT_POSSIBLE_INPUT_NUM_TWO, "size of x0 in LUT of two input size too large");
+            STDSC_THROW_INVPARAM_IF_CHECK(x1sz < FTS_LUT_POSSIBLE_INPUT_NUM_TWO, "size of x1 in LUT of two input size too large");
+
+            lutvec_i[0].resize(FTS_LUT_POSSIBLE_INPUT_NUM_TWO, 100);
+            lutvec_i[1].resize(FTS_LUT_POSSIBLE_INPUT_NUM_TWO, 100);
+
+            for (size_t i=0; i<lutvec_i[0].size(); ++i) {
+                
+                const auto& x0 = lutvec_i[0][i];
+                for (size_t j=0; j<lutvec_i[1].size(); ++j) {
+                    
+                    int64_t val = 1000;
+                    if (i < x0sz && j < x1sz) {
+                        try {
+                            const auto& x1 = lutvec_i[1][j];
+                            val = lut.get(x0, x1);
+                        }catch (stdsc::InvParamException& ex) {
+                            // nothing to do
+                        }
+                    }
+                    
+                    lutvec_o.push_back(val);
+                }
+            }
+            
+            possible_input_num = FTS_LUT_POSSIBLE_INPUT_NUM_TWO;
+            possible_combination_num = possible_input_num * possible_input_num;
         }
 
         const uint32_t max_concurrent_queries_;
@@ -150,8 +137,6 @@ namespace fts_cs
         std::vector<std::vector<int64_t>> LUTin_one_;
         std::vector<std::vector<int64_t>> LUTin_two_;
         std::vector<int64_t> LUTout_two_;
-        LUTLFunc LUTlfunc_;
-        LUTQFunc LUTqfunc_;
         int64_t possible_input_num_one_;
         int64_t possible_input_num_two_;
         int64_t possible_combination_num_two_;

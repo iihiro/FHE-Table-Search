@@ -204,6 +204,17 @@ namespace fts_cs
         return super::map_[key];
     }
 
+    const std::pair<int64_t, int64_t> LUTQFunc::decode_key(const std::string& key) const
+    {
+        std::string str;
+        std::stringstream ss(key);
+        getline(ss, str, ',');
+        int64_t x0 = std::stol(str);
+        getline(ss, str, ',');
+        int64_t x1 = std::stol(str);
+        return std::make_pair(x0, x1);
+    }
+
     std::string LUTQFunc::generate_key(const int64_t x0, const int64_t x1) const
     {
         std::ostringstream oss;
