@@ -115,6 +115,13 @@ The demo app consists of three processes: Decryptor, ComputationServer and User.
     * value1 value1 (type: int)
     * value2 value2 (type: int) (*OPTINAL*)
 
+# Test
+```sh
+$ cd test
+$ ./test_one.sh # Test for one input
+$ ./test_two.sh # Test for two input
+```
+
 # License
 Copyright 2018 Yamana Laboratory, Waseda University
 Supported by JST CREST Grant Number JPMJCR1503, Japan.
