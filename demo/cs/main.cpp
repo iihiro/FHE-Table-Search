@@ -36,23 +36,39 @@ static constexpr const char* DEFAULT_LUT_DIR  = "../../../test/sample_LUT";
 
 struct Option
 {
-    std::string lut_dir = DEFAULT_LUT_DIR;
+    std::string port     = PORT_CS_SRV;
+    std::string lut_dir  = DEFAULT_LUT_DIR;
+    uint32_t max_queries = FTS_DEFAULT_MAX_CONCURRENT_QUERIES;
+    uint32_t max_results = FTS_DEFAULT_MAX_RESULTS;
+    uint32_t max_result_lifetime_sec = FTS_DEFAULT_MAX_RESULT_LIFETIME_SEC;
 };
 
 void init(Option& option, int argc, char* argv[])
 {
     int opt;
     opterr = 0;
-    while ((opt = getopt(argc, argv, "d:h")) != -1)
+    while ((opt = getopt(argc, argv, "p:d:h")) != -1)
     {
         switch (opt)
         {
+            case 'p':
+                option.port = optarg;
+                break;
             case 'd':
                 option.lut_dir = optarg;
                 break;
+            case 'q':
+                option.max_queries = std::stol(optarg);
+                break;
+            case 'r':
+                option.max_results = std::stol(optarg);
+                break;
+            case 'l':
+                option.max_result_lifetime_sec = std::stol(optarg);
+                break;
             case 'h':
             default:
-                printf("Usage: %s [-d lut_dir]\n", argv[0]);
+                printf("Usage: %s [-p port] [-d lut_dir]\n", argv[0]);
                 exit(1);
         }
     }
@@ -77,7 +93,8 @@ void exec(Option& option)
     const char* dec_host = "localhost";
 
     std::shared_ptr<fts_cs::CSServer> cs_server
-        (new fts_cs::CSServer(PORT_CS_SRV, dec_host, PORT_DEC_SRV, LUT_dirpath, callback, state));
+        (new fts_cs::CSServer(option.port.c_str(), dec_host, PORT_DEC_SRV, LUT_dirpath, callback, state,
+                              option.max_queries, option.max_results, option.max_result_lifetime_sec));
 
     cs_server->start();
     

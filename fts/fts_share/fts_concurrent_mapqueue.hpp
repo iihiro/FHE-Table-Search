@@ -40,6 +40,21 @@ public:
         map_.emplace(key, val);
     }
 
+    virtual size_t size() const
+    {
+        return map_.size();
+    }
+
+    virtual typename std::map<Tk, Tv>::iterator begin()
+    {
+        return map_.begin();
+    }
+
+    virtual typename std::map<Tk, Tv>::iterator end()
+    {
+        return map_.end();
+    }
+    
     virtual size_t count(const Tk& key) const
     {
         return map_.count(key);

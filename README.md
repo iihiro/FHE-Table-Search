@@ -69,8 +69,8 @@ The demo app consists of three processes: Decryptor, ComputationServer and User.
     ```sh
     Usage: ./dec [-p port] [-c config_filename]
     ```
-    * -p port : port number (type: int)
-    * -c config_filename : file path of configuration file (type: string) (*OPTINAL*)
+    * -p port : port number (type: int, default: 10001)
+    * -c config_filename : file path of configuration file (type: string)
 * Configuration
     * Specify the following encryption parameters in the configuration file.
         ```
@@ -92,11 +92,13 @@ The demo app consists of three processes: Decryptor, ComputationServer and User.
     * ComputationServer receives a result request from User, then returns encryped results. (Fig: (11))
 * Usage
     ```sh
-    Usage: ./cs [-p port] [-f LUT_filepath] [-m max_queries]
+    Usage: ./cs [-p port] [-f LUT_filepath] [-q max_queries] [-r max_results] [-l max_result_lifetime_sec]
     ```
-    * -p port : port number (type: int)
-    * -f LUT_filepath : LUT filepath (type: string)
-    * -m max_queries : max concurrent queries (type: int)
+    * -p port : port number (type: int, default: 10002)
+    * -d LUT_dir : LUT dir  (type: string, default: ../../../test/sample_LUT)
+    * -q max_queries : max concurrent queries (type: int, default: 128)
+    * -r max_results : max resutls (type: int, default: 128)
+    * -l max_result_lifetime_sec : max result lifetime sec (type: int, default: 50000)
 * State Transition Diagram
     * ![](doc/spec-ja/source/images/fhetbl_design-state-cs.png)
 
@@ -113,6 +115,13 @@ The demo app consists of three processes: Decryptor, ComputationServer and User.
     ```
     * value1 value1 (type: int)
     * value2 value2 (type: int) (*OPTINAL*)
+
+# Test
+```sh
+$ cd test
+$ ./test_one.sh # Test for one input
+$ ./test_two.sh # Test for two input
+```
 
 # License
 Copyright 2018 Yamana Laboratory, Waseda University

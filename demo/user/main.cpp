@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2018 Yamana Laboratory, Waseda University
  * Supported by JST CREST Grant Number JPMJCR1503, Japan.

@@ -20,6 +20,11 @@
 
 #include <memory>
 
+namespace fts_share
+{
+    class fts_config;
+}
+
 namespace fts_dec
 {
 

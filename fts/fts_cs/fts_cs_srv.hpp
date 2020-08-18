@@ -18,11 +18,8 @@
 #ifndef FTS_CS_HPP
 #define FTS_CS_HPP
 
-#define DEFAULT_MAX_CONCURRENT_QUERIES 128
-#define DEFAULT_MAX_RESULTS 128
-#define DEFAULT_MAX_RESULT_LIFETIME_SEC 50000
-
 #include <memory>
+#include <fts_share/fts_define.hpp>
 
 namespace fts_cs
 {
@@ -51,9 +48,9 @@ public:
              const std::string& LUT_dir,
              stdsc::CallbackFunctionContainer& callback,
              stdsc::StateContext& state,
-             const uint32_t max_concurrent_queries = DEFAULT_MAX_CONCURRENT_QUERIES,
-             const uint32_t max_results = DEFAULT_MAX_RESULTS,
-             const uint32_t result_lifetime_sec = DEFAULT_MAX_RESULT_LIFETIME_SEC);
+             const uint32_t max_concurrent_queries = FTS_DEFAULT_MAX_CONCURRENT_QUERIES,
+             const uint32_t max_results = FTS_DEFAULT_MAX_RESULTS,
+             const uint32_t result_lifetime_sec = FTS_DEFAULT_MAX_RESULT_LIFETIME_SEC);
     ~CSServer(void) = default;
 
     /**

@@ -23,6 +23,8 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm> // std::all_of
+#include <dirent.h>  // scandir
+#include <string.h>  // strcmp
 #include <stdsc/stdsc_exception.hpp>
 #include <fts_share/fts_utility.hpp>
 
@@ -125,6 +127,61 @@ int32_t gen_uuid(void)
     std::srand(std::time(nullptr));
     return std::rand();
 }
+
+std::string trim_string(const std::string& str, const std::string& whitespace)
+{
+    const auto bgn = str.find_first_not_of(whitespace);
+    if (bgn == std::string::npos) {
+        return "";
+    }
+
+    const auto end = str.find_last_not_of(whitespace);
+    const auto len = end - bgn + 1;
+
+    return str.substr(bgn, len);
+}
+
+std::vector<std::string> get_filelist(const std::string& dir, const std::string& ext)
+{
+    std::vector<std::string> flist;
+
+    struct stat stat_buf;
+    struct dirent** namelist = nullptr;
+
+    auto n = ::scandir(dir.c_str(), &namelist, NULL, NULL);
+    for (int i=0; i<n; ++i) {
+        if (::strcmp(namelist[i]->d_name, ".\0") &&
+            ::strcmp(namelist[i]->d_name, "..\0")) {
+            auto fullpath = dir + "/" + std::string(namelist[i]->d_name);
+            if (::stat(fullpath.c_str(), &stat_buf) == 0 && (stat_buf.st_mode & S_IFMT) != S_IFDIR) {
+                auto extname = get_extname(fullpath);
+                if (ext.empty() || ext == extname) {
+                    flist.push_back(fullpath);
+                }
+            }
+        }
+    }
+
+    return flist;
+}
+
+std::string get_filename(const std::string& path, const bool without_ext) 
+{
+    int endpos = without_ext ? path.length() - (path.find_last_of('.') + 1) : -1;
+    return path.substr(path.find_last_of('/') + 1, endpos);
+}
+
+std::string get_dirname(const std::string& path)
+{
+    return path.substr(0, path.find_last_of('/') + 1);
+}
+
+std::string get_extname(const std::string& path)
+{
+    auto filename = get_filename(path);
+    return filename.substr(filename.find_last_of('.') + 1);
+}
+
     
 } /* namespace utility */
 
